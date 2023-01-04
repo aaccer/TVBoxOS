@@ -405,8 +405,8 @@ public class DetailActivity extends BaseActivity {
             public void onItemSelected(TvRecyclerView parent, View itemView, int position) {
                 TextView txtView = itemView.findViewById(R.id.tvSeriesGroup);
                 txtView.setTextColor(mContext.getResources().getColor(R.color.color_02F8E1));
-                if (vodInfo != null && vodInfo.seriesMap.get(vodInfo.playFlag).size() > 0) {
-                    int targetPos = position * GroupCount+1;
+	        if (vodInfo != null && vodInfo.seriesMap.get(vodInfo.playFlag).size() > 0 && position != 0) {
+	            int targetPos = (position - 1) * GroupCount;
                     mGridView.smoothScrollToPosition(targetPos);
                 }
                 currentSeriesGroupView = itemView;
@@ -422,8 +422,8 @@ public class DetailActivity extends BaseActivity {
                 FastClickCheckUtil.check(view);
                 TextView newTxtView = view.findViewById(R.id.tvSeriesGroup);
                 newTxtView.setTextColor(mContext.getResources().getColor(R.color.color_02F8E1));
-                if (vodInfo != null && vodInfo.seriesMap.get(vodInfo.playFlag).size() > 0) {
-                    int targetPos =  position * GroupCount+1;
+	        if (vodInfo != null && vodInfo.seriesMap.get(vodInfo.playFlag).size() > 0 && position != 0) {
+	            int targetPos =  (position - 1) * GroupCount;
 //                    mGridView.scrollToPosition(targetPos);
                     mGridView.smoothScrollToPosition(targetPos);
                 }
@@ -526,7 +526,7 @@ public class DetailActivity extends BaseActivity {
         w += 32;
         int screenWidth = getWindowManager().getDefaultDisplay().getWidth()/3;
         int offset = screenWidth/w;
-        if(offset <=2) offset =2;
+        if(offset < 2) offset =1;
         if(offset > 6) offset =6;
         mGridViewLayoutMgr.setSpanCount(offset);
         seriesAdapter.setNewData(vodInfo.seriesMap.get(vodInfo.playFlag));
@@ -555,19 +555,18 @@ public class DetailActivity extends BaseActivity {
             int remainedOptionSize = listSize % GroupCount;
             int optionSize = listSize / GroupCount;
 
+            seriesGroupOptions.add("全部");
             for(int i = 0; i < optionSize; i++) {
                 if(vodInfo.reverseSort)
-//                    seriesGroupOptions.add(String.format("%d - %d", i * GroupCount + GroupCount, i * GroupCount + 1));
-                    seriesGroupOptions.add(String.format("%d - %d", listSize - (i * GroupCount + 1)+1, listSize - (i * GroupCount + GroupCount)+1));
+                    seriesGroupOptions.add(String.format("%d - %d", listSize - i * GroupCount, listSize - (i + 1) * GroupCount + 1));
                 else
-                    seriesGroupOptions.add(String.format("%d - %d", i * GroupCount + 1, i * GroupCount + GroupCount));
+                    seriesGroupOptions.add(String.format("%d - %d", i * GroupCount + 1, (i + 1)* GroupCount));
             }
             if(remainedOptionSize > 0) {
                 if(vodInfo.reverseSort)
-//                    seriesGroupOptions.add(String.format("%d - %d", optionSize * GroupCount + remainedOptionSize, optionSize * GroupCount + 1));
-                    seriesGroupOptions.add(String.format("%d - %d", listSize - (optionSize * GroupCount + 1)+1, listSize - (optionSize * GroupCount + remainedOptionSize)+1));
+                    seriesGroupOptions.add(String.format("%d - %d", listSize - optionSize * GroupCount, 1));
                 else
-                    seriesGroupOptions.add(String.format("%d - %d", optionSize * GroupCount + 1, optionSize * GroupCount + remainedOptionSize));
+                    seriesGroupOptions.add(String.format("%d - %d", optionSize * GroupCount + 1, listSize));
             }
 //            if(vodInfo.reverseSort) Collections.reverse(seriesGroupOptions);
 
