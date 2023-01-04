@@ -606,15 +606,15 @@ public class VodController extends BaseController {
     }
 
     public void initLandscapePortraitBtnInfo() {
-        if(mControlWrapper!=null && mActivity!=null){
-            int width = mControlWrapper.getVideoSize()[0];
-            int height = mControlWrapper.getVideoSize()[1];
-            double screenSqrt = ScreenUtils.getSqrt(mActivity);
-            if (screenSqrt < 10.0 && width < height) {
+//        if(mControlWrapper!=null && mActivity!=null){
+//            int width = mControlWrapper.getVideoSize()[0];
+//            int height = mControlWrapper.getVideoSize()[1];
+//            double screenSqrt = ScreenUtils.getSqrt(mActivity);
+//            if (screenSqrt < 10.0 && width < height) {
                 mLandscapePortraitBtn.setVisibility(View.VISIBLE);
                 mLandscapePortraitBtn.setText("竖屏");
-            }
-        }
+//            }
+//        }
     }
 
     void setLandscapePortrait() {
