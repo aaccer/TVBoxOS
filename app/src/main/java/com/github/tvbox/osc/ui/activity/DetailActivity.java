@@ -555,7 +555,7 @@ public class DetailActivity extends BaseActivity {
             int remainedOptionSize = listSize % GroupCount;
             int optionSize = listSize / GroupCount;
 
-            seriesGroupOptions.add("全部");
+            seriesGroupOptions.add("分组");
             for(int i = 0; i < optionSize; i++) {
                 if(vodInfo.reverseSort)
                     seriesGroupOptions.add(String.format("%d - %d", listSize - i * GroupCount, listSize - (i + 1) * GroupCount + 1));
