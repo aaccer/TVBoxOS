@@ -599,6 +599,7 @@ public class DetailActivity extends BaseActivity {
                 if (absXml != null && absXml.movie != null && absXml.movie.videoList != null && absXml.movie.videoList.size() > 0) {
                     showSuccess();
                     mVideo = absXml.movie.videoList.get(0);
+                    mVideo.id = vodId;
                     vodInfo = new VodInfo();
                     vodInfo.setVideo(mVideo);
                     vodInfo.sourceKey = mVideo.sourceKey;
