@@ -318,9 +318,15 @@ public class VodController extends BaseController {
                 myHandle.postDelayed(myRunnable, myHandleSeconds);
                 try {
                     float speed = (float) mPlayerConfig.getDouble("sp");
+                    if (speed < 1.5){
                     speed += 0.25f;
-                    if (speed > 3)
+                    }else if(speed >= 1.5 &&speed < 2){
+                    speed += 0.5f;
+                    }else if(speed >= 2&&speed < 3){
+                    speed += 1f;
+                    }else if (speed >= 3){
                         speed = 0.5f;
+                        }
                     mPlayerConfig.put("sp", speed);
                     updatePlayerCfgView();
                     listener.updatePlayerCfg();
