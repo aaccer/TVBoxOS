@@ -14,13 +14,6 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: Extra Modify
-        if: ${{ env.commit }}
-        working-directory: TVBoxOSC
-        run: |
-          echo '修改VersionName'
-          sed -i "/versionName/s#[0-9a-zA-Z_\.\'\"-]\+\$#\'${{ env.tag }}\'#" app/build.gradle
-          sed -i "/android:text=/s#=\"#=\"${{ env.tag }}\\\\n\\\\n#" app/src/main/res/layout/dialog_about.xml
       - name: Build With Gradle
         run: |
           chmod +x gradlew
@@ -29,7 +22,7 @@ jobs:
         run: |
           mkdir -p ${{ github.workspace }}/apk/
           for file in `find ~ -name "*.apk" -print`; do
-            mv "$file" apk/TVBox_${{ env.tag }}.apk
+            mv "$file" apk/TVBox.apk
           done
       - name: Upload App To Artifact
         uses: actions/upload-artifact@v3
