@@ -611,10 +611,9 @@ public class VodController extends BaseController {
 //            int height = mControlWrapper.getVideoSize()[1];
 //            double screenSqrt = ScreenUtils.getSqrt(mActivity);
 //            if (screenSqrt < 10.0 && width < height) {
-            if (getPackageManager().hasSystemFeature("android.hardware.touchscreen")) {//非电视
                 mLandscapePortraitBtn.setVisibility(View.VISIBLE);
                 mLandscapePortraitBtn.setText("竖屏");
-            }
+//            }
 //        }
     }
 
