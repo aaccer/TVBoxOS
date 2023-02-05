@@ -1343,7 +1343,8 @@ public class LivePlayActivity extends BaseActivity {
         playChannel(liveChannelGroupAdapter.getSelectedGroupIndex(), position, false);
         if (tvLeftChannelListLayout.getVisibility() == View.VISIBLE) {
             mHandler.removeCallbacks(mHideChannelListRun);
-            mHandler.postDelayed(mHideChannelListRun, 5000);
+          //mHandler.postDelayed(mHideChannelListRun, 5000);
+            mHandler.post(mHideChannelListRun);
         }
     }
 
