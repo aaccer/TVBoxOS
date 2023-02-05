@@ -1319,7 +1319,8 @@ public class LivePlayActivity extends BaseActivity {
                 liveChannelGroupAdapter.setFocusedGroupIndex(-1);
                 liveChannelItemAdapter.setFocusedChannelIndex(position);
                 mHandler.removeCallbacks(mHideChannelListRun);
-                mHandler.postDelayed(mHideChannelListRun, 5000);
+              //mHandler.postDelayed(mHideChannelListRun, 5000);
+                mHandler.post(mHideChannelListRun);
             }
 
             @Override
