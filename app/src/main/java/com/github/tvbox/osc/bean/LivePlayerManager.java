@@ -24,7 +24,7 @@ public class LivePlayerManager {
         try {
             defaultPlayerConfig.put("pl", Hawk.get(HawkConfig.PLAY_TYPE, 2));//exo
             defaultPlayerConfig.put("ijk", Hawk.get(HawkConfig.IJK_CODEC, "软解码"));
-            defaultPlayerConfig.put("pr", Hawk.get(HawkConfig.PLAY_RENDER, 0));
+            defaultPlayerConfig.put("pr", Hawk.get(HawkConfig.PLAY_RENDER, 1));
             defaultPlayerConfig.put("sc", Hawk.get(HawkConfig.PLAY_SCALE, 1));  //16:9
         } catch (JSONException e) {
             e.printStackTrace();
@@ -43,10 +43,14 @@ public class LivePlayerManager {
 
     public void getLiveChannelPlayer(VideoView videoView, String channelName) {
         JSONObject playerConfig = Hawk.get(channelName, null);
-        if (playerConfig == null || channelName.indexOf("exo") != -1) {
+        if (playerConfig == null) {
             if (!currentPlayerConfig.toString().equals(defaultPlayerConfig.toString()))
                 getDefaultLiveChannelPlayer(videoView);
             return;
+        }
+        if(channelName.indexOf("exo") != -1){
+        playerConfig.put("pl", 2);
+        playerConfig.put("ijk", "软解码");
         }
         if (playerConfig.toString().equals(currentPlayerConfig.toString()))
             return;
