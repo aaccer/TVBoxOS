@@ -42,15 +42,15 @@ public class LivePlayerManager {
     }
 
     public void getLiveChannelPlayer(VideoView videoView, String channelName) {
+        if(channelName.indexOf("exo") != -1){
+        JSONObject playerConfig = new JSONObject(defaultPlayerConfig.toString());
+        }else{
         JSONObject playerConfig = Hawk.get(channelName, null);
+        }
         if (playerConfig == null) {
             if (!currentPlayerConfig.toString().equals(defaultPlayerConfig.toString()))
                 getDefaultLiveChannelPlayer(videoView);
             return;
-        }
-        if(channelName.indexOf("exo") != -1){
-        playerConfig.put("pl", 2);
-        playerConfig.put("ijk", "软解码");
         }
         if (playerConfig.toString().equals(currentPlayerConfig.toString()))
             return;
