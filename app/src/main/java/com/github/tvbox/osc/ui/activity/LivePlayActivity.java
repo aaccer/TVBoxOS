@@ -778,7 +778,11 @@ public class LivePlayActivity extends BaseActivity {
             currentLiveChannelIndex = liveChannelIndex;
             currentLiveChannelItem = getLiveChannels(currentChannelGroupIndex).get(currentLiveChannelIndex);
             Hawk.put(HawkConfig.LIVE_CHANNEL, currentLiveChannelItem.getChannelName());
+        if(currentLiveChannelItem.getChannelName().toString().indexOf("exo") != -1){
+        livePlayerManager.changeLivePlayerType(mVideoView,3,currentLiveChannelItem.getChannelName());
+        }else{
             livePlayerManager.getLiveChannelPlayer(mVideoView, currentLiveChannelItem.getChannelName());
+             }
         }
 
         channel_Name = currentLiveChannelItem;
