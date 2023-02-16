@@ -42,11 +42,9 @@ public class LivePlayerManager {
     }
 
     public void getLiveChannelPlayer(VideoView videoView, String channelName) {
-        JSONObject playerConfig;
+        JSONObject playerConfig = Hawk.get(channelName, null);
         if(channelName.indexOf("exo") != -1){
-        playerConfig = new JSONObject(defaultPlayerConfig.toString());
-        }else{
-        playerConfig = Hawk.get(channelName, null);
+        changeLivePlayerType(videoView,3,channelName);
         }
         if (playerConfig == null) {
             if (!currentPlayerConfig.toString().equals(defaultPlayerConfig.toString()))
