@@ -1684,7 +1684,8 @@ public class LivePlayActivity extends BaseActivity {
         @Override
         public void run() {
             Date day=new Date();
-            SimpleDateFormat df = new SimpleDateFormat("HH:mm:ss");
+            //SimpleDateFormat df = new SimpleDateFormat("HH:mm:ss");
+            SimpleDateFormat df = new SimpleDateFormat("HH:mm");
             tvTime.setText(df.format(day));
             mHandler.postDelayed(this, 1000);
         }
