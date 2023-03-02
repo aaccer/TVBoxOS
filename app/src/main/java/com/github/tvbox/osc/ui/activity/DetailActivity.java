@@ -407,6 +407,7 @@ public class DetailActivity extends BaseActivity {
                 txtView.setTextColor(mContext.getResources().getColor(R.color.color_02F8E1));
 	        if (vodInfo != null && vodInfo.seriesMap.get(vodInfo.playFlag).size() > 0 && position != 0) {
 	            int targetPos = (position - 1) * GroupCount;
+                    mGridView.scrollToPosition(targetPos);
                     mGridView.smoothScrollToPosition(targetPos);
                 }
                 currentSeriesGroupView = itemView;
@@ -424,7 +425,7 @@ public class DetailActivity extends BaseActivity {
                 newTxtView.setTextColor(mContext.getResources().getColor(R.color.color_02F8E1));
 	        if (vodInfo != null && vodInfo.seriesMap.get(vodInfo.playFlag).size() > 0 && position != 0) {
 	            int targetPos =  (position - 1) * GroupCount;
-//                    mGridView.scrollToPosition(targetPos);
+                    mGridView.scrollToPosition(targetPos);
                     mGridView.smoothScrollToPosition(targetPos);
                 }
                 if(currentSeriesGroupView != null) {
@@ -536,6 +537,7 @@ public class DetailActivity extends BaseActivity {
         mGridView.postDelayed(new Runnable() {
             @Override
             public void run() {
+                mGridView.scrollToPosition(vodInfo.playIndex);
                 mGridView.smoothScrollToPosition(vodInfo.playIndex);
             }
         }, 100);
