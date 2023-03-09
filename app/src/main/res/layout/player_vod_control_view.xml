@@ -7,14 +7,12 @@
 
     <LinearLayout
             android:id="@+id/tv_top_l_container"
-            android:layout_width="720dp"
+            android:background="#33000000"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:tag="tv_top_container"
             android:visibility="gone"
             tools:visibility="visible"
-            android:layout_marginStart="@dimen/vs_20"
-            android:layout_marginLeft="@dimen/vs_20"
-            android:layout_marginTop="@dimen/vs_10"
             android:orientation="vertical">
 
             <TextView
@@ -24,7 +22,6 @@
                 android:layout_gravity="left"
                 android:ellipsize="end"
                 android:singleLine="true"
-                android:width="680dp"
                 android:paddingTop="@dimen/vs_20"
                 android:paddingLeft="@dimen/vs_20"
                 android:text="http://"
@@ -39,6 +36,7 @@
                 android:ellipsize="end"
                 android:maxLines="1"
                 android:paddingLeft="@dimen/vs_20"
+                android:paddingBottom="@dimen/vs_5"
                 android:tag="vod_video_size"
                 android:text="[ 1024 x 768 ]"
                 android:textColor="@android:color/white"
@@ -48,14 +46,12 @@
 
     <LinearLayout
         android:id="@+id/tv_top_r_container"
-        android:layout_width="120dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:tag="tv_top_container"
         android:visibility="gone"
         tools:visibility="visible"
         android:layout_gravity="right"
-        android:layout_marginRight="@dimen/vs_20"
-        android:layout_marginTop="@dimen/vs_10"
         android:orientation="vertical">
 
         <TextView
