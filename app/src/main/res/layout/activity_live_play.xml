@@ -720,7 +720,7 @@
 		android:background="@drawable/shape_user_search"
 		android:layout_width="@dimen/vs_240"
 		android:layout_height="@dimen/vs_70"
-		android:layout_marginTop="25mm"
+		android:layout_marginTop="50mm"
 		android:layout_marginRight="25mm"
 
 		android:minWidth="270px">
