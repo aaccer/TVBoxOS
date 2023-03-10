@@ -451,6 +451,11 @@ public class LivePlayActivity extends BaseActivity {
                     hsEpg.put(savedEpgKey, arrayList);
                 showBottomEpg();
             }
+	
+                    @Override
+                    public String convertResponse(okhttp3.Response response) throws Throwable {
+                        return response.body().string();
+                    }
         });
     }
 
