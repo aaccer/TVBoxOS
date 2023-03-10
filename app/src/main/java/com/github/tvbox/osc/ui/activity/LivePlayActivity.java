@@ -61,6 +61,9 @@ import com.github.tvbox.osc.util.urlhttp.CallBackUtil;
 import com.github.tvbox.osc.util.urlhttp.UrlHttpUtil;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import org.apache.commons.lang3.StringUtils;
 import com.lzy.okgo.OkGo;
 import com.lzy.okgo.callback.AbsCallback;
@@ -424,11 +427,11 @@ public class LivePlayActivity extends BaseActivity {
         }else {
             url= epgStringAddress + "?ch="+ URLEncoder.encode(epgTagName) + "&date=" + timeFormat.format(date);
         }
-        OkGo. < String > get(url)
+        OkGo.<String>get(url)
             .params("date", timeFormat.format(date))
-            .execute(new AbsCallback < String > () {
+            .execute(new AbsCallback<String>() {
                     @Override
-                    public void onSuccess(Response < String > paramString) {
+                    public void onSuccess(Response <String> paramString) {
                         ArrayList arrayList = new ArrayList();
 
                         try {
