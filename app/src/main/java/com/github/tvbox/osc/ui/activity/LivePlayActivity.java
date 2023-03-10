@@ -424,32 +424,23 @@ public class LivePlayActivity extends BaseActivity {
         }else {
             url= epgStringAddress + "?ch="+ URLEncoder.encode(epgTagName) + "&date=" + timeFormat.format(date);
         }
-        UrlHttpUtil.get(url, new CallBackUtil.CallBackString() {
-            public void onFailure(int i, String str) {
-                //showEpg(date, new ArrayList());
-                //showBottomEpg();
-            }
+        OkGo. < String > get(url)
+            .params("date", timeFormat.format(date))
+            .execute(new AbsCallback < String > () {
+                    @Override
+                    public void onSuccess(Response < String > paramString) {
+                        ArrayList arrayList = new ArrayList();
 
-            public void onResponse(String paramString) {
-
-                ArrayList arrayList = new ArrayList();
-
-                Log.d("返回的EPG信息", paramString);
-                try {
-                    if (paramString.contains("epg_data")) {
-                        final JSONArray jSONArray = new JSONObject(paramString).optJSONArray("epg_data");
-                        if (jSONArray != null)
-                            for (int b = 0; b < jSONArray.length(); b++) {
-                                JSONObject jSONObject = jSONArray.getJSONObject(b);
-                                Epginfo epgbcinfo = new Epginfo(date,jSONObject.optString("title"), date, jSONObject.optString("start"), jSONObject.optString("end"),b);
+                        try {
+                            JsonArray itemList = JsonParser.parseString(paramString.body()).getAsJsonObject().get("epg_data").getAsJsonArray();
+                            for (JsonElement ele: itemList) {
+                                JsonObject obj = (JsonObject) ele;
+                                Epginfo epgbcinfo = new Epginfo(obj.get("title").getAsString().trim(), obj.get("start").getAsString().trim(), obj.get("end").getAsString().trim());
                                 arrayList.add(epgbcinfo);
-                                Log.d("EPG信息:", day +"  "+ jSONObject.optString("start") +" - "+jSONObject.optString("end") + "  " +jSONObject.optString("title"));
                             }
-                    }
-
-                } catch (JSONException jSONException) {
-                    jSONException.printStackTrace();
-                }
+                        } catch (Throwable th) {
+                            th.printStackTrace();
+                        }
                 showEpg(date, arrayList);
                 String savedEpgKey = channelName + "_" + liveEpgDateAdapter.getItem(liveEpgDateAdapter.getSelectedIndex()).getDatePresented();
                 if (!hsEpg.contains(savedEpgKey))
