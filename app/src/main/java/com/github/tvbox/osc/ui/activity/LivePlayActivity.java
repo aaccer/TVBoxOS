@@ -428,7 +428,6 @@ public class LivePlayActivity extends BaseActivity {
             url= epgStringAddress + "?ch="+ URLEncoder.encode(epgTagName) + "&date=" + timeFormat.format(date);
         }
         OkGo.<String>get(url)
-            .params("date", timeFormat.format(date))
             .execute(new AbsCallback<String>() {
                     @Override
                     public void onSuccess(Response <String> paramString) {
@@ -436,9 +435,11 @@ public class LivePlayActivity extends BaseActivity {
 
                         try {
                             JsonArray itemList = JsonParser.parseString(paramString.body()).getAsJsonObject().get("epg_data").getAsJsonArray();
+                            int b=0;
                             for (JsonElement ele: itemList) {
                                 JsonObject obj = (JsonObject) ele;
-                                Epginfo epgbcinfo = new Epginfo(obj.get("title").getAsString().trim(), obj.get("start").getAsString().trim(), obj.get("end").getAsString().trim());
+                                Epginfo epgbcinfo = new Epginfo(date,obj.get("title").getAsString().trim(),date, obj.get("start").getAsString().trim(), obj.get("end").getAsString().trim(),b);
+                                b++;
                                 arrayList.add(epgbcinfo);
                             }
                         } catch (Throwable th) {
