@@ -17,10 +17,14 @@
 
             <TextView
                 android:id="@+id/tv_info_name1"
-                android:layout_width="wrap_content"
+                android:layout_width="680dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="left"
-                android:ellipsize="end"
+                android:ellipsize="marquee"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:marqueeRepeatLimit="marquee_forever"
+                android:scrollHorizontally="true"
                 android:singleLine="true"
                 android:paddingTop="@dimen/vs_20"
                 android:paddingLeft="@dimen/vs_20"
