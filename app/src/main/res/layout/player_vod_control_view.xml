@@ -440,12 +440,10 @@
         tools:visibility="visible">
 
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="left"
-            android:layout_marginStart="@dimen/vs_20"
-            android:layout_marginLeft="@dimen/vs_20"
-            android:layout_marginTop="@dimen/vs_10"
+            android:background="#33000000"
             android:orientation="vertical">
 
             <TextView
