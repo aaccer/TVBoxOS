@@ -272,12 +272,13 @@ public class LivePlayActivity extends BaseActivity {
 
         if(show){
             backcontroller.setVisibility(View.VISIBLE);
-            ll_epg.setVisibility(View.GONE);
+            //ll_epg.setVisibility(View.GONE);
 
         }else{
             backcontroller.setVisibility(View.GONE);
-            ll_epg.setVisibility(View.VISIBLE);
+            //ll_epg.setVisibility(View.VISIBLE);
         }
+            ll_epg.setVisibility(View.GONE);
 
 
         iv_play.setOnClickListener(new View.OnClickListener() {
@@ -802,8 +803,8 @@ public class LivePlayActivity extends BaseActivity {
         }else {
             currentLiveChannelItem.setinclude_back(false);
         }
+        //showBottomEpg();        
         getEpg(new Date());
-        //showBottomEpg();
         backcontroller.setVisibility(View.GONE);
         ll_right_top_huikan.setVisibility(View.GONE);
         mVideoView.setUrl(currentLiveChannelItem.getUrl());
