@@ -413,7 +413,9 @@ public class LivePlayActivity extends BaseActivity {
         timeFormat.setTimeZone(TimeZone.getTimeZone("GMT+8:00"));
         String[] epgInfo = EpgUtil.getEpgInfo(channelName);
         String epgTagName = channelName;
-        updateChannelIcon(channelName, epgInfo == null ? null : epgInfo[0]);
+        //updateChannelIcon(channelName, epgInfo == null ? null : epgInfo[0]);
+        String savedEpgKey = channelName + "_" + timeFormat.format(date);
+        if (!hsEpg.contains(savedEpgKey)){
         if (epgInfo != null && !epgInfo[1].isEmpty()) {
             epgTagName = epgInfo[1];
         }
@@ -446,10 +448,8 @@ public class LivePlayActivity extends BaseActivity {
                             th.printStackTrace();
                         }
                 showEpg(date, arrayList);
-                String savedEpgKey = channelName + "_" + liveEpgDateAdapter.getItem(liveEpgDateAdapter.getSelectedIndex()).getDatePresented();
-                if (!hsEpg.contains(savedEpgKey))
                     hsEpg.put(savedEpgKey, arrayList);
-                showBottomEpg();
+                //showBottomEpg();
             }
 	
                     @Override
@@ -457,16 +457,17 @@ public class LivePlayActivity extends BaseActivity {
                         return response.body().string();
                     }
         });
+        }
     }
 
     //显示底部EPG
     private void showBottomEpg() {
         if (isSHIYI)
             return;
+            tip_epg1.setText("暂无信息");
         if (channel_Name.getChannelName() != null) {
             ((TextView) findViewById(R.id.tv_channel_bar_name)).setText(channel_Name.getChannelName());
             ((TextView) findViewById(R.id.tv_channel_bottom_number)).setText("" + channel_Name.getChannelNum());
-            tip_epg1.setText("暂无信息");
             ((TextView) findViewById(R.id.tv_current_program_name)).setText("");
             tip_epg2.setText("开源测试软件,请勿商用以及播放违法内容");
             ((TextView) findViewById(R.id.tv_next_program_name)).setText("");
@@ -493,13 +494,13 @@ public class LivePlayActivity extends BaseActivity {
                 }
                 epgListAdapter.CanBack(currentLiveChannelItem.getinclude_back());
                 epgListAdapter.setNewData(arrayList);
-            } else {
-                int selectedIndex = liveEpgDateAdapter.getSelectedIndex();
-                if (selectedIndex < 0)
-                    getEpg(new Date());
-                else
-                    getEpg(liveEpgDateAdapter.getData().get(selectedIndex).getDateParamVal());
-            }
+            } //else {
+                //int selectedIndex = liveEpgDateAdapter.getSelectedIndex();
+                //if (selectedIndex < 0)
+                    //getEpg(new Date());
+                //else
+                    //getEpg(liveEpgDateAdapter.getData().get(selectedIndex).getDateParamVal());
+            //}
 
             if (countDownTimer != null) {
                 countDownTimer.cancel();
@@ -792,8 +793,8 @@ public class LivePlayActivity extends BaseActivity {
         }else {
             currentLiveChannelItem.setinclude_back(false);
         }
-        showBottomEpg();
         getEpg(new Date());
+        showBottomEpg();
         backcontroller.setVisibility(View.GONE);
         ll_right_top_huikan.setVisibility(View.GONE);
         mVideoView.setUrl(currentLiveChannelItem.getUrl());
