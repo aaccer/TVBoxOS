@@ -414,8 +414,6 @@ public class LivePlayActivity extends BaseActivity {
         String[] epgInfo = EpgUtil.getEpgInfo(channelName);
         String epgTagName = channelName;
         //updateChannelIcon(channelName, epgInfo == null ? null : epgInfo[0]);
-        String savedEpgKey = channelName + "_" + liveEpgDateAdapter.getItem(liveEpgDateAdapter.getSelectedIndex()).getDatePresented();
-        if (!hsEpg.contains(savedEpgKey)){
         if (epgInfo != null && !epgInfo[1].isEmpty()) {
             epgTagName = epgInfo[1];
         }
@@ -423,6 +421,8 @@ public class LivePlayActivity extends BaseActivity {
         epgListAdapter.CanBack(currentLiveChannelItem.getinclude_back());
         //epgListAdapter.updateData(date, new ArrayList<>());
 
+        String savedEpgKey = channelName + "_" + liveEpgDateAdapter.getItem(liveEpgDateAdapter.getSelectedIndex()).getDatePresented();
+        if (!hsEpg.containsKey(savedEpgKey)){
         String url;
         if(epgStringAddress.contains("{name}") && epgStringAddress.contains("{date}")){
             url= epgStringAddress.replace("{name}",URLEncoder.encode(epgTagName)).replace("{date}",timeFormat.format(date));
@@ -448,8 +448,10 @@ public class LivePlayActivity extends BaseActivity {
                             th.printStackTrace();
                         }
                 showEpg(date, arrayList);
-                    hsEpg.put(savedEpgKey, arrayList);
-                //showBottomEpg();
+                hsEpg.put(savedEpgKey, arrayList);
+                Date now=new Date();
+                if(timeFormat.format(date).equals(timeFormat.format(now)))
+                showBottomEpg();
             }
 	
                     @Override
@@ -457,7 +459,14 @@ public class LivePlayActivity extends BaseActivity {
                         return response.body().string();
                     }
         });
-        }
+        }else{
+            ArrayList arrayList = new ArrayList();
+            arrayList = (ArrayList) hsEpg.get(savedEpgKey);
+            showEpg(date, arrayList); 
+            Date now=new Date();
+            if(timeFormat.format(date).equals(timeFormat.format(now)))
+            showBottomEpg();
+            }
     }
 
     //显示底部EPG
@@ -794,7 +803,7 @@ public class LivePlayActivity extends BaseActivity {
             currentLiveChannelItem.setinclude_back(false);
         }
         getEpg(new Date());
-        showBottomEpg();
+        //showBottomEpg();
         backcontroller.setVisibility(View.GONE);
         ll_right_top_huikan.setVisibility(View.GONE);
         mVideoView.setUrl(currentLiveChannelItem.getUrl());
