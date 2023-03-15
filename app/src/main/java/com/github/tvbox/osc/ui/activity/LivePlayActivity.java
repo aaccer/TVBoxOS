@@ -533,7 +533,7 @@ public class LivePlayActivity extends BaseActivity {
             } else {
                 ((TextView) findViewById(R.id.tv_source)).setText("[线路" + (channel_Name.getSourceIndex() + 1) + "/" + channel_Name.getSourceNum() + "]");
             }
-            tv_right_top_channel_name.setText(channel_Name.getChannelName());
+            //tv_right_top_channel_name.setText(channel_Name.getChannelName());
             tv_right_top_epg_name.setText(channel_Name.getChannelName());
             ll_right_top_loading.setVisibility(View.VISIBLE);
 
@@ -796,6 +796,7 @@ public class LivePlayActivity extends BaseActivity {
         }
 
         channel_Name = currentLiveChannelItem;
+        tv_right_top_channel_name.setText(channel_Name.getChannelName());
         isSHIYI=false;
         isBack = false;
         if(currentLiveChannelItem.getUrl().indexOf("PLTV/8888") !=-1){
@@ -803,7 +804,7 @@ public class LivePlayActivity extends BaseActivity {
         }else {
             currentLiveChannelItem.setinclude_back(false);
         }
-        //showBottomEpg();        
+        //showBottomEpg();
         getEpg(new Date());
         backcontroller.setVisibility(View.GONE);
         ll_right_top_huikan.setVisibility(View.GONE);
