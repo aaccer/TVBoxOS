@@ -414,7 +414,7 @@ public class LivePlayActivity extends BaseActivity {
         String[] epgInfo = EpgUtil.getEpgInfo(channelName);
         String epgTagName = channelName;
         //updateChannelIcon(channelName, epgInfo == null ? null : epgInfo[0]);
-        String savedEpgKey = channelName + "_" + timeFormat.format(date);
+        String savedEpgKey = channelName + "_" + liveEpgDateAdapter.getItem(liveEpgDateAdapter.getSelectedIndex()).getDatePresented();
         if (!hsEpg.contains(savedEpgKey)){
         if (epgInfo != null && !epgInfo[1].isEmpty()) {
             epgTagName = epgInfo[1];
