@@ -255,7 +255,7 @@ public class LivePlayActivity extends BaseActivity {
 
         mRightEpgList = (TvRecyclerView) findViewById(R.id.lv_epg);
         //EPG频道名称
-        imgLiveIcon = findViewById(R.id.img_live_icon);
+        //imgLiveIcon = findViewById(R.id.img_live_icon);
         liveIconNullBg = findViewById(R.id.live_icon_null_bg);
         liveIconNullText = findViewById(R.id.live_icon_null_text);
         imgLiveIcon.setVisibility(View.INVISIBLE);
