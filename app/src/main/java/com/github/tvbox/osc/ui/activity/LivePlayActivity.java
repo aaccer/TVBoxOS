@@ -414,7 +414,7 @@ public class LivePlayActivity extends BaseActivity {
         timeFormat.setTimeZone(TimeZone.getTimeZone("GMT+8:00"));
         String[] epgInfo = EpgUtil.getEpgInfo(channelName);
         String epgTagName = channelName;
-        updateChannelIcon(channelName, epgInfo == null ? null : epgInfo[0]);
+        //updateChannelIcon(channelName, epgInfo == null ? null : epgInfo[0]);
         if (epgInfo != null && !epgInfo[1].isEmpty()) {
             epgTagName = epgInfo[1];
         }
@@ -484,7 +484,7 @@ public class LivePlayActivity extends BaseActivity {
             String savedEpgKey = channel_Name.getChannelName() + "_" + liveEpgDateAdapter.getItem(liveEpgDateAdapter.getSelectedIndex()).getDatePresented();
             if (hsEpg.containsKey(savedEpgKey)) {
                 String[] epgInfo = EpgUtil.getEpgInfo(channel_Name.getChannelName());
-                //updateChannelIcon(channel_Name.getChannelName(), epgInfo == null ? null : epgInfo[0]);
+                updateChannelIcon(channel_Name.getChannelName(), epgInfo == null ? null : epgInfo[0]);
                 ArrayList arrayList = (ArrayList) hsEpg.get(savedEpgKey);
                 if (arrayList != null && arrayList.size() > 0) {
                     int size = arrayList.size() - 1;
@@ -561,7 +561,8 @@ public class LivePlayActivity extends BaseActivity {
             imgLiveIcon.setVisibility(View.INVISIBLE);
             liveIconNullText.setText("" + channel_Name.getChannelNum());
         } else {
-            Picasso.get().load(logoUrl).placeholder(R.drawable.app_banner).into(imgLiveIcon);
+            //Picasso.get().load(logoUrl).placeholder(R.drawable.app_banner).into(imgLiveIcon);
+            Picasso.get().load(logoUrl).into(imgLiveIcon);
             imgLiveIcon.setVisibility(View.VISIBLE);
             liveIconNullBg.setVisibility(View.INVISIBLE);
             liveIconNullText.setVisibility(View.INVISIBLE);
