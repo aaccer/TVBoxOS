@@ -470,7 +470,7 @@
 					android:ellipsize='marquee'
 					android:singleLine="true"
 					android:textColor="@android:color/white"
-					android:textSize="@dimen/vs_60"
+					android:textSize="@dimen/vs_50"
 					android:textStyle="bold"
 					tools:ignore="EllipsizeMaxLines" />
 				<ImageView
