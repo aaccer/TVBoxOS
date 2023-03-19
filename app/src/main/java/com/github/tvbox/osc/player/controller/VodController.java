@@ -149,7 +149,7 @@ public class VodController extends BaseController {
             String width = Integer.toString(mControlWrapper.getVideoSize()[0]);
             String height = Integer.toString(mControlWrapper.getVideoSize()[1]);
             mVideoSize.setText("[ " + width + " X " + height +" ]");
-            mPlayTitle1.requestFocus();
+            //mPlayTitle1.requestFocus();
 
             mHandler.postDelayed(this, 1000);
         }
@@ -676,6 +676,7 @@ public class VodController extends BaseController {
     public void setTitle(String playTitleInfo) {
         mPlayTitle.setText(playTitleInfo);
         mPlayTitle1.setText(playTitleInfo);
+        mPlayTitle1.requestFocus();
     }
 
     public void setUrlTitle(String playTitleInfo) {
