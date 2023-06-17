@@ -77,7 +77,6 @@ import com.lzy.okgo.model.Response;
 import com.obsez.android.lib.filechooser.ChooserDialog;
 import com.orhanobut.hawk.Hawk;
 
-import org.apache.commons.lang3.StringUtils;
 import org.greenrobot.eventbus.EventBus;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
@@ -530,8 +529,15 @@ public class PlayActivity extends BaseActivity {
         boolean dealedExtXKey = false;
         for (int i = 0; i < lines.length; ++i) {
             if (!dealedExtXKey && lines[i].startsWith("#EXT-X-KEY")) {
-                String keyUrl = StringUtils.substringBetween(lines[i], "URI=\"", "\"");
-                if (keyUrl != null && !keyUrl.startsWith("http://") && !keyUrl.startsWith("https://")) {
+                //String keyUrl = StringUtils.substringBetween(lines[i], "URI=\"", "\"");
+                String keyUrl ="";
+                int keyStart=lines[i].indexOf("URI=\"");                
+                if(keyStart>=0){
+                    String keyUrltmp=lines[i].substring(keyStart+5);
+                   int keyEnd=keyUrltmp.indexOf("\"");
+                    if(keyEnd>0)keyUrl=keyUrltmp.substring(0,keyEnd);
+                    }
+                if (keyUrl !=""&&keyUrl != null && !keyUrl.startsWith("http://") && !keyUrl.startsWith("https://")) {
                     String newKeyUrl;
                     if (keyUrl.charAt(0) == '/') {
                         int ifirst = tsUrlPre.indexOf('/', 9);//skip https://, http://
@@ -560,7 +566,7 @@ public class PlayActivity extends BaseActivity {
                 lines[i] = "";
             }
         }
-        return StringUtils.join(lines, linesplit);
+        return TextUtils.join(linesplit,lines );
     }
 
     void playUrl(String url, HashMap<String, String> headers) {
@@ -1851,4 +1857,4 @@ public class PlayActivity extends BaseActivity {
         }
     }
 
-    }
+}
