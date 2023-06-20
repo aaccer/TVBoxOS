@@ -176,7 +176,7 @@ public class HomeActivity extends BaseActivity {
                     HomeActivity.this.sortFocusView = view;
                     HomeActivity.this.sortFocused = position;
                     mHandler.removeCallbacks(mDataRunnable);
-                    mHandler.postDelayed(mDataRunnable, 200);
+                    mHandler.postDelayed(mDataRunnable, 500);
                 }
             }
 
