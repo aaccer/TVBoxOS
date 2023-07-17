@@ -946,6 +946,7 @@ public class PlayFragment extends BaseLazyFragment {
         }
         stopLoadWebView(true);
         stopParse();
+        Thunder.stop(); // 停止磁力下载
     }
 
     private VodInfo mVodInfo;
