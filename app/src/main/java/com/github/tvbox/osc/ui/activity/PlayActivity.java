@@ -920,6 +920,7 @@ public class PlayActivity extends BaseActivity {
         stopLoadWebView(true);
         stopParse();
         Thunder.stop(false); // 停止磁力下载
+        Jianpian.finish();
     }
 
     private VodInfo mVodInfo;
