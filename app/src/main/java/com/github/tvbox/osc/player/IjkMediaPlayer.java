@@ -40,6 +40,7 @@ public class IjkMediaPlayer extends IjkPlayer {
                 int category = Integer.parseInt(opt[0].trim());
                 String name = opt[1].trim();
                 try {
+                    assert value != null;
                     long valLong = Long.parseLong(value);
                     mMediaPlayer.setOption(category, name, valLong);
                 } catch (Exception e) {
@@ -84,7 +85,7 @@ public class IjkMediaPlayer extends IjkPlayer {
             e.printStackTrace();
         }
         setDataSourceHeader(headers);
-        mMediaPlayer.setOption(tv.danmaku.ijk.media.player.IjkMediaPlayer.OPT_CATEGORY_FORMAT, "protocol_whitelist", "ijkio,ffio,async,cache,crypto,file,dash,http,https,ijkhttphook,ijkinject,ijklivehook,ijklongurl,ijksegment,ijktcphook,pipe,rtp,tcp,tls,udp,ijkurlhook,data"); 
+        mMediaPlayer.setOption(tv.danmaku.ijk.media.player.IjkMediaPlayer.OPT_CATEGORY_FORMAT, "protocol_whitelist", "ijkio,ffio,async,cache,crypto,file,dash,http,https,ijkhttphook,ijkinject,ijklivehook,ijklongurl,ijksegment,ijktcphook,pipe,rtp,tcp,tls,udp,ijkurlhook,data");
         super.setDataSource(path, null);
     }
 
@@ -149,4 +150,4 @@ public class IjkMediaPlayer extends IjkPlayer {
         mMediaPlayer.setOnTimedTextListener(listener);
     }
 
-                               }
+}
