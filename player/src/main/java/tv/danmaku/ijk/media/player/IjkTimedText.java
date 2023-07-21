@@ -28,6 +28,9 @@ public final class IjkTimedText {
         mTextBounds = bounds;
         mTextChars = text;
     }
+	
+    public IjkTimedText(int[] obj) {
+    }
 
     public Rect getBounds() {
         return mTextBounds;
