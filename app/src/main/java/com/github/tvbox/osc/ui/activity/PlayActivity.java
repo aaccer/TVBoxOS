@@ -975,7 +975,7 @@ public class PlayActivity extends BaseActivity {
             autoRetryFromLoadFoundVideoUrls();
             return true;
         }
-        if (autoRetryCount < 2) {
+        if (autoRetryCount < 1) {
             autoRetryCount++;
             play(false);
             return true;
