@@ -156,7 +156,6 @@ public class RemoteServer extends NanoHTTPD {
                     return NanoHTTPD.newFixedLengthResponse(NanoHTTPD.Response.Status.OK, "application/dns-message", new ByteArrayInputStream(rs), rs.length);
                 } else if (fileName.equals("/m3u8")) {
                     return NanoHTTPD.newFixedLengthResponse(NanoHTTPD.Response.Status.OK,  NanoHTTPD.MIME_PLAINTEXT, m3u8Content);
-                    String url = fileName.substring(6);
                 } else if (fileName.startsWith("/push/")) {
                     String url = fileName.substring(6);
                     if (url.startsWith("b64:")) {
