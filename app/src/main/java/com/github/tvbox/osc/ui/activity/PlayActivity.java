@@ -55,6 +55,7 @@ import com.github.tvbox.osc.player.MyVideoView;
 import com.github.tvbox.osc.player.TrackInfo;
 import com.github.tvbox.osc.player.TrackInfoBean;
 import com.github.tvbox.osc.player.controller.VodController;
+import com.github.tvbox.osc.server.ControlManager;
 import com.github.tvbox.osc.server.RemoteServer;
 import com.github.tvbox.osc.ui.adapter.SelectDialogAdapter;
 import com.github.tvbox.osc.ui.dialog.SearchSubtitleDialog;
@@ -62,6 +63,7 @@ import com.github.tvbox.osc.ui.dialog.SelectDialog;
 import com.github.tvbox.osc.ui.dialog.SubtitleDialog;
 import com.github.tvbox.osc.util.AdBlocker;
 import com.github.tvbox.osc.util.DefaultConfig;
+import com.github.tvbox.osc.util.FileUtils;
 import com.github.tvbox.osc.util.HawkConfig;
 import com.github.tvbox.osc.util.LOG;
 import com.github.tvbox.osc.util.MD5;
@@ -690,6 +692,15 @@ public class PlayActivity extends BaseActivity {
         //if(autoRetryCount>0 && url.contains(".m3u8")){
             //url="http://home.jundie.top:666/unBom.php?m3u8="+url;
         //}
+        if (url.startsWith("data:application/dash+xml;base64,")) {
+            PlayerHelper.updateCfg(mVideoView, mVodPlayerCfg, 2);
+            App.getInstance().setDashData(url.split("base64,")[1]);
+            url = ControlManager.get().getAddress(true) + "dash/proxy.mpd";
+        } else if (url.contains(".mpd") || url.contains("type=mpd")) {
+            PlayerHelper.updateCfg(mVideoView, mVodPlayerCfg, 2);
+        } else {
+            PlayerHelper.updateCfg(mVideoView, mVodPlayerCfg);
+        }
         String finalUrl = url;
         runOnUiThread(new Runnable() {
             @Override
@@ -697,7 +708,6 @@ public class PlayActivity extends BaseActivity {
                 stopParse();
                 if (mVideoView != null) {
                     mVideoView.release();
-
                     if (finalUrl != null) {
                         try {
                             int playerType = mVodPlayerCfg.getInt("pl");
@@ -706,7 +716,8 @@ public class PlayActivity extends BaseActivity {
                                 String playTitle = mVodInfo.name + " " + vs.name;
                                 setTip("调用外部播放器" + PlayerHelper.getPlayerName(playerType) + "进行播放", true, false);
                                 boolean callResult = false;
-                                callResult = PlayerHelper.runExternalPlayer(playerType, PlayActivity.this, finalUrl, playTitle, playSubtitle, headers);
+                                long progress = getSavedProgress(progressKey);
+                                callResult = PlayerHelper.runExternalPlayer(playerType, PlayActivity.this, finalUrl, playTitle, playSubtitle, headers, progress);
                                 setTip("调用外部播放器" + PlayerHelper.getPlayerName(playerType) + (callResult ? "成功" : "失败"), callResult, !callResult);
                                 return;
                             }
@@ -714,7 +725,7 @@ public class PlayActivity extends BaseActivity {
                             e.printStackTrace();
                         }
                         hideTip();
-                        PlayerHelper.updateCfg(mVideoView, mVodPlayerCfg);
+                        //PlayerHelper.updateCfg(mVideoView, mVodPlayerCfg);
                         mVideoView.setProgressKey(progressKey);
                         if (headers != null) {
                             mVideoView.setUrl(finalUrl, headers);
@@ -789,7 +800,30 @@ public class PlayActivity extends BaseActivity {
                         playSubtitle = info.optString("subt", /*"https://dash.akamaized.net/akamai/test/caption_test/ElephantsDream/ElephantsDream_en.vtt"*/"");
                         if(playSubtitle.isEmpty() && info.has("subs")) {
                             try {
-                                playSubtitle = info.getJSONArray("subs").optJSONObject(0).optString("url", "");
+                                JSONObject obj =info.getJSONArray("subs").optJSONObject(0);
+                                String url = obj.optString("url", "");
+                                if (!TextUtils.isEmpty(url) && !FileUtils.hasExtension(url)) {
+                                    String format = obj.optString("format", "");
+                                    String name = obj.optString("name", "字幕");
+                                    String ext = ".srt";
+                                    switch (format) {
+                                        case "text/x-ssa":
+                                            ext = ".ass";
+                                            break;
+                                        case "text/vtt":
+                                            ext = ".vtt";
+                                            break;
+                                        case "application/x-subrip":
+                                            ext = ".srt";
+                                            break;
+                                        case "text/lrc":
+                                            ext = ".lrc";
+                                            break;
+                                    }
+                                    String filename = name + (name.toLowerCase().endsWith(ext) ? "" : ext);
+                                    url += "#" + URLEncoder.encode(filename);
+                                }
+                                playSubtitle = url;
                             } catch (Throwable th) {
                             }
                         }
@@ -932,6 +966,7 @@ public class PlayActivity extends BaseActivity {
         stopParse();
         Thunder.stop(false);//停止磁力下载
         Jianpian.finish();//停止p2p下载
+        App.getInstance().setDashData(null);
     }
 
     private VodInfo mVodInfo;
@@ -1315,7 +1350,6 @@ public class PlayActivity extends BaseActivity {
                 public void run() {
                     JSONObject rs = ApiConfig.get().jsonExtMix(parseFlag + "111", pb.getUrl(), finalExtendName, jxs, webUrl);
                     if (rs == null || !rs.has("url") || rs.optString("url").isEmpty()) {
-//                        errorWithRetry("解析错误", false);
                         setTip("解析错误", false, true);
                     } else {
                         if (rs.has("parse") && rs.optInt("parse", 0) == 1) {
