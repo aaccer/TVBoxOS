@@ -797,7 +797,7 @@ public class LivePlayActivity extends BaseActivity {
         tv_right_top_channel_name.setText(channel_Name.getChannelName());
         isSHIYI=false;
         isBack = false;
-        if(currentLiveChannelItem.getUrl().indexOf("PLTV/8888") !=-1){
+        if(currentLiveChannelItem.getUrl().indexOf("PLTV/") !=-1){//PLTV/8888
             currentLiveChannelItem.setinclude_back(true);
         }else {
             currentLiveChannelItem.setinclude_back(false);
@@ -963,7 +963,7 @@ public class LivePlayActivity extends BaseActivity {
                 String shiyiUrl = currentLiveChannelItem.getUrl();
                 if (now.compareTo(selectedData.startdateTime) < 0) {
 
-                } else if(shiyiUrl.indexOf("PLTV/8888") !=-1){
+                } else if(shiyiUrl.indexOf("PLTV/") !=-1){//PLTV/8888
 
                     mHandler.removeCallbacks(mHideChannelListRun);
                     mHandler.postDelayed(mHideChannelListRun, 100);
@@ -1039,7 +1039,7 @@ public class LivePlayActivity extends BaseActivity {
                 String shiyiUrl = currentLiveChannelItem.getUrl();
                 if (now.compareTo(selectedData.startdateTime) < 0) {
 
-                } else if(shiyiUrl.indexOf("PLTV/8888") !=-1){
+                } else if(shiyiUrl.indexOf("PLTV/") !=-1){//PLTV/8888
                     mHandler.removeCallbacks(mHideChannelListRun);
                     mHandler.postDelayed(mHideChannelListRun, 100);
 
