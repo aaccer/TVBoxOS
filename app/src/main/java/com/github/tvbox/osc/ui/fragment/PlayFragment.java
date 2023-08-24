@@ -704,6 +704,7 @@ public class PlayFragment extends BaseLazyFragment {
             //url="http://home.jundie.top:666/unBom.php?m3u8="+url;
         //}
         if (mActivity == null) return;
+        if (!isAdded()) return;
         requireActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
