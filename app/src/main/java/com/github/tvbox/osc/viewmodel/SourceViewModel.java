@@ -1066,7 +1066,7 @@ public class SourceViewModel extends ViewModel {
                 }
                 if (hasThunder) {
                     thunderParse = true;
-                    Thunder.parse(App.getInstance(), video.urlBean, new Thunder.ThunderCallback() {
+                    Thunder.parse(App.getInstance(), urlInfo.beanList.get(0).url, new Thunder.ThunderCallback() {
                         @Override
                         public void status(int code, String info) {
                             if (code >= 0) {
