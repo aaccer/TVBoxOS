@@ -1054,10 +1054,9 @@ public class SourceViewModel extends ViewModel {
             Movie.Video video = data.movie.videoList.get(0);
             if (video != null && video.urlBean != null && video.urlBean.infoList != null) {
                 boolean hasThunder=false;
-                Movie.Video.UrlBean.UrlInfo urlInfo = video.urlBean.infoList.get(0);
                 thunderLoop:
                 for (int idx=0;idx<video.urlBean.infoList.size();idx++) {
-                    urlInfo = video.urlBean.infoList.get(idx);
+                    Movie.Video.UrlBean.UrlInfo urlInfo = video.urlBean.infoList.get(idx);
                     for (Movie.Video.UrlBean.UrlInfo.InfoBean infoBean : urlInfo.beanList) {
                         if(Thunder.isSupportUrl(infoBean.url)){
                             hasThunder=true;
@@ -1067,7 +1066,7 @@ public class SourceViewModel extends ViewModel {
                 }
                 if (hasThunder) {
                     thunderParse = true;
-                    Thunder.parse(App.getInstance(), urlInfo.beanList.get(0).url, new Thunder.ThunderCallback() {
+                    Thunder.parse(App.getInstance(), video.urlBean, new Thunder.ThunderCallback() {
                         @Override
                         public void status(int code, String info) {
                             if (code >= 0) {
