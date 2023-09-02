@@ -788,7 +788,7 @@ public class PlayFragment extends BaseLazyFragment {
                         boolean hasCh =false;
                         for(TrackInfoBean subtitleTrackInfoBean : subtitleTrackList) {
                             String lowerLang = subtitleTrackInfoBean.language.toLowerCase();
-                            if (lowerLang.contains("zh") || lowerLang.contains("ch")) {
+                            if (lowerLang.startsWith("zh") || lowerLang.startsWith("ch")) {
                                 hasCh=true;
                                 if (selectedIndex != subtitleTrackInfoBean.index) {
                                     ((IjkMediaPlayer)(mVideoView.getMediaPlayer())).setTrack(subtitleTrackInfoBean.index);
@@ -1090,7 +1090,7 @@ public class PlayFragment extends BaseLazyFragment {
         if (reset) {
             CacheManager.delete(MD5.string2MD5(progressKey), 0);
             CacheManager.delete(MD5.string2MD5(subtitleCacheKey), 0);
-        }else{
+        /*}else{
             try{
                 int playerType = mVodPlayerCfg.getInt("pl");
                 if(playerType==1){
@@ -1100,7 +1100,7 @@ public class PlayFragment extends BaseLazyFragment {
                 }
             }catch (JSONException e) {
                 e.printStackTrace();
-            }
+            }*/
         }
 
         if(Jianpian.isJpUrl(vs.url)){//荐片地址特殊判断
