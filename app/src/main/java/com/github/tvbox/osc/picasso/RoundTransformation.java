@@ -192,6 +192,7 @@ public class RoundTransformation implements Transformation {
                     }
                 } else {
                     float dis = (width - viewWidth) / 2f;
+                    if(width * 1f / height >= 1.45f && width * 1f / height <= 1.5f) dis = (width - viewWidth) * 1f;
                     mCanvas.translate(-dis, 0);
                     mCanvas.drawRoundRect(new RectF(dis, 0, viewWidth + dis, viewHeight), radius, radius, mPaint);
                     drawBottomLabel(mCanvas, mPaint, dis, 0, viewWidth + dis, viewHeight);
