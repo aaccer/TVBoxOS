@@ -401,7 +401,7 @@ public class VideoView<P extends AbstractPlayer> extends FrameLayout
      * 保存播放进度
      */
     protected void saveProgress() {
-        if (mProgressManager != null && mCurrentPosition > 0) {
+        if (mProgressManager != null && mCurrentPosition > 0 && mCurrentPosition < mMediaPlayer.getDuration()) {
             L.d("saveProgress: " + mCurrentPosition);
             mProgressManager.saveProgress(mProgressKey == null ? mUrl : mProgressKey, mCurrentPosition);
         }
