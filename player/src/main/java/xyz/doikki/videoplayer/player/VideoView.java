@@ -362,6 +362,8 @@ public class VideoView<P extends AbstractPlayer> extends FrameLayout
      */
     public void release() {
         if (!isInIdleState()) {
+            //保存播放进度
+            saveProgress();
             //释放播放器
             if (mMediaPlayer != null) {
                 mMediaPlayer.release();
@@ -388,8 +390,6 @@ public class VideoView<P extends AbstractPlayer> extends FrameLayout
             }
             //关闭屏幕常亮
             mPlayerContainer.setKeepScreenOn(false);
-            //保存播放进度
-            saveProgress();
             //重置播放进度
             mCurrentPosition = 0;
             //切换转态
@@ -401,7 +401,7 @@ public class VideoView<P extends AbstractPlayer> extends FrameLayout
      * 保存播放进度
      */
     protected void saveProgress() {
-        if (mProgressManager != null && mCurrentPosition > 0 && mCurrentPosition < mMediaPlayer.getDuration()) {
+        if (mProgressManager != null && mCurrentPosition > 0 && mCurrentPosition < getDuration()) {
             L.d("saveProgress: " + mCurrentPosition);
             mProgressManager.saveProgress(mProgressKey == null ? mUrl : mProgressKey, mCurrentPosition);
         }
