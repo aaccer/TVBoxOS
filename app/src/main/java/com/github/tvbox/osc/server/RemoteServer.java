@@ -83,6 +83,45 @@ public class RemoteServer extends NanoHTTPD {
         postRequestList.add(new InputRequestProcess(this));
     }
 
+    public String getpath() {
+        String datapath = "";
+        String[] strArr = new String[] {
+            "/mnt/usb/",
+            "/storage/usb/",
+            "/storage/",
+            "/mnt/"
+        };
+        for (int i = 0; i < strArr.length; i++) {
+            if (datapath == null || datapath == "") {
+                File[] listFiles = new File(strArr[i]).listFiles();
+                if (listFiles != null && listFiles.length > 0) {
+                    for (File file: listFiles) {
+                        if (file.isDirectory() && file.getName().length() == 9 && file.getName().indexOf("-") == 4) {
+                            if (!file.getName().equals(Environment.getExternalStorageDirectory().getName())) {
+                                datapath = file.getAbsolutePath();
+                                break;
+                            }
+                        }
+                    }
+                }
+            } else {
+                break;
+            }
+        }
+        if (datapath == null || datapath == "") {
+            if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+                datapath = Environment.getExternalStorageDirectory().getAbsolutePath();
+            } else {
+                datapath = App.getInstance().getFilesDir().getAbsolutePath();
+                File file = new File(datapath);  
+                if(!file.exists()){
+                file.mkdirs();  
+                }
+            }
+        }
+        return datapath;
+    }
+
     @Override
     public void start(int timeout, boolean daemon) throws IOException {
         isStarted = true;
@@ -131,7 +170,7 @@ public class RemoteServer extends NanoHTTPD {
                 } else if (fileName.startsWith("/file/")) {
                     try {
                         String f = fileName.substring(6);
-                        String root = Environment.getExternalStorageDirectory().getAbsolutePath();
+                        String root = getpath();
                         String file = root + "/" + f;
                         File localFile = new File(file);
                         if (localFile.exists()) {
@@ -219,7 +258,7 @@ public class RemoteServer extends NanoHTTPD {
                                 String fn = params.get(k);
                                 String tmpFile = files.get(k);
                                 File tmp = new File(tmpFile);
-                                String root = Environment.getExternalStorageDirectory().getAbsolutePath();
+                                String root = getpath();
                                 File file = new File(root + "/" + path + "/" + fn);
                                 if (file.exists())
                                     file.delete();
@@ -238,7 +277,7 @@ public class RemoteServer extends NanoHTTPD {
                     } else if (fileName.equals("/newFolder")) {
                         String path = params.get("path");
                         String name = params.get("name");
-                        String root = Environment.getExternalStorageDirectory().getAbsolutePath();
+                        String root = getpath();
                         File file = new File(root + "/" + path + "/" + name);
                         if (!file.exists()) {
                             file.mkdirs();
@@ -249,7 +288,7 @@ public class RemoteServer extends NanoHTTPD {
                         return NanoHTTPD.newFixedLengthResponse(NanoHTTPD.Response.Status.OK, NanoHTTPD.MIME_PLAINTEXT, "OK");
                     } else if (fileName.equals("/delFolder")) {
                         String path = params.get("path");
-                        String root = Environment.getExternalStorageDirectory().getAbsolutePath();
+                        String root = getpath();
                         File file = new File(root + "/" + path);
                         if (file.exists()) {
                             FileUtils.recursiveDelete(file);
@@ -257,7 +296,7 @@ public class RemoteServer extends NanoHTTPD {
                         return NanoHTTPD.newFixedLengthResponse(NanoHTTPD.Response.Status.OK, NanoHTTPD.MIME_PLAINTEXT, "OK");
                     } else if (fileName.equals("/delFile")) {
                         String path = params.get("path");
-                        String root = Environment.getExternalStorageDirectory().getAbsolutePath();
+                        String root = getpath();
                         File file = new File(root + "/" + path);
                         if (file.exists()) {
                             file.delete();
