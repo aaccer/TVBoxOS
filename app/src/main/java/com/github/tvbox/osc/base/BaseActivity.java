@@ -3,12 +3,11 @@ package com.github.tvbox.osc.base;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.AssetManager;
-import android.content.res.Resources;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Looper;
-import android.util.DisplayMetrics;
+import android.os.Handler;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -16,16 +15,25 @@ import androidx.core.content.PermissionChecker;
 
 import com.github.tvbox.osc.callback.EmptyCallback;
 import com.github.tvbox.osc.callback.LoadingCallback;
+import com.github.tvbox.osc.event.RefreshEvent;
 import com.github.tvbox.osc.util.AppManager;
+import com.gyf.immersionbar.ImmersionBar;
+import com.hjq.bar.OnTitleBarListener;
+import com.hjq.bar.TitleBar;
 import com.kingja.loadsir.callback.Callback;
 import com.kingja.loadsir.core.LoadService;
 import com.kingja.loadsir.core.LoadSir;
+import com.lxj.xpopup.XPopup;
+import com.lxj.xpopup.impl.LoadingPopupView;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-import me.jessyan.autosize.AutoSizeCompat;
 import me.jessyan.autosize.internal.CustomAdapt;
 
 /**
@@ -33,58 +41,75 @@ import me.jessyan.autosize.internal.CustomAdapt;
  * @date :2020/12/17
  * @description:
  */
-public abstract class BaseActivity extends AppCompatActivity implements CustomAdapt {
+public abstract class BaseActivity extends AppCompatActivity implements CustomAdapt, OnTitleBarListener {
     protected Context mContext;
     private LoadService mLoadService;
 
-    private static float screenRatio = -100.0f;
+    private ImmersionBar mImmersionBar;
+    private TitleBar mTitleBar;
+    private LoadingPopupView loadingPopup;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
-        try {
-            if (screenRatio < 0) {
-                DisplayMetrics dm = new DisplayMetrics();
-                getWindowManager().getDefaultDisplay().getMetrics(dm);
-                int screenWidth = dm.widthPixels;
-                int screenHeight = dm.heightPixels;
-                screenRatio = (float) Math.max(screenWidth, screenHeight) / (float) Math.min(screenWidth, screenHeight);
-            }
-        } catch (Throwable th) {
-            th.printStackTrace();
-        }
         super.onCreate(savedInstanceState);
-        setContentView(getLayoutResID());
+        EventBus.getDefault().register(this);
+
+        if (getLayoutResID()==-1){
+            initVb();
+        }else {
+            setContentView(getLayoutResID());
+        }
         mContext = this;
         AppManager.getInstance().addActivity(this);
+        initStatusBar();
+        initTitleBar();
         init();
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        hideSysBar();
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void refresh(RefreshEvent event) {
+
     }
 
-    public void hideSysBar() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            int uiOptions = getWindow().getDecorView().getSystemUiVisibility();
-            uiOptions |= View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
-            uiOptions |= View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION;
-            uiOptions |= View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
-            uiOptions |= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
-            uiOptions |= View.SYSTEM_UI_FLAG_FULLSCREEN;
-            uiOptions |= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
-            getWindow().getDecorView().setSystemUiVisibility(uiOptions);
+
+    private void initStatusBar(){
+        ImmersionBar.with(this)
+                .statusBarDarkFont(true)
+                .titleBar(findTitleBar(getWindow().getDecorView().findViewById(android.R.id.content)))
+                .init();
+    }
+
+    private void initTitleBar(){
+        if (getTitleBar() != null) {
+            getTitleBar().setOnTitleBarListener(this);
         }
     }
 
-    @Override
-    public Resources getResources() {
-        if (Looper.myLooper() == Looper.getMainLooper()) {
-            AutoSizeCompat.autoConvertDensityOfCustomAdapt(super.getResources(), this);
+    /**
+     * 递归获取 ViewGroup 中的 TitleBar 对象
+     */
+    private TitleBar findTitleBar(ViewGroup group) {
+        for (int i = 0; i < group.getChildCount(); i++) {
+            View view = group.getChildAt(i);
+            if ((view instanceof TitleBar)) {
+                return (TitleBar) view;
+            } else if (view instanceof ViewGroup) {
+                TitleBar titleBar = findTitleBar((ViewGroup) view);
+                if (titleBar != null) {
+                    return titleBar;
+                }
+            }
         }
-        return super.getResources();
+        return null;
     }
+
+    private TitleBar getTitleBar() {
+        if (mTitleBar == null) {
+            mTitleBar = findTitleBar(getWindow().getDecorView().findViewById(android.R.id.content));
+        }
+        return mTitleBar;
+    }
+
 
     public boolean hasPermission(String permission) {
         boolean has = true;
@@ -99,6 +124,10 @@ public abstract class BaseActivity extends AppCompatActivity implements CustomAd
     protected abstract int getLayoutResID();
 
     protected abstract void init();
+
+    protected void initVb() {
+
+    }
 
     protected void setLoadSir(View view) {
         if (mLoadService == null) {
@@ -131,6 +160,7 @@ public abstract class BaseActivity extends AppCompatActivity implements CustomAd
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        EventBus.getDefault().unregister(this);
         AppManager.getInstance().finishActivity(this);
     }
 
@@ -163,12 +193,39 @@ public abstract class BaseActivity extends AppCompatActivity implements CustomAd
 
     @Override
     public float getSizeInDp() {
-        return isBaseOnWidth() ? 1280 : 720;
+        return isBaseOnWidth() ? 360 : 720;
     }
 
     @Override
     public boolean isBaseOnWidth() {
-        return !(screenRatio >= 4.0f);
+        return true;
     }
 
+    @Override
+    public void onLeftClick(TitleBar titleBar) {
+        finish();
+    }
+
+
+    /**
+     * 显示加载框
+     */
+    public void showLoadingDialog() {
+        if (loadingPopup == null) {
+            loadingPopup = new XPopup.Builder(this)
+                    .isLightNavigationBar(true)
+                    .hasShadowBg(false)
+                    .asLoading();
+        }
+        loadingPopup.show();
+    }
+
+    /**
+     * 隐藏加载框
+     */
+    public void dismissLoadingDialog() {
+        if (loadingPopup != null && loadingPopup.isShow()) {
+            loadingPopup.dismiss();
+        }
+    }
 }

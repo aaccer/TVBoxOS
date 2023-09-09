@@ -2,10 +2,15 @@ package com.github.tvbox.osc.ui.fragment;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.animation.BounceInterpolator;
 import android.widget.LinearLayout;
 
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.blankj.utilcode.util.ToastUtils;
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.github.tvbox.osc.R;
 import com.github.tvbox.osc.api.ApiConfig;
@@ -16,14 +21,15 @@ import com.github.tvbox.osc.cache.RoomDataManger;
 import com.github.tvbox.osc.event.ServerEvent;
 import com.github.tvbox.osc.ui.activity.CollectActivity;
 import com.github.tvbox.osc.ui.activity.DetailActivity;
+import com.github.tvbox.osc.ui.activity.FastSearchActivity;
 import com.github.tvbox.osc.ui.activity.HistoryActivity;
 import com.github.tvbox.osc.ui.activity.LivePlayActivity;
-import com.github.tvbox.osc.ui.activity.PushActivity;
-import com.github.tvbox.osc.ui.activity.SearchActivity;
+
 import com.github.tvbox.osc.ui.activity.SettingActivity;
-import com.github.tvbox.osc.ui.adapter.HomeHotVodAdapter;
+import com.github.tvbox.osc.ui.adapter.GridAdapter;
 import com.github.tvbox.osc.util.FastClickCheckUtil;
 import com.github.tvbox.osc.util.HawkConfig;
+import com.github.tvbox.osc.util.UA;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -33,6 +39,8 @@ import com.lzy.okgo.callback.AbsCallback;
 import com.lzy.okgo.model.Response;
 import com.orhanobut.hawk.Hawk;
 import com.owen.tvrecyclerview.widget.TvRecyclerView;
+import com.owen.tvrecyclerview.widget.V7GridLayoutManager;
+import com.owen.tvrecyclerview.widget.V7LinearLayoutManager;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -47,19 +55,11 @@ import java.util.List;
  * @date :2021/3/9
  * @description:
  */
-public class UserFragment extends BaseLazyFragment implements View.OnClickListener {
-    private LinearLayout tvLive;
-    private LinearLayout tvSearch;
-    private LinearLayout tvSetting;
-    private LinearLayout tvHistory;
-    private LinearLayout tvCollect;
-    private LinearLayout tvPush;
-    private HomeHotVodAdapter homeHotVodAdapter;
-    private List<Movie.Video> homeSourceRec;
+public class UserFragment extends BaseLazyFragment {
 
-    public static UserFragment newInstance() {
-        return new UserFragment();
-    }
+    private GridAdapter homeHotVodAdapter;
+    private List<Movie.Video> homeSourceRec;
+    RecyclerView tvHotList1;
 
     public static UserFragment newInstance(List<Movie.Video> recVod) {
         return new UserFragment().setArguments(recVod);
@@ -73,21 +73,9 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
     @Override
     protected void onFragmentResume() {
         super.onFragmentResume();
-        if (Hawk.get(HawkConfig.HOME_REC, 0) == 2) {
-            List<VodInfo> allVodRecord = RoomDataManger.getAllVodRecord(10);
-            List<Movie.Video> vodList = new ArrayList<>();
-            for (VodInfo vodInfo : allVodRecord) {
-                Movie.Video vod = new Movie.Video();
-                vod.id = vodInfo.id;
-                vod.sourceKey = vodInfo.sourceKey;
-                vod.name = vodInfo.name;
-                vod.pic = vodInfo.pic;
-                if (vodInfo.playNote != null && !vodInfo.playNote.isEmpty())
-                    vod.note = "上次看到" + vodInfo.playNote;
-                vodList.add(vod);
-            }
-            homeHotVodAdapter.setNewData(vodList);
-        }
+
+        tvHotList1.setHasFixedSize(true);
+        tvHotList1.setLayoutManager(new GridLayoutManager(this.mContext, 3));
     }
 
     @Override
@@ -97,74 +85,53 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
 
     @Override
     protected void init() {
-        EventBus.getDefault().register(this);
-        tvLive = findViewById(R.id.tvLive);
-        tvSearch = findViewById(R.id.tvSearch);
-        tvSetting = findViewById(R.id.tvSetting);
-        tvCollect = findViewById(R.id.tvFavorite);
-        tvHistory = findViewById(R.id.tvHistory);
-        tvPush = findViewById(R.id.tvPush);
-        tvLive.setOnClickListener(this);
-        tvSearch.setOnClickListener(this);
-        tvSetting.setOnClickListener(this);
-        tvHistory.setOnClickListener(this);
-        tvPush.setOnClickListener(this);
-        tvCollect.setOnClickListener(this);
-        tvLive.setOnFocusChangeListener(focusChangeListener);
-        tvSearch.setOnFocusChangeListener(focusChangeListener);
-        tvSetting.setOnFocusChangeListener(focusChangeListener);
-        tvHistory.setOnFocusChangeListener(focusChangeListener);
-        tvPush.setOnFocusChangeListener(focusChangeListener);
-        tvCollect.setOnFocusChangeListener(focusChangeListener);
-        TvRecyclerView tvHotList = findViewById(R.id.tvHotList);
-        homeHotVodAdapter = new HomeHotVodAdapter();
+        tvHotList1 = findViewById(R.id.tvHotList1);
+        homeHotVodAdapter = new GridAdapter();
         homeHotVodAdapter.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
-                if (ApiConfig.get().getSourceBeanList().isEmpty())
+                if (ApiConfig.get().getSourceBeanList().isEmpty()){
+                    ToastUtils.showShort("暂无订阅");
                     return;
+                }
                 Movie.Video vod = ((Movie.Video) adapter.getItem(position));
-                if (vod.id != null && !vod.id.isEmpty()) {
-                    Bundle bundle = new Bundle();
+                Bundle bundle = new Bundle();
+                if (!TextUtils.isEmpty(vod.id)) {
                     bundle.putString("id", vod.id);
                     bundle.putString("sourceKey", vod.sourceKey);
                     jumpActivity(DetailActivity.class, bundle);
                 } else {
-                    Intent newIntent = new Intent(mContext, SearchActivity.class);
-                    newIntent.putExtra("title", vod.name);
-                    newIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    mActivity.startActivity(newIntent);
+                    bundle.putString("title", vod.name);
+                    jumpActivity(FastSearchActivity.class, bundle);
                 }
             }
         });
-        tvHotList.setOnItemListener(new TvRecyclerView.OnItemListener() {
-            @Override
-            public void onItemPreSelected(TvRecyclerView parent, View itemView, int position) {
-                itemView.animate().scaleX(1.0f).scaleY(1.0f).setDuration(300).setInterpolator(new BounceInterpolator()).start();
-            }
 
+        homeHotVodAdapter.setOnItemLongClickListener(new BaseQuickAdapter.OnItemLongClickListener() {
             @Override
-            public void onItemSelected(TvRecyclerView parent, View itemView, int position) {
-                itemView.animate().scaleX(1.05f).scaleY(1.05f).setDuration(300).setInterpolator(new BounceInterpolator()).start();
-            }
-
-            @Override
-            public void onItemClick(TvRecyclerView parent, View itemView, int position) {
-
+            public boolean onItemLongClick(BaseQuickAdapter adapter, View view, int position) {
+                if (ApiConfig.get().getSourceBeanList().isEmpty()) return true;
+                Movie.Video vod = ((Movie.Video) adapter.getItem(position));
+                Bundle bundle = new Bundle();
+                bundle.putString("title", vod.name);
+                jumpActivity(FastSearchActivity.class, bundle);
+                return true;
             }
         });
-        tvHotList.setAdapter(homeHotVodAdapter);
 
+        tvHotList1.setAdapter(homeHotVodAdapter);
+        setLoadSir2(tvHotList1);
         initHomeHotVod(homeHotVodAdapter);
     }
 
-    private void initHomeHotVod(HomeHotVodAdapter adapter) {
+    private void initHomeHotVod(GridAdapter adapter) {
         if (Hawk.get(HawkConfig.HOME_REC, 0) == 1) {
-            if (homeSourceRec != null) {
+            if (homeSourceRec != null && homeSourceRec.size() > 0) {
+                showSuccess();
                 adapter.setNewData(homeSourceRec);
+            }else {
+                showEmpty();
             }
-            return;
-        } else if (Hawk.get(HawkConfig.HOME_REC, 0) == 2) {
             return;
         }
         try {
@@ -177,31 +144,47 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
             if (requestDay.equals(today)) {
                 String json = Hawk.get("home_hot", "");
                 if (!json.isEmpty()) {
-                    adapter.setNewData(loadHots(json));
-                    return;
+                    ArrayList<Movie.Video> hotMovies = loadHots(json);
+                    if (hotMovies != null && hotMovies.size() > 0) {
+                        showSuccess();
+                        adapter.setNewData(hotMovies);
+                        return;
+                    }
                 }
             }
-            OkGo.<String>get("https://movie.douban.com/j/new_search_subjects?sort=U&range=0,10&tags=&playable=1&start=0&year_range=" + year + "," + year).execute(new AbsCallback<String>() {
-                @Override
-                public void onSuccess(Response<String> response) {
-                    String netJson = response.body();
-                    Hawk.put("home_hot_day", today);
-                    Hawk.put("home_hot", netJson);
-                    mActivity.runOnUiThread(new Runnable() {
+            String doubanUrl = "https://movie.douban.com/j/new_search_subjects?sort=U&range=0,10&tags=&playable=1&start=0&year_range=" + year + "," + year;
+            OkGo.<String>get(doubanUrl)
+                    .headers("User-Agent", UA.randomOne())
+                    .execute(new AbsCallback<String>() {
                         @Override
-                        public void run() {
-                            adapter.setNewData(loadHots(netJson));
+                        public void onSuccess(Response<String> response) {
+                            String netJson = response.body();
+                            Hawk.put("home_hot_day", today);
+                            Hawk.put("home_hot", netJson);
+                            mActivity.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    ArrayList<Movie.Video> videos = loadHots(netJson);
+                                    if (videos.size()>0){
+                                        showSuccess();
+                                        adapter.setNewData(videos);
+                                    }else {
+                                        showEmpty();
+                                    }
+                                }
+                            });
+                        }
+
+                        @Override
+                        public String convertResponse(okhttp3.Response response) throws Throwable {
+                            return response.body().string();
                         }
                     });
-                }
-
-                @Override
-                public String convertResponse(okhttp3.Response response) throws Throwable {
-                    return response.body().string();
-                }
-            });
         } catch (Throwable th) {
             th.printStackTrace();
+            if (adapter.getData().isEmpty()){
+                showEmpty();
+            }
         }
     }
 
@@ -215,52 +198,13 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
                 Movie.Video vod = new Movie.Video();
                 vod.name = obj.get("title").getAsString();
                 vod.note = obj.get("rate").getAsString();
-                vod.pic = obj.get("cover").getAsString();
+                if (!vod.note.isEmpty()) vod.note += " 分";
+                vod.pic = obj.get("cover").getAsString() + "@User-Agent=com.douban.frodo";
                 result.add(vod);
             }
         } catch (Throwable th) {
 
         }
         return result;
-    }
-
-    private View.OnFocusChangeListener focusChangeListener = new View.OnFocusChangeListener() {
-        @Override
-        public void onFocusChange(View v, boolean hasFocus) {
-            if (hasFocus)
-                v.animate().scaleX(1.05f).scaleY(1.05f).setDuration(300).setInterpolator(new BounceInterpolator()).start();
-            else
-                v.animate().scaleX(1.0f).scaleY(1.0f).setDuration(300).setInterpolator(new BounceInterpolator()).start();
-        }
-    };
-
-    @Override
-    public void onClick(View v) {
-        FastClickCheckUtil.check(v);
-        if (v.getId() == R.id.tvLive) {
-            jumpActivity(LivePlayActivity.class);
-        } else if (v.getId() == R.id.tvSearch) {
-            jumpActivity(SearchActivity.class);
-        } else if (v.getId() == R.id.tvSetting) {
-            jumpActivity(SettingActivity.class);
-        } else if (v.getId() == R.id.tvHistory) {
-            jumpActivity(HistoryActivity.class);
-        } else if (v.getId() == R.id.tvPush) {
-            jumpActivity(PushActivity.class);
-        } else if (v.getId() == R.id.tvFavorite) {
-            jumpActivity(CollectActivity.class);
-        }
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void server(ServerEvent event) {
-        if (event.type == ServerEvent.SERVER_CONNECTION) {
-        }
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        EventBus.getDefault().unregister(this);
     }
 }

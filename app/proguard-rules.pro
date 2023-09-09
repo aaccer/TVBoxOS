@@ -199,3 +199,31 @@
 }
 
 -keep class com.github.catvod.crawler.*{*;}
+# 迅雷下载模块
+-keep class com.xunlei.downloadlib.** {*;}
+# quickjs引擎
+-keep class com.github.tvbox.quickjs.** {*;}
+# 支持影视的ali相关的jar
+-keep class com.google.gson.**{*;}
+
+
+# 沉浸状态栏
+-keep class com.gyf.immersionbar.* {*;}
+-dontwarn com.gyf.immersionbar.**
+
+
+# glide
+-keep public class * implements com.bumptech.glide.module.GlideModule
+-keep public class * extends com.bumptech.glide.module.AppGlideModule
+-keep public enum com.bumptech.glide.load.ImageHeaderParser$** {
+  **[] $VALUES;
+  public *;
+}
+
+# ViewBinding & DataBinding
+-keepclassmembers class * implements androidx.viewbinding.ViewBinding {
+  public static * inflate(android.view.LayoutInflater);
+  public static * inflate(android.view.LayoutInflater, android.view.ViewGroup, boolean);
+  public static * bind(android.view.View);
+}
+

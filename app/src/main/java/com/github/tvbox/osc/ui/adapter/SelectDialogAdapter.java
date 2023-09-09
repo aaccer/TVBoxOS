@@ -1,5 +1,7 @@
 package com.github.tvbox.osc.ui.adapter;
 
+import android.annotation.SuppressLint;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +12,7 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.blankj.utilcode.util.ColorUtils;
 import com.github.tvbox.osc.R;
 
 import org.jetbrains.annotations.NotNull;
@@ -51,7 +54,7 @@ public class SelectDialogAdapter<T> extends ListAdapter<T, SelectDialogAdapter.S
 
     private int select = 0;
 
-    private SelectDialogInterface dialogInterface = null;
+    private SelectDialogInterface dialogInterface;
 
     public SelectDialogAdapter(SelectDialogInterface dialogInterface, DiffUtil.ItemCallback diffCallback) {
         super(diffCallback);
@@ -77,12 +80,18 @@ public class SelectDialogAdapter<T> extends ListAdapter<T, SelectDialogAdapter.S
     }
 
     @Override
-    public void onBindViewHolder(@NonNull @NotNull SelectDialogAdapter.SelectViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull @NotNull SelectDialogAdapter.SelectViewHolder holder, @SuppressLint("RecyclerView") int position) {
         T value = data.get(position);
         String name = dialogInterface.getDisplay(value);
-        if (position == select)
-            name = "√ " + name;
-        ((TextView) holder.itemView.findViewById(R.id.tvName)).setText(name);
+        TextView view = holder.itemView.findViewById(R.id.tvName);
+        if (position == select) {
+            view.setTextColor(Color.WHITE);
+            view.setBackground(view.getContext().getDrawable(R.drawable.button_primary_r25));
+        }else {
+            view.setBackground(view.getContext().getDrawable(R.drawable.bg_r_25_stroke_primary));
+            view.setTextColor(ColorUtils.getColor(R.color.colorPrimary));
+        }
+        view.setText(name);
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

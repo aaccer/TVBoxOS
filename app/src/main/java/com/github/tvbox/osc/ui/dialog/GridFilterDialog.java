@@ -11,27 +11,40 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.github.tvbox.osc.R;
 import com.github.tvbox.osc.bean.MovieSort;
 import com.github.tvbox.osc.ui.adapter.GridFilterKVAdapter;
+import com.lihang.ShadowLayout;
 import com.owen.tvrecyclerview.widget.TvRecyclerView;
 import com.owen.tvrecyclerview.widget.V7LinearLayoutManager;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class GridFilterDialog extends BaseDialog {
     private LinearLayout filterRoot;
+    private MovieSort.SortData mSortData;
 
     public GridFilterDialog(@NonNull @NotNull Context context) {
         super(context);
-        setCanceledOnTouchOutside(false);
+        
         setCancelable(true);
         setContentView(R.layout.dialog_grid_filter);
         filterRoot = findViewById(R.id.filterRoot);
+        findViewById(R.id.btn_reset).setOnClickListener(view -> {
+            mSortData.filterSelect = new HashMap<>();
+            selectChange = true;
+            setData(mSortData);
+        });
+
+        findViewById(R.id.btn_confirm).setOnClickListener(view -> {
+            dismiss();
+        });
     }
 
     public interface Callback {
@@ -39,22 +52,19 @@ public class GridFilterDialog extends BaseDialog {
     }
 
     public void setOnDismiss(Callback callback) {
-        setOnDismissListener(new DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface dialogInterface) {
-                if (selectChange) {
-                    callback.change();
-                }
+        setOnDismissListener(dialogInterface -> {
+            if (selectChange) {
+                callback.change();
             }
         });
     }
 
     public void setData(MovieSort.SortData sortData) {
-        ArrayList<MovieSort.SortFilter> filters = sortData.filters;
-        for (MovieSort.SortFilter filter : filters) {
+        mSortData = sortData;
+        filterRoot.removeAllViews();
+        for (MovieSort.SortFilter filter : sortData.filters) {
             View line = LayoutInflater.from(getContext()).inflate(R.layout.item_grid_filter, null);
-            ((TextView) line.findViewById(R.id.filterName)).setText(filter.name);
-            TvRecyclerView gridView = line.findViewById(R.id.mFilterKv);
+            RecyclerView gridView = line.findViewById(R.id.mFilterKv);
             gridView.setHasFixedSize(true);
             gridView.setLayoutManager(new V7LinearLayoutManager(getContext(), 0, false));
             GridFilterKVAdapter filterKVAdapter = new GridFilterKVAdapter();
@@ -67,18 +77,25 @@ public class GridFilterDialog extends BaseDialog {
 
                 @Override
                 public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
-                    if (sortData.filterSelect.get(key) == null || !sortData.filterSelect.get(key).equals(values.get(position))) {
+                    selectChange = true;
+                    String filterSelect = sortData.filterSelect.get(key);
+                    if (filterSelect == null || !filterSelect.equals(keys.get(position))) {// 没选 或 不是重选
                         sortData.filterSelect.put(key, keys.get(position));
-                        selectChange = true;
-                        if (pre != null) {
-                            TextView val = pre.findViewById(R.id.filterValue);
-                            val.getPaint().setFakeBoldText(false);
-                            val.setTextColor(getContext().getResources().getColor(R.color.color_FFFFFF));
+                        if (pre != null) {//上一次点击的view
+                            ShadowLayout val = pre.findViewById(R.id.sl);
+                            val.setSelected(false);
                         }
-                        TextView val = view.findViewById(R.id.filterValue);
-                        val.getPaint().setFakeBoldText(true);
-                        val.setTextColor(getContext().getResources().getColor(R.color.color_02F8E1));
+                        ShadowLayout val = view.findViewById(R.id.sl);
+                        val.setSelected(true);
+                        //记录点击的view,下次点击对上一个view做处理
                         pre = view;
+                    } else {// 重选 取消
+                        sortData.filterSelect.remove(key);
+                        if (pre != null){
+                            ShadowLayout val = pre.findViewById(R.id.sl);
+                            val.setSelected(false);
+                        }
+                        pre = null;
                     }
                 }
             });

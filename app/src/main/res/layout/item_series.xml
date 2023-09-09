@@ -1,20 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="wrap_content"
+<com.lihang.ShadowLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/sl"
+    android:layout_width="110dp"
     android:layout_height="wrap_content"
-    android:layout_margin="@dimen/vs_5"
-    android:background="@drawable/shape_source_series_focus"
-    android:focusable="true">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:hl_cornerRadius="@dimen/common_corners"
+    app:hl_layoutBackground="@color/white"
+    app:hl_layoutBackground_true="@color/colorPrimary"
+    app:hl_shapeMode="selected"
+    app:hl_bindTextView="@+id/tvSeries"
+    app:hl_textColor_true="#fff"
+    app:hl_textColor="@color/colorPrimary">
 
     <TextView
         android:id="@+id/tvSeries"
-        android:layout_width="@dimen/vs_190"
-        android:layout_height="@dimen/vs_50"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:ellipsize="marquee"
         android:gravity="center"
         android:marqueeRepeatLimit="marquee_forever"
-        android:padding="@dimen/vs_10"
+        android:text="第210集"
         android:singleLine="true"
-        android:textColor="@android:color/white"
-        android:textSize="@dimen/ts_20" />
-</FrameLayout>
+        android:paddingHorizontal="10dp"
+        android:paddingVertical="6dp"
+        android:textSize="12dp"/>
+</com.lihang.ShadowLayout>

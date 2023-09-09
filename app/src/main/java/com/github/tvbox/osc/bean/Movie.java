@@ -27,6 +27,9 @@ public class Movie implements Serializable {
     @XStreamImplicit(itemFieldName = "video")
     public List<Video> videoList;
 
+    /**
+     * 解析出的影片详情对象
+     */
     @XStreamAlias("video")
     public static class Video implements Serializable {
         @XStreamAlias("last")//时间
@@ -62,6 +65,8 @@ public class Movie implements Serializable {
         @XStreamAlias("des")
         public String des;// <![CDATA[权来]
         public String sourceKey;
+        @XStreamAlias("tag")
+        public String tag;
 
         @XStreamAlias("dl")
         public static class UrlBean implements Serializable {

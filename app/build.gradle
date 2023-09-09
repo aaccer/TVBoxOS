@@ -1,14 +1,15 @@
 apply plugin: 'com.android.application'
+apply plugin: 'org.jetbrains.kotlin.android'
 
 android {
     compileSdkVersion 30
 
     defaultConfig {
         applicationId 'com.github.tvbox.osc'
-        minSdkVersion 16
-        targetSdkVersion 26
-        versionCode 1
-        versionName '1.0.0'
+        minSdkVersion 24
+        targetSdkVersion 30
+        versionCode 5
+        versionName '0.0.5'
         multiDexEnabled true
         //设置room的Schema的位置
         javaCompileOptions {
@@ -18,12 +19,40 @@ android {
         }
     }
 
+
+    // 执行配置
+    applicationVariants.all { variant ->
+
+        // Apk 输出配置
+        variant.outputs.all { output ->
+            outputFileName = rootProject.getName() + '_v' + variant.versionName + '_' + variant.buildType.name
+            if (variant.buildType.name == buildTypes.release.getName()) {
+                outputFileName += '_' + new Date().format("yyyyMMdd")
+            }
+            outputFileName += '.apk'
+        }
+    }
+
+
     packagingOptions {
         exclude 'META-INF/DEPENDENCIES'
     }
 
+    signingConfigs {
+        config {
+            keyAlias 'key0'
+            keyPassword '123456'
+            storeFile file('test.jks')
+            storePassword '123456'
+            v1SigningEnabled true
+            v2SigningEnabled true
+        }
+    }
+
+
     buildTypes {
         debug {
+            signingConfig signingConfigs.config
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             minifyEnabled false
 
@@ -32,9 +61,11 @@ android {
             }
         }
         release {
+            signingConfig signingConfigs.config
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             minifyEnabled true
 
+            debuggable true
             ndk {
                 abiFilters 'armeabi-v7a'
             }
@@ -56,25 +87,33 @@ android {
         additionalParameters += '--set-max-idx-number=48000'
         additionalParameters += '--minimal-main-dex'
     }
+    buildFeatures {
+        viewBinding true
+    }
 }
 
 dependencies {
     api fileTree(dir: "libs", include: ["*.jar"])
 
+    implementation 'com.google.android.material:material:1.4.0'
+
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.5.31"
+    implementation 'androidx.core:core-ktx:1.6.0'
 
     implementation 'org.nanohttpd:nanohttpd:2.3.1'
     implementation 'com.google.zxing:core:3.4.1'
     implementation 'androidx.appcompat:appcompat:1.3.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
-    implementation 'androidx.recyclerview:recyclerview:1.1.0'
-    implementation files('libs\\thunder.jar')
+    implementation 'androidx.recyclerview:recyclerview:1.2.1'
+    implementation files('libs/thunder.jar')
+    implementation files('libs/commons-lang3-3.12.0.jar')
 
+    implementation 'com.squareup.okhttp3:okhttp:3.12.11'
     annotationProcessor 'androidx.room:room-compiler:2.3.0'
     implementation 'androidx.room:room-runtime:2.3.0'
     implementation 'androidx.multidex:multidex:2.0.1'
-    implementation 'com.squareup.okhttp3:okhttp:3.12.1'
-    implementation 'com.squareup.okio:okio:2.6.0'
+    implementation 'com.squareup.okio:okio:2.8.0'
     implementation 'com.github.CymChad:BaseRecyclerViewAdapterHelper:2.9.45-androidx'
     implementation 'com.kingja.loadsir:loadsir:1.3.8'
     implementation 'com.google.code.gson:gson:2.8.7'
@@ -87,6 +126,7 @@ dependencies {
     implementation 'com.orhanobut:hawk:2.0.1'
 
     implementation project(":player")
+    implementation project(":quickjs")
 
     implementation('org.xwalk:xwalk_shared_library:23.53.589.4') {
         exclude group: 'com.android.support'
@@ -96,4 +136,41 @@ dependencies {
     implementation 'com.owen:tv-recyclerview:3.0.0'
 
     implementation 'com.github.getActivity:XXPermissions:13.6'
+    implementation 'org.jsoup:jsoup:1.14.1'
+    implementation 'com.github.hedzr:android-file-chooser:v1.2.0-final'
+    implementation 'commons-io:commons-io:2.11.0'
+    implementation 'com.googlecode.juniversalchardet:juniversalchardet:1.0.3'
+
+    //沉浸式状态栏
+    implementation 'com.geyifeng.immersionbar:immersionbar:3.2.2'
+    //标题栏
+    implementation 'com.github.getActivity:TitleBar:10.5'
+    //弹窗
+    implementation 'com.github.li-xiaojun:XPopup:2.9.19'
+    //工具类
+    implementation 'com.blankj:utilcodex:1.31.0'
+    //阴影/shape/选择器/圆角/...
+    implementation 'com.github.lihangleo2:ShadowLayout:3.3.3'
+    //glide图片加载
+    implementation 'com.github.bumptech.glide:glide:4.12.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.12.0'
+
+    //tab标题栏
+    implementation project(":TabLayout")
+    implementation project(':ViewPager1Delegate')
+    //TabLayout的非kt项目需要依赖这个包实现点击事件等
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    //展开收缩tv
+    implementation 'com.github.MZCretin:ExpandableTextView:v1.6.1-x'
+    //lottie动画
+    implementation 'com.airbnb.android:lottie:5.2.0'
+    //流式布局
+    implementation 'com.hyman:flowlayout-lib:1.1.2'
+
+    def androidPickerVersion = "4.1.12"
+    //文件选择器基本弹窗
+    implementation "com.github.gzu-liyujiang.AndroidPicker:Common:${androidPickerVersion}"
+    //文件选择器
+    implementation "com.github.gzu-liyujiang.AndroidPicker:FilePicker:${androidPickerVersion}"
+
 }
