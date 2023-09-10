@@ -1192,6 +1192,8 @@ public class LivePlayActivity extends BaseActivity {
                     case VideoView.STATE_PREPARED:
                         if (mVideoView.getVideoSize().length >= 2) {
                         tv_right_top_tipnetspeed.setText("[" + mVideoView.getVideoSize()[0] + " x " + mVideoView.getVideoSize()[1] + "]");
+                        }else{
+                        tv_right_top_tipnetspeed.setText("");
                         }
                         break;
                     case VideoView.STATE_BUFFERED:
