@@ -402,7 +402,7 @@ public class VodController extends BaseController {
         });
         mPlayerBtn.setOnClickListener(new OnClickListener() {
             @Override
-            public void onClick(View view) {
+            public boolean onClick(View view) {
                 myHandle.removeCallbacks(myRunnable);
                 myHandle.postDelayed(myRunnable, myHandleSeconds);
                 FastClickCheckUtil.check(view);
@@ -465,7 +465,7 @@ public class VodController extends BaseController {
 
         mPlayerBtn.setOnLongClickListener(new OnLongClickListener() {
             @Override
-            public boolean onLongClick(View view) {
+            public void onLongClick(View view) {
                 myHandle.removeCallbacks(myRunnable);
                 myHandle.postDelayed(myRunnable, myHandleSeconds);
                 try {
