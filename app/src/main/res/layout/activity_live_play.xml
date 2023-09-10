@@ -757,7 +757,7 @@
 			android:singleLine="true"
 			android:text="测试频道"
 			android:textColor="#FFFCFFFF"
-			android:textSize="@dimen/vs_30" />
+			android:textSize="@dimen/vs_24" />
 
 		<TextView
 			android:id="@+id/tv_right_top_tipnetspeed"
