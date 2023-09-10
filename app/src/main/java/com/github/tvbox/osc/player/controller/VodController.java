@@ -402,7 +402,7 @@ public class VodController extends BaseController {
         });
         mPlayerBtn.setOnClickListener(new OnClickListener() {
             @Override
-            public boolean onClick(View view) {
+            public void onClick(View view) {
                 myHandle.removeCallbacks(myRunnable);
                 myHandle.postDelayed(myRunnable, myHandleSeconds);
                 FastClickCheckUtil.check(view);
@@ -459,13 +459,13 @@ public class VodController extends BaseController {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                return true;
+                //return true;
             }
         });
 
         mPlayerBtn.setOnLongClickListener(new OnLongClickListener() {
             @Override
-            public void onLongClick(View view) {
+            public boolean onLongClick(View view) {
                 myHandle.removeCallbacks(myRunnable);
                 myHandle.postDelayed(myRunnable, myHandleSeconds);
                 try {
@@ -493,6 +493,7 @@ public class VodController extends BaseController {
                 }
                 mPlayerBtn.requestFocus();
                 mPlayerBtn.requestFocusFromTouch();
+                return true;
             }
         });
         mPlayerIJKBtn.setOnClickListener(new OnClickListener() {
