@@ -135,7 +135,7 @@ public class LivePlayActivity extends BaseActivity {
     private CountDownTimer countDownTimer;
     //private CountDownTimer countDownTimerRightTop;
     private View ll_right_top_loading;
-    private View ll_right_top_huikan;
+    //private View ll_right_top_huikan;
     private View divLoadEpg;
     private View divLoadEpgleft;
     private LinearLayout divEpg;
@@ -150,8 +150,8 @@ public class LivePlayActivity extends BaseActivity {
     private MyEpgAdapter myAdapter;
     private TextView tv_right_top_tipnetspeed;
     private TextView tv_right_top_channel_name;
-    private TextView tv_right_top_epg_name;
-    private TextView tv_right_top_type;
+    //private TextView tv_right_top_epg_name;
+    //private TextView tv_right_top_type;
     private ImageView iv_circle_bg;
     private TextView tv_shownum ;
     private TextView txtNoEpg ;
@@ -231,14 +231,14 @@ public class LivePlayActivity extends BaseActivity {
         ll_epg = (RelativeLayout) findViewById(R.id.ll_epg);
         tv_right_top_tipnetspeed = (TextView)findViewById(R.id.tv_right_top_tipnetspeed);
         tv_right_top_channel_name = (TextView)findViewById(R.id.tv_right_top_channel_name);
-        tv_right_top_epg_name = (TextView)findViewById(R.id.tv_right_top_epg_name);
+        //tv_right_top_epg_name = (TextView)findViewById(R.id.tv_right_top_epg_name);
         //tv_right_top_type = (TextView)findViewById(R.id.tv_right_top_type);
         iv_circle_bg = (ImageView) findViewById(R.id.iv_circle_bg);
         iv_back_bg = (ImageView) findViewById(R.id.iv_back_bg);
         tv_shownum = (TextView) findViewById(R.id.tv_shownum);
         txtNoEpg = (TextView) findViewById(R.id.txtNoEpg);
         ll_right_top_loading = findViewById(R.id.ll_right_top_loading);
-        ll_right_top_huikan = findViewById(R.id.ll_right_top_huikan);
+        //ll_right_top_huikan = findViewById(R.id.ll_right_top_huikan);
         divLoadEpg = (View) findViewById(R.id.divLoadEpg);
         divLoadEpgleft = (View) findViewById(R.id.divLoadEpgleft);
         divEpg = (LinearLayout) findViewById(R.id.divEPG);
@@ -535,7 +535,7 @@ public class LivePlayActivity extends BaseActivity {
                 ((TextView) findViewById(R.id.tv_source)).setText("[线路" + (channel_Name.getSourceIndex() + 1) + "/" + channel_Name.getSourceNum() + "]");
             }
             //tv_right_top_channel_name.setText(channel_Name.getChannelName());
-            tv_right_top_epg_name.setText(channel_Name.getChannelName());
+            //tv_right_top_epg_name.setText(channel_Name.getChannelName());
 
             Handler handler = new Handler(Looper.getMainLooper());
             ll_right_top_loading.setVisibility(View.VISIBLE);
@@ -545,7 +545,7 @@ public class LivePlayActivity extends BaseActivity {
                 @Override
                 public void run() {
                     ll_right_top_loading.setVisibility(View.GONE);
-                    ll_right_top_huikan.setVisibility(View.GONE);
+                    //ll_right_top_huikan.setVisibility(View.GONE);
                 }
             }, 5000);
         }
@@ -805,7 +805,7 @@ public class LivePlayActivity extends BaseActivity {
         //showBottomEpg();
         getEpg(new Date());
         backcontroller.setVisibility(View.GONE);
-        ll_right_top_huikan.setVisibility(View.GONE);
+        //ll_right_top_huikan.setVisibility(View.GONE);
         mVideoView.setUrl(currentLiveChannelItem.getUrl());
        // showChannelInfo();
         mVideoView.start();
@@ -1190,6 +1190,10 @@ public class LivePlayActivity extends BaseActivity {
                     case VideoView.STATE_PAUSED:
                         break;
                     case VideoView.STATE_PREPARED:
+                        if (mVideoView.getVideoSize().length >= 2) {
+                        tv_right_top_tipnetspeed.setText("[" + mVideoView.getVideoSize()[0] + " x " + mVideoView.getVideoSize()[1] + "]");
+                        }
+                        break;
                     case VideoView.STATE_BUFFERED:
                     case VideoView.STATE_PLAYING:
                         currentLiveChangeSourceTimes = 0;
@@ -1703,7 +1707,7 @@ public class LivePlayActivity extends BaseActivity {
     };
 
     private void showNetSpeed() {
-        tv_right_top_tipnetspeed.setVisibility(View.VISIBLE);
+        //tv_right_top_tipnetspeed.setVisibility(View.VISIBLE);
         if (Hawk.get(HawkConfig.LIVE_SHOW_NET_SPEED, false)) {
             mHandler.post(mUpdateNetSpeedRun);
             tvNetSpeed.setVisibility(View.VISIBLE);
@@ -1719,7 +1723,7 @@ public class LivePlayActivity extends BaseActivity {
             if (mVideoView == null) return;
             String speed = PlayerHelper.getDisplaySpeed(mVideoView.getTcpSpeed());
             tvNetSpeed.setText(speed);
-            tv_right_top_tipnetspeed.setText(speed);
+            //tv_right_top_tipnetspeed.setText(speed);
             mHandler.postDelayed(this, 1000);
         }
     };
