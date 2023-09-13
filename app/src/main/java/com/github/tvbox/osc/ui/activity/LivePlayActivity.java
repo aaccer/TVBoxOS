@@ -8,7 +8,6 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.CountDownTimer;
 import android.os.Handler;
-import android.os.Looper;
 import android.util.Base64;
 import android.util.Log;
 import android.view.Gravity;
@@ -133,7 +132,7 @@ public class LivePlayActivity extends BaseActivity {
     private static LiveChannelItem  channel_Name = null;
     private static Hashtable hsEpg = new Hashtable();
     private CountDownTimer countDownTimer;
-    //private CountDownTimer countDownTimerRightTop;
+    private CountDownTimer countDownTimerRightTop;
     private View ll_right_top_loading;
     //private View ll_right_top_huikan;
     private View divLoadEpg;
@@ -537,18 +536,23 @@ public class LivePlayActivity extends BaseActivity {
             //tv_right_top_channel_name.setText(channel_Name.getChannelName());
             //tv_right_top_epg_name.setText(channel_Name.getChannelName());
 
-            Handler handler = new Handler(Looper.getMainLooper());
             ll_right_top_loading.setVisibility(View.VISIBLE);
-            
-            // 延迟5秒后执行隐藏操作
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    ll_right_top_loading.setVisibility(View.GONE);
-                    //ll_right_top_huikan.setVisibility(View.GONE);
+
+            if (countDownTimerRightTop != null) {
+                countDownTimerRightTop.cancel();
+            }
+            countDownTimerRightTop = new CountDownTimer(5000, 1000) {
+
+                public void onTick(long j) {
                 }
-            }, 5000);
+
+                public void onFinish() {
+                    ll_right_top_loading.setVisibility(View.GONE);
+                }
+            };
+
         }
+        countDownTimerRightTop.start();
     }
 
     private void updateChannelIcon(String channelName, String logoUrl) {
