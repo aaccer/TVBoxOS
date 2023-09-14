@@ -1196,8 +1196,6 @@ public class LivePlayActivity extends BaseActivity {
                     case VideoView.STATE_PREPARED:
                         if (mVideoView.getVideoSize().length >= 2) {
                         tv_right_top_tipnetspeed.setText("[" + mVideoView.getVideoSize()[0] + " x " + mVideoView.getVideoSize()[1] + "]");
-                        }else{
-                        tv_right_top_tipnetspeed.setText("");
                         }
                         break;
                     case VideoView.STATE_BUFFERED:
@@ -1212,6 +1210,8 @@ public class LivePlayActivity extends BaseActivity {
                         mHandler.postDelayed(mConnectTimeoutChangeSourceRun, 1500);
                         break;
                     case VideoView.STATE_PREPARING:
+                        tv_right_top_tipnetspeed.setText("");
+                        break;
                     case VideoView.STATE_BUFFERING:
                         mHandler.removeCallbacks(mConnectTimeoutChangeSourceRun);
                         mHandler.postDelayed(mConnectTimeoutChangeSourceRun, (Hawk.get(HawkConfig.LIVE_CONNECT_TIMEOUT, 1) + 1) * 3000);
