@@ -52,6 +52,8 @@ import xyz.doikki.videoplayer.util.PlayerUtils;
 
 import static xyz.doikki.videoplayer.util.PlayerUtils.stringForTime;
 
+import net.cachapa.expandablelayout.ExpandableLayout;
+
 public class VodController extends BaseController {
     public VodController(@NonNull @NotNull Context context) {
         super(context);
@@ -119,8 +121,6 @@ public class VodController extends BaseController {
     public TextView mPlayerSpeedBtn;
     TextView mPlayerBtn;
     TextView mPlayerIJKBtn;
-    ImageView mPlayerRetry;
-    ImageView mPlayrefresh;
     public TextView mPlayerTimeStartEndText;
     public TextView mPlayerTimeStartBtn;
     public TextView mPlayerTimeSkipBtn;
@@ -180,8 +180,6 @@ public class VodController extends BaseController {
         mTopRoot2 = findViewById(R.id.tv_top_r_container);
         mParseRoot = findViewById(R.id.parse_root);
         mGridView = findViewById(R.id.mGridView);
-        mPlayerRetry = findViewById(R.id.play_retry);
-        mPlayrefresh = findViewById(R.id.play_refresh);
         mNextBtn = findViewById(R.id.play_next);
         mPreBtn = findViewById(R.id.play_pre);
         mPlayerScaleBtn = findViewById(R.id.play_scale);
@@ -199,6 +197,7 @@ public class VodController extends BaseController {
         mZimuBtn = findViewById(R.id.zimu_select);
         mAudioTrackBtn = findViewById(R.id.audio_track_select);
         mLandscapePortraitBtn = findViewById(R.id.landscape_portrait);
+        ExpandableLayout expandableSetting = findViewById(R.id.expandable_setting);
 
         initSubtitleInfo();
 
@@ -207,6 +206,9 @@ public class VodController extends BaseController {
             @Override
             public void run() {
                 hideBottom();
+                if (expandableSetting.isExpanded()){
+                    expandableSetting.collapse();
+                }
             }
         };
 
@@ -273,14 +275,14 @@ public class VodController extends BaseController {
         mPlayTitle.setOnClickListener(view -> listener.exit());
         mPlayTitle1.setOnClickListener(view -> listener.exit());
 
-        mPlayerRetry.setOnClickListener(new OnClickListener() {
+        findViewById(R.id.play_retry).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
                 listener.replay(true);
                 hideBottom();
             }
         });
-        mPlayrefresh.setOnClickListener(new OnClickListener() {
+        findViewById(R.id.play_refresh).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
                 listener.replay(false);
@@ -299,6 +301,14 @@ public class VodController extends BaseController {
             public void onClick(View view) {
                 listener.playPre();
                 hideBottom();
+            }
+        });
+        findViewById(R.id.setting).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                myHandle.removeCallbacks(myRunnable);
+                myHandle.postDelayed(myRunnable, myHandleSeconds);
+                expandableSetting.toggle();
             }
         });
         findViewById(R.id.iv_fullscreen).setOnClickListener(new OnClickListener() {
@@ -601,6 +611,14 @@ public class VodController extends BaseController {
             }
         });
         mNextBtn.setNextFocusLeftId(R.id.play_time_start);
+        findViewById(R.id.choose_series).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                FastClickCheckUtil.check(view);
+                hideBottom();
+                listener.chooseSeries();
+            }
+        });
     }
 
     private void hideLiveAboutBtn() {
@@ -698,6 +716,7 @@ public class VodController extends BaseController {
     }
 
     public interface VodControlListener {
+        void chooseSeries();
         void playNext(boolean rmProgress);
 
         void playPre();

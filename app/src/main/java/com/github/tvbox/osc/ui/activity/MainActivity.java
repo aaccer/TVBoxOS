@@ -1,32 +1,27 @@
 package com.github.tvbox.osc.ui.activity;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.Toast;
 
 import com.blankj.utilcode.util.ActivityUtils;
 import com.blankj.utilcode.util.ToastUtils;
 import com.github.tvbox.osc.R;
-import com.github.tvbox.osc.base.BaseActivity;
 import com.github.tvbox.osc.base.BaseVbActivity;
 import com.github.tvbox.osc.databinding.ActivityMainBinding;
 import com.github.tvbox.osc.ui.fragment.GridFragment;
 import com.github.tvbox.osc.ui.fragment.HomeFragment;
 import com.github.tvbox.osc.ui.fragment.MyFragment;
-import com.github.tvbox.osc.ui.fragment.UserFragment;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.github.tvbox.osc.util.Checker;
+import com.github.tvbox.osc.util.UpdateAppHttpUtil;
+import com.vector.update_app.UpdateAppManager;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class MainActivity extends BaseVbActivity<ActivityMainBinding> {
 
@@ -54,6 +49,8 @@ public class MainActivity extends BaseVbActivity<ActivityMainBinding> {
                 mBinding.bottomNav.getMenu().getItem(position).setChecked(true);
             }
         });
+
+        initUpdater();
     }
 
     private void initVp() {
@@ -74,30 +71,59 @@ public class MainActivity extends BaseVbActivity<ActivityMainBinding> {
         mBinding.vp.setOffscreenPageLimit(fragments.size());
     }
 
+    public void initUpdater() {
+        Checker.getInstance()
+                .checkProxy(isAvailable -> {
+                    new UpdateAppManager
+                            .Builder()
+                            .setTopPic(R.drawable.iv_dialog_top)
+                            .setActivity(MainActivity.this)
+                            .setUpdateUrl("later incoming")// 给UpdateAppHttpUtil一起做处理
+                            .setHttpManager(new UpdateAppHttpUtil(isAvailable))
+                            .build()
+                            .update();
+                });
+    }
+
     private long exitTime = 0L;
+
     @Override
     public void onBackPressed() {
-        HomeFragment homeFragment = (HomeFragment)fragments.get(0);
+        if (mBinding.vp.getCurrentItem() == 1) {
+            mBinding.vp.setCurrentItem(0);
+            return;
+        }
+        HomeFragment homeFragment = (HomeFragment) fragments.get(0);
+        if (!homeFragment.isAdded()) {// 资源不足销毁重建时未挂载到activity时getChildFragmentManager会崩溃
+            confirmExit();
+            return;
+        }
         List<Fragment> childFragments = homeFragment.getChildFragmentManager().getFragments();
+        if (childFragments.isEmpty()) {//加载中(没有tab)
+            confirmExit();
+            return;
+        }
         Fragment fragment = childFragments.get(homeFragment.getTabIndex());
-        if (fragment instanceof GridFragment){// 影视列表,非主页
-            GridFragment item = (GridFragment)fragment;
-            if (item.restoreView()){// 有回退的view,先回退(AList等文件夹列表)
+        if (fragment instanceof GridFragment) {// 首页数据源动态加载的tab
+            GridFragment item = (GridFragment) fragment;
+            if (item.restoreView()) {// 有回退的view,先回退(AList等文件夹列表)
                 return;
             }
             // 没有可回退的,返到主页tab
             homeFragment.scrollToFirstTab();
-        }else {// 主页tab提示退出
+        } else {
             confirmExit();
         }
     }
 
-    private void confirmExit(){
+    private void confirmExit() {
         if (System.currentTimeMillis() - exitTime > 2000) {
             ToastUtils.showShort("再按一次退出程序");
             exitTime = System.currentTimeMillis();
         } else {
             ActivityUtils.finishAllActivities(true);
+            android.os.Process.killProcess(android.os.Process.myPid());
+            System.exit(0);
         }
     }
 
