@@ -613,12 +613,21 @@ public class VodController extends BaseController {
         mZimuBtn.setOnLongClickListener(new OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
-                mSubtitleView.setVisibility(View.GONE);
+                /*mSubtitleView.setVisibility(View.GONE);
                 mSubtitleView.destroy();
                 mSubtitleView.clearSubtitleCache();
                 mSubtitleView.isInternal = false;
                 hideBottom();
+                Toast.makeText(getContext(), "字幕已关闭", Toast.LENGTH_SHORT).show();*/
+                if(mSubtitleView.getVisibility() == View.VISIBLE){
+                mSubtitleView.setVisibility(View.GONE);
+                hideBottom();
                 Toast.makeText(getContext(), "字幕已关闭", Toast.LENGTH_SHORT).show();
+                }else{
+                mSubtitleView.setVisibility(View.VISIBLE);
+                hideBottom();
+                Toast.makeText(getContext(), "字幕已开启", Toast.LENGTH_SHORT).show();
+                }
                 return true;
             }
         });
