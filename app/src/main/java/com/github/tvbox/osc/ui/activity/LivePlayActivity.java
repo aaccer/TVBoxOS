@@ -276,6 +276,7 @@ public class LivePlayActivity extends BaseActivity {
 
         backcontroller.setVisibility(View.GONE);
         ll_epg.setVisibility(View.GONE);
+        ll_right_top_loading.setVisibility(View.GONE);
 
         initEpgDateView();
         initEpgListView();
@@ -422,7 +423,7 @@ public class LivePlayActivity extends BaseActivity {
         String finalChannelName = channelName;
         //epgListAdapter.CanBack(currentLiveChannelItem.getinclude_back());
         //epgListAdapter.updateData(date, new ArrayList<>());
-        showEpg(date, new ArrayList());
+        //showEpg(date, new ArrayList());
         String savedEpgKey = channelName + "_" + liveEpgDateAdapter.getItem(liveEpgDateAdapter.getSelectedIndex()).getDatePresented();
         if (!hsEpg.containsKey(savedEpgKey)){
         String url;
@@ -449,12 +450,17 @@ public class LivePlayActivity extends BaseActivity {
                         } catch (Throwable th) {
                             th.printStackTrace();
                         }
-                showEpg(date, arrayList);
-                hsEpg.put(savedEpgKey, arrayList);
-                //Date now=new Date();
-                //if(timeFormat.format(date).equals(timeFormat.format(now)))
-                //showBottomEpg();
-            }
+                        showEpg(date, arrayList);
+                        hsEpg.put(savedEpgKey, arrayList);
+                        //Date now=new Date();
+                        //if(timeFormat.format(date).equals(timeFormat.format(now)))
+                        showBottomEpg();
+                    }
+                    @Override
+                    public void onError(Response <String> paramString) {
+                        showEpg(date, new ArrayList());
+                        showBottomEpg();
+                    }
                     @Override
                     public String convertResponse(okhttp3.Response response) throws Throwable {
                         return response.body().string();
@@ -466,9 +472,9 @@ public class LivePlayActivity extends BaseActivity {
             showEpg(date, arrayList); 
             //Date now=new Date();
             //if(timeFormat.format(date).equals(timeFormat.format(now)))
-            //showBottomEpg();
-            }
             showBottomEpg();
+            }
+            //showBottomEpg();
     }
 
     //显示底部EPG
@@ -483,7 +489,7 @@ public class LivePlayActivity extends BaseActivity {
             tip_epg2.setText("开源测试软件,请勿商用以及播放违法内容");
             ((TextView) findViewById(R.id.tv_next_program_name)).setText("");
             String savedEpgKey = channel_Name.getChannelName() + "_" + liveEpgDateAdapter.getItem(liveEpgDateAdapter.getSelectedIndex()).getDatePresented();
-            if (hsEpg.containsKey(savedEpgKey)) {
+            if (hsEpg.containsKey(savedEpgKey) && liveEpgDateAdapter.getSelectedIndex()==1) {
                 String[] epgInfo = EpgUtil.getEpgInfo(channel_Name.getChannelName());
                 updateChannelIcon(channel_Name.getChannelName(), epgInfo == null ? null : epgInfo[0]);
                 ArrayList arrayList = (ArrayList) hsEpg.get(savedEpgKey);
@@ -516,7 +522,7 @@ public class LivePlayActivity extends BaseActivity {
             if (countDownTimer != null) {
                 countDownTimer.cancel();
             }
-            if(!tip_epg1.getText().equals("暂无信息")&&((TextView) findViewById(R.id.tv_current_program_name)).getText().toString().indexOf("精彩节目")== -1 && liveEpgDateAdapter.getSelectedIndex()==1){
+            if(!tip_epg1.getText().equals("暂无信息")&&((TextView) findViewById(R.id.tv_current_program_name)).getText().toString().indexOf("精彩节目")== -1){
                 ll_epg.setVisibility(View.VISIBLE);
                 countDownTimer = new CountDownTimer(5000, 1000) {//底部epg隐藏时间设定
                     public void onTick(long j) {
@@ -948,7 +954,6 @@ public class LivePlayActivity extends BaseActivity {
 
             @Override
             public void onItemClick(TvRecyclerView parent, View itemView, int position) {
-
                 Date date = liveEpgDateAdapter.getSelectedIndex() < 0 ? new Date() :
                         liveEpgDateAdapter.getData().get(liveEpgDateAdapter.getSelectedIndex()).getDateParamVal();
                 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
