@@ -133,6 +133,8 @@ public class PlayFragment extends BaseLazyFragment {
     public void refresh(RefreshEvent event) {
         if (event.type == RefreshEvent.TYPE_SUBTITLE_SIZE_CHANGE) {
             mController.mSubtitleView.setTextSize((int) event.obj);
+        } else if (event.type == RefreshEvent.TYPE_BATTERY_CHANGE && mController.mMyBatteryView!=null){
+            mController.mMyBatteryView.updateBattery((int) event.obj);
         }
     }
 
@@ -270,6 +272,14 @@ public class PlayFragment extends BaseLazyFragment {
             }
         });
         mVideoView.setVideoController(mController);
+    }
+
+    /**
+     * activity返回/点击播放器切换全屏操作等
+     * @param b
+     */
+    public void changedLandscape(boolean b) {
+        mController.changedLandscape(b);
     }
 
     //设置字幕

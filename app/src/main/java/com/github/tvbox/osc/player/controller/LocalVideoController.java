@@ -32,6 +32,7 @@ import com.github.tvbox.osc.subtitle.widget.SimpleSubtitleView;
 import com.github.tvbox.osc.ui.adapter.ParseAdapter;
 import com.github.tvbox.osc.ui.adapter.SelectDialogAdapter;
 import com.github.tvbox.osc.ui.dialog.SelectDialog;
+import com.github.tvbox.osc.ui.widget.MyBatteryView;
 import com.github.tvbox.osc.util.FastClickCheckUtil;
 import com.github.tvbox.osc.util.PlayerHelper;
 import com.github.tvbox.osc.util.ScreenUtils;
@@ -74,7 +75,6 @@ public class LocalVideoController extends BaseController {
                         mBottomRoot.setVisibility(VISIBLE);
                         mTopRoot1.setVisibility(VISIBLE);
                         mTopRoot2.setVisibility(VISIBLE);
-                        mPlayTitle.setVisibility(GONE);
                         mNextBtn.requestFocus();
                         break;
                     }
@@ -105,13 +105,12 @@ public class LocalVideoController extends BaseController {
     TextView mCurrentTime;
     TextView mTotalTime;
     boolean mIsDragging;
-    LinearLayout mProgressRoot;
+    View mProgressRoot;
     TextView mProgressText;
     ImageView mProgressIcon;
     LinearLayout mBottomRoot;
     LinearLayout mTopRoot1;
-    LinearLayout mTopRoot2;
-    TextView mPlayTitle;
+    View mTopRoot2;
     TextView mPlayTitle1;
     TextView mPlayLoadNetSpeedRightTop;
     ImageView mNextBtn;
@@ -131,10 +130,11 @@ public class LocalVideoController extends BaseController {
     TextView mZimuBtn;
     TextView mAudioTrackBtn;
     public TextView mLandscapePortraitBtn;
-
+    private ImageView mIvPlayStatus;
+    public MyBatteryView mMyBatteryView;
     Handler myHandle;
     Runnable myRunnable;
-    int myHandleSeconds = 10000;//闲置多少毫秒秒关闭底栏  默认6秒
+    int myHandleSeconds = 4000;//闲置多少毫秒秒关闭底栏  默认6秒
 
     int videoPlayState = 0;
 
@@ -162,13 +162,14 @@ public class LocalVideoController extends BaseController {
     @Override
     protected void initView() {
         super.initView();
+        mMyBatteryView = findViewById(R.id.battery);
+        mMyBatteryView.setVisibility(VISIBLE);
         findViewById(R.id.setting).setVisibility(GONE);
         findViewById(R.id.choose_series).setVisibility(GONE);
         mCurrentTime = findViewById(R.id.curr_time);
         mTvSpeedTip = findViewById(R.id.tv_speed);
         mLlSpeed = findViewById(R.id.ll_speed);
         mTotalTime = findViewById(R.id.total_time);
-        mPlayTitle = findViewById(R.id.tv_info_name);
         mPlayTitle1 = findViewById(R.id.tv_info_name1);
         mPlayLoadNetSpeedRightTop = findViewById(R.id.tv_play_load_net_speed_right_top);
         mSeekBar = findViewById(R.id.seekBar);
@@ -178,7 +179,6 @@ public class LocalVideoController extends BaseController {
         mBottomRoot = findViewById(R.id.bottom_container);
         mTopRoot1 = findViewById(R.id.tv_top_l_container);
         mTopRoot2 = findViewById(R.id.tv_top_r_container);
-
 
         mNextBtn = findViewById(R.id.play_next);
         mPreBtn = findViewById(R.id.play_pre);
@@ -197,8 +197,12 @@ public class LocalVideoController extends BaseController {
         mZimuBtn = findViewById(R.id.zimu_select);
         mAudioTrackBtn = findViewById(R.id.audio_track_select);
         mLandscapePortraitBtn = findViewById(R.id.landscape_portrait);
-
+        mIvPlayStatus = findViewById(R.id.play_status);
         initSubtitleInfo();
+
+        //本地播放没小屏播放,直接显示上下集(后续将本地播放的xml独立)
+        mPreBtn.setVisibility(VISIBLE);
+        mNextBtn.setVisibility(VISIBLE);
 
         myHandle = new Handler();
         myRunnable = new Runnable() {
@@ -248,7 +252,6 @@ public class LocalVideoController extends BaseController {
             }
         });
 
-        mPlayTitle.setOnClickListener(view -> listener.exit());
         mPlayTitle1.setOnClickListener(view -> listener.exit());
 
         findViewById(R.id.play_retry).setOnClickListener(new OnClickListener() {
@@ -263,6 +266,16 @@ public class LocalVideoController extends BaseController {
             public void onClick(View v) {
                 listener.replay(false);
                 hideBottom();
+            }
+        });
+        mIvPlayStatus.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                togglePlay();
+                if (videoPlayState == VideoView.STATE_PLAYING){
+                    myHandle.removeCallbacks(myRunnable);
+                    myHandle.postDelayed(myRunnable, 300);
+                }
             }
         });
         mNextBtn.setOnClickListener(new OnClickListener() {
@@ -657,12 +670,7 @@ public class LocalVideoController extends BaseController {
     }
 
     public void setTitle(String playTitleInfo) {
-        mPlayTitle.setText(playTitleInfo);
         mPlayTitle1.setText(playTitleInfo);
-    }
-
-    public void setUrlTitle(String playTitleInfo) {
-        mPlayTitle.setText(playTitleInfo);
     }
 
     public void resetSpeed() {
@@ -800,11 +808,10 @@ public class LocalVideoController extends BaseController {
             case VideoView.STATE_PLAYING:
                 initLandscapePortraitBtnInfo();
                 startProgress();
+                mIvPlayStatus.setImageResource(R.drawable.ic_pause);
                 break;
             case VideoView.STATE_PAUSED:
-                mTopRoot1.setVisibility(GONE);
-                mTopRoot2.setVisibility(GONE);
-                mPlayTitle.setVisibility(VISIBLE);
+                mIvPlayStatus.setImageResource(R.drawable.ic_play);
                 break;
             case VideoView.STATE_ERROR:
                 listener.errReplay();

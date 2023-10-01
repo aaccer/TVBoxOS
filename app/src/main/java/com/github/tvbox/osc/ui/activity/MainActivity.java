@@ -10,15 +10,12 @@ import android.os.Bundle;
 
 import com.blankj.utilcode.util.ActivityUtils;
 import com.blankj.utilcode.util.ToastUtils;
-import com.github.tvbox.osc.R;
+import com.github.tvbox.osc.base.BaseLazyFragment;
 import com.github.tvbox.osc.base.BaseVbActivity;
 import com.github.tvbox.osc.databinding.ActivityMainBinding;
 import com.github.tvbox.osc.ui.fragment.GridFragment;
 import com.github.tvbox.osc.ui.fragment.HomeFragment;
 import com.github.tvbox.osc.ui.fragment.MyFragment;
-import com.github.tvbox.osc.util.Checker;
-import com.github.tvbox.osc.util.UpdateAppHttpUtil;
-import com.vector.update_app.UpdateAppManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,8 +46,6 @@ public class MainActivity extends BaseVbActivity<ActivityMainBinding> {
                 mBinding.bottomNav.getMenu().getItem(position).setChecked(true);
             }
         });
-
-        initUpdater();
     }
 
     private void initVp() {
@@ -71,20 +66,6 @@ public class MainActivity extends BaseVbActivity<ActivityMainBinding> {
         mBinding.vp.setOffscreenPageLimit(fragments.size());
     }
 
-    public void initUpdater() {
-        Checker.getInstance()
-                .checkProxy(isAvailable -> {
-                    new UpdateAppManager
-                            .Builder()
-                            .setTopPic(R.drawable.iv_dialog_top)
-                            .setActivity(MainActivity.this)
-                            .setUpdateUrl("later incoming")// 给UpdateAppHttpUtil一起做处理
-                            .setHttpManager(new UpdateAppHttpUtil(isAvailable))
-                            .build()
-                            .update();
-                });
-    }
-
     private long exitTime = 0L;
 
     @Override
@@ -98,7 +79,7 @@ public class MainActivity extends BaseVbActivity<ActivityMainBinding> {
             confirmExit();
             return;
         }
-        List<Fragment> childFragments = homeFragment.getChildFragmentManager().getFragments();
+        List<BaseLazyFragment> childFragments = homeFragment.getAllFragments();
         if (childFragments.isEmpty()) {//加载中(没有tab)
             confirmExit();
             return;
@@ -106,11 +87,9 @@ public class MainActivity extends BaseVbActivity<ActivityMainBinding> {
         Fragment fragment = childFragments.get(homeFragment.getTabIndex());
         if (fragment instanceof GridFragment) {// 首页数据源动态加载的tab
             GridFragment item = (GridFragment) fragment;
-            if (item.restoreView()) {// 有回退的view,先回退(AList等文件夹列表)
-                return;
+            if (!item.restoreView()) {// 有回退的view,先回退(AList等文件夹列表),没有可回退的,返到主页tab
+                homeFragment.scrollToFirstTab();
             }
-            // 没有可回退的,返到主页tab
-            homeFragment.scrollToFirstTab();
         } else {
             confirmExit();
         }
