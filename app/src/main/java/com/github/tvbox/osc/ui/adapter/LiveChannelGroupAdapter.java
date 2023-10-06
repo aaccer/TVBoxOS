@@ -57,4 +57,8 @@ public class LiveChannelGroupAdapter extends BaseQuickAdapter<LiveChannelGroup, 
         else if (this.selectedGroupIndex != -1)
             notifyItemChanged(this.selectedGroupIndex);
     }
+    
+    public int getFocusedGroupIndex() {
+        return focusedGroupIndex;
+    }
 }
