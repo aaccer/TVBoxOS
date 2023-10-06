@@ -55,4 +55,8 @@ public class LiveEpgDateAdapter extends BaseQuickAdapter<LiveEpgDate, BaseViewHo
         if (this.focusedIndex != -1)
             notifyItemChanged(this.focusedIndex);
     }
+
+    public int getFocusedIndex() {
+        return focusedIndex;
+    }
 }
