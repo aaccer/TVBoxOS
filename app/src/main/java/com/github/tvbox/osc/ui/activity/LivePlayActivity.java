@@ -710,10 +710,12 @@ public class LivePlayActivity extends BaseActivity {
                         divLoadEpg.setVisibility(View.VISIBLE);
                         mChannelGroupView.setVisibility(View.VISIBLE);
                         divEpg.setVisibility(View.GONE);
+                        epgListAdapter.setFocusedEpgIndex(-1);
+                        liveEpgDateAdapter.setFocusedIndex(liveEpgDateAdapter.getSelectedIndex());
                     }
                 }
                 if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
-                    if(liveChannelItemAdapter.getFocusedChannelIndex()>=0&&divEpg.getVisibility() == View.GONE){
+                    if((liveChannelItemAdapter.getFocusedChannelIndex()>=0 || loadEpgOnFocus)&&divEpg.getVisibility() == View.GONE){
                         divLoadEpgleft.setVisibility(View.VISIBLE);
                         divLoadEpg.setVisibility(View.GONE);
                         mChannelGroupView.setVisibility(View.GONE);
@@ -1658,6 +1660,10 @@ public class LivePlayActivity extends BaseActivity {
                         select = !Hawk.get(HawkConfig.LIVE_CROSS_GROUP, false);
                         Hawk.put(HawkConfig.LIVE_CROSS_GROUP, select);
                         break;
+                    case 4:
+                        select = !Hawk.get(HawkConfig.LIVE_MAINPAGE, false);
+                        Hawk.put(HawkConfig.LIVE_MAINPAGE, select);
+                        break;
                 }
                 liveSettingItemAdapter.selectItem(position, select, false);
                 break;
@@ -1773,7 +1779,7 @@ public class LivePlayActivity extends BaseActivity {
         ArrayList<String> scaleItems = new ArrayList<>(Arrays.asList("默认", "16:9", "4:3", "填充", "原始", "裁剪"));
         ArrayList<String> playerDecoderItems = new ArrayList<>(Arrays.asList("系统", "ijk硬解", "ijk软解", "exo"));
         ArrayList<String> timeoutItems = new ArrayList<>(Arrays.asList("3s", "6s", "9s", "12s", "15s", "18s"));
-        ArrayList<String> personalSettingItems = new ArrayList<>(Arrays.asList("显示时间", "显示网速", "换台反转", "跨选分类"));
+        ArrayList<String> personalSettingItems = new ArrayList<>(Arrays.asList("显示时间", "显示网速", "换台反转", "跨选分类", "默认首页"));
         itemsArrayList.add(sourceItems);
         itemsArrayList.add(scaleItems);
         itemsArrayList.add(playerDecoderItems);
@@ -1800,6 +1806,8 @@ public class LivePlayActivity extends BaseActivity {
         liveSettingGroupList.get(4).getLiveSettingItems().get(1).setItemSelected(Hawk.get(HawkConfig.LIVE_SHOW_NET_SPEED, false));
         liveSettingGroupList.get(4).getLiveSettingItems().get(2).setItemSelected(Hawk.get(HawkConfig.LIVE_CHANNEL_REVERSE, false));
         liveSettingGroupList.get(4).getLiveSettingItems().get(3).setItemSelected(Hawk.get(HawkConfig.LIVE_CROSS_GROUP, false));
+        liveSettingGroupList.get(4).getLiveSettingItems().get(4).setItemSelected(Hawk.get(HawkConfig.LIVE_MAINPAGE, false));
+        
     }
 
     private void loadCurrentSourceList() {
