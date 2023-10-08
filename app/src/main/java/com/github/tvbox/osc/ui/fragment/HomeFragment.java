@@ -30,6 +30,8 @@ import com.github.tvbox.osc.server.ControlManager;
 import com.github.tvbox.osc.ui.activity.FastSearchActivity;
 import com.github.tvbox.osc.ui.activity.HistoryActivity;
 import com.github.tvbox.osc.ui.activity.MainActivity;
+import com.github.tvbox.osc.ui.activity.SettingActivity;
+import com.github.tvbox.osc.ui.activity.SubscriptionActivity;
 import com.github.tvbox.osc.ui.adapter.SelectDialogAdapter;
 import com.github.tvbox.osc.ui.dialog.SelectDialog;
 import com.github.tvbox.osc.ui.dialog.TipDialog;
@@ -63,9 +65,16 @@ public class HomeFragment extends BaseVbFragment<FragmentHomeBinding> {
         ControlManager.get().startServer();
 
         mBinding.nameContainer.setOnClickListener(v -> {
-            dataInitOk = false;
-            jarInitOk = true;
-            showSiteSwitch();
+            if(dataInitOk && jarInitOk){
+                showSiteSwitch();
+            }else {
+                ToastUtils.showShort("数据源未加载，长按刷新或切换订阅");
+            }
+        });
+
+        mBinding.nameContainer.setOnLongClickListener(v -> {
+            refreshHomeSouces();
+            return true;
         });
 
         mBinding.ivSearch.setOnClickListener(view -> jumpActivity(FastSearchActivity.class));
@@ -223,6 +232,12 @@ public class HomeFragment extends BaseVbFragment<FragmentHomeBinding> {
                                         }
                                     });
                                 }
+
+                                @Override
+                                public void onTitleClick() {
+                                    dialog.hide();
+                                    jumpActivity(SubscriptionActivity.class);
+                                }
                             });
                         if (!dialog.isShowing())
                             dialog.show();
@@ -319,12 +334,7 @@ public class HomeFragment extends BaseVbFragment<FragmentHomeBinding> {
                 @Override
                 public void click(SourceBean value, int pos) {
                     ApiConfig.get().setSourceBean(value);
-                    Intent intent = new Intent(App.getInstance(), MainActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                    Bundle bundle = new Bundle();
-                    bundle.putBoolean("useCache", true);
-                    intent.putExtras(bundle);
-                    startActivity(intent);
+                    refreshHomeSouces();
                 }
 
                 @Override
@@ -346,6 +356,15 @@ public class HomeFragment extends BaseVbFragment<FragmentHomeBinding> {
         }else {
             ToastUtils.showLong("暂无可用数据源");
         }
+    }
+
+    private void refreshHomeSouces(){
+        Intent intent = new Intent(App.getInstance(), MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        Bundle bundle = new Bundle();
+        bundle.putBoolean("useCache", true);
+        intent.putExtras(bundle);
+        startActivity(intent);
     }
 
     @Override
