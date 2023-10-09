@@ -710,8 +710,6 @@ public class LivePlayActivity extends BaseActivity {
                         divLoadEpg.setVisibility(View.VISIBLE);
                         mChannelGroupView.setVisibility(View.VISIBLE);
                         divEpg.setVisibility(View.GONE);
-                        epgListAdapter.setFocusedEpgIndex(-1);
-                        liveEpgDateAdapter.setFocusedIndex(liveEpgDateAdapter.getSelectedIndex());
                     }
                 }
                 if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
