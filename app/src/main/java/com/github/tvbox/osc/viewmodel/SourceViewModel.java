@@ -562,6 +562,7 @@ public class SourceViewModel extends ViewModel {
         } else if (type == 0 || type == 1) {
             OkGo.<String>get(sourceBean.getApi())
                     .params("wd", wd)
+                    //.params(type == 1 ? "ac" : null, type == 1 ? "detail" : null)
                     .params("ac", "detail")
                     .tag("search")
                     .execute(new AbsCallback<String>() {
@@ -640,6 +641,7 @@ public class SourceViewModel extends ViewModel {
         } else if (type == 0 || type == 1) {
             OkGo.<String>get(sourceBean.getApi())
                     .params("wd", wd)
+                    //.params(type == 1 ? "ac" : null, type == 1 ? "detail" : null)
                     .params("ac", "detail")
                     .tag("quick_search")
                     .execute(new AbsCallback<String>() {
@@ -713,9 +715,9 @@ public class SourceViewModel extends ViewModel {
                 @Override
                 public void run() {
                     Spider sp = ApiConfig.get().getCSP(sourceBean);
-                    if(TextUtils.isEmpty(url))return;
-                    String json = sp.playerContent(playFlag, url, ApiConfig.get().getVipParseFlags());
+                    if(TextUtils.isEmpty(url))return;                    
                     try {
+                        String json = sp.playerContent(playFlag, url, ApiConfig.get().getVipParseFlags());
                         JSONObject result = new JSONObject(json);
                         result.put("key", url);
                         result.put("proKey", progressKey);
