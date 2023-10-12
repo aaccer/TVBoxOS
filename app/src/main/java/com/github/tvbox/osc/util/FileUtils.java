@@ -131,7 +131,7 @@ public class FileUtils {
 
     public static String loadModule(String name) {
         try {
-        	/*if (name.endsWith("ali.js")) {
+        	if (name.endsWith("ali.js")) {
                 name = "ali.js";
             } else if (name.endsWith("ali_api.js")) {
                 name = "ali_api.js";    
@@ -143,7 +143,7 @@ public class FileUtils {
                 name = "模板.js";
             } else if (name.contains("cat.js")) {
                 name = "cat.js";
-            }*/
+            }
             Matcher m = URLJOIN.matcher(name);
             if (m.find()) {
                 if (!Hawk.get(HawkConfig.DEBUG_OPEN, false)) {
