@@ -1305,7 +1305,7 @@ public class LivePlayActivity extends BaseActivity {
                         tv_right_top_tipnetspeed.setText("[" + mVideoView.getVideoSize()[0] + " x " + mVideoView.getVideoSize()[1] + "]");
                         }
                         int duration = (int) mVideoView.getDuration();
-                        if (duration > 0&& livePlayerManager.getLivePlayerType() != 3) {
+                        if (livePlayerManager.getLivePlayerType() != 3 && duration > 0 || livePlayerManager.getLivePlayerType() == 3 && duration >= 5*60*1000) {
                         sBar.setMax(duration);
                         sBar.setProgress((int)  mVideoView.getCurrentPosition());
                         tv_currentpos.setText(durationToString((int)mVideoView.getCurrentPosition()));
