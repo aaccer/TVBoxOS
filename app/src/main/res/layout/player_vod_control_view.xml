@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/rootView"
     tools:background="@color/black">
 
     <LinearLayout
@@ -47,6 +48,19 @@
                  />
 
     </LinearLayout>
+
+    <ImageView
+        android:id="@+id/iv_lock"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_gravity="right|center"
+        android:layout_marginHorizontal="24dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:paddingHorizontal="6dp"
+        android:src="@drawable/ic_unlock"
+        android:visibility="invisible"
+        tools:visibility="visible"/>
 
     <LinearLayout
         android:id="@+id/tv_top_r_container"
@@ -108,11 +122,22 @@
                 android:id="@+id/cast"
                 android:layout_width="34dp"
                 android:layout_height="34dp"
-                android:layout_marginHorizontal="4dp"
+                android:layout_marginEnd="8dp"
                 android:padding="4dp"
                 android:scaleType="centerCrop"
                 android:src="@drawable/ic_cast_18"
                 app:tint="@color/white" />
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/setting"
+                android:layout_width="34dp"
+                android:layout_height="34dp"
+                android:scaleType="centerCrop"
+                android:padding="4dp"
+                android:src="@drawable/ic_player_setting"
+                android:tint="@color/white"
+                android:layout_marginStart="4dp"
+                />
 
         </LinearLayout>
 
@@ -180,7 +205,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/dp_10"
+            android:layout_marginBottom="14dp"
             android:layout_marginHorizontal="20dp"
             android:orientation="horizontal"
             android:gravity="center_vertical">
@@ -270,16 +295,6 @@
                 android:textSize="16sp"
                 android:layout_marginLeft="4dp"
                 />
-            <androidx.appcompat.widget.AppCompatImageView
-                android:id="@+id/setting"
-                android:layout_width="34dp"
-                android:layout_height="34dp"
-                android:scaleType="centerCrop"
-                android:padding="4dp"
-                android:src="@drawable/ic_player_setting"
-                android:tint="@color/white"
-                android:layout_marginLeft="4dp"
-                />
 
             <androidx.appcompat.widget.AppCompatImageView
                 android:id="@+id/iv_fullscreen"
@@ -290,23 +305,12 @@
                 android:src="@drawable/ic_fullscreen"/>
         </LinearLayout>
 
-        <net.cachapa.expandablelayout.ExpandableLayout
-            android:id="@+id/expandable_setting"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:el_duration="300"
-            app:el_expanded="false"
-            tools:el_expanded="true"
-            app:el_parallax="0.5"
-            android:background="@drawable/bg_gradient_primary_b2t"
-            android:paddingBottom="4dp"
-            >
-
             <HorizontalScrollView
                 android:id="@+id/container_playing_setting"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:scrollbars="none">
+                android:scrollbars="none"
+                android:visibility="gone">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -500,8 +504,6 @@
                 </LinearLayout>
 
             </HorizontalScrollView>
-
-        </net.cachapa.expandablelayout.ExpandableLayout>
 
     </LinearLayout>
 
