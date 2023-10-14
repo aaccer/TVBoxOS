@@ -2,7 +2,7 @@ package com.github.tvbox.osc.base;
 
 import android.app.Activity;
 import androidx.multidex.MultiDexApplication;
-
+import com.github.catvod.crawler.JsLoader;
 import com.github.tvbox.osc.bean.VodInfo;
 import com.github.tvbox.osc.callback.EmptyCallback;
 import com.github.tvbox.osc.callback.LoadingCallback;
@@ -15,13 +15,11 @@ import com.github.tvbox.osc.util.HawkConfig;
 import com.github.tvbox.osc.util.LOG;
 import com.github.tvbox.osc.util.OkGoHelper;
 import com.github.tvbox.osc.util.PlayerHelper;
-import com.github.tvbox.osc.util.js.JSEngine;
+
 import com.kingja.loadsir.core.LoadSir;
 import com.orhanobut.hawk.Hawk;
 import com.p2p.P2PClass;
-
 import com.whl.quickjs.android.QuickJSLoader;
-
 import me.jessyan.autosize.AutoSizeConfig;
 import me.jessyan.autosize.unit.Subunits;
 
@@ -32,6 +30,7 @@ import me.jessyan.autosize.unit.Subunits;
  */
 public class App extends MultiDexApplication {
     private static App instance;
+
     private static P2PClass p;
     public static String burl;
     private static String dashData;
@@ -42,8 +41,7 @@ public class App extends MultiDexApplication {
         instance = this;
         initParams();
         // OKGo
-        OkGoHelper.init(); 
-        //台标获取
+        OkGoHelper.init(); //台标获取
         EpgUtil.init();
         // 初始化Web服务器
         ControlManager.init(this);
@@ -88,7 +86,7 @@ public class App extends MultiDexApplication {
     @Override
     public void onTerminate() {
         super.onTerminate();
-        JSEngine.getInstance().destroy();
+        JsLoader.load();
     }
 
 
@@ -99,7 +97,7 @@ public class App extends MultiDexApplication {
     public VodInfo getVodInfo(){
         return this.vodInfo;
     }
-    
+
     public static P2PClass getp2p() {
         try {
             if (p == null) {
