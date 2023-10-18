@@ -271,12 +271,6 @@ public class LivePlayActivity extends BaseActivity {
         iv_playpause = findViewById(R.id.iv_playpause);
         iv_play = findViewById(R.id.iv_play);
 
-        //ViewGroup.LayoutParams lp =  iv_play.getLayoutParams();
-        //lp.width=videoHeight/7;
-        //lp.height=videoHeight/7;
-        //iv_play.setLayoutParams(lp);
-        //sBar = (SeekBar) findViewById(R.id.pb_progressbar);
-
         backcontroller.setVisibility(View.GONE);
         ll_epg.setVisibility(View.GONE);
         ll_right_top_loading.setVisibility(View.GONE);
@@ -617,7 +611,7 @@ public class LivePlayActivity extends BaseActivity {
         mRightEpgList.post(new Runnable() {
             @Override
             public void run() {
-                mRightEpgList.smoothScrollToPosition(epgListAdapter.getSelectedIndex());
+                mRightEpgList.scrollToPosition(epgListAdapter.getSelectedIndex());
             }
         });
     }
@@ -723,7 +717,7 @@ public class LivePlayActivity extends BaseActivity {
                         mRightEpgList.post(new Runnable() {
                             @Override
                             public void run() {
-                                mRightEpgList.smoothScrollToPosition(epgListAdapter.getSelectedIndex());
+                                mRightEpgList.scrollToPosition(epgListAdapter.getSelectedIndex());
                             }
                         });
                     }
@@ -1312,6 +1306,7 @@ public class LivePlayActivity extends BaseActivity {
                         tv_duration.setText(durationToString(duration));
                         showProgressBars();
                         isBack = true;
+                        livePlayerManager.changeLivePlayerScale(mVideoView, 0, currentLiveChannelItem.getChannelName());
                         } 
                         break;
                     case VideoView.STATE_BUFFERED:
