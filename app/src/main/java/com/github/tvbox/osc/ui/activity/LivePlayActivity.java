@@ -1997,8 +1997,8 @@ public class LivePlayActivity extends BaseActivity {
     }
 
     //计算两个时间相差的秒数
-    public static long getTime(String startTime, String endTime)  {
-/*        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+/*    public static long getTime(String startTime, String endTime)  {
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         long eTime = 0;
         try {
             eTime = df.parse(endTime).getTime();
