@@ -93,6 +93,8 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 import xyz.doikki.videoplayer.player.VideoView;
+import xyz.doikki.videoplayer.util.PlayerUtils;
+import static xyz.doikki.videoplayer.util.PlayerUtils.stringForTimeVod;
 
 /**
  * @author pj567
@@ -1278,8 +1280,19 @@ public class LivePlayActivity extends BaseActivity {
         LiveController controller = new LiveController(this);
         controller.setListener(new LiveController.LiveControlListener() {
             @Override
-            public boolean singleTap() {
-                showChannelList();
+            public boolean singleTap(MotionEvent e) {
+                int fiveScreen = PlayerUtils.getScreenWidth(mContext, true) / 5;
+
+                if (e.getX() > 0 && e.getX() < (fiveScreen * 2)) {
+                    // left side <<<<<
+                    showChannelList();
+                } else if ((e.getX() > (fiveScreen * 2)) && (e.getX() < (fiveScreen * 3))) {
+                    // middle screen
+                    showBottomEpg();
+                } else if (e.getX() > (fiveScreen * 3)) {
+                    // right side >>>>>
+                    showSettingGroup();
+                }
                 return true;
             }
 
@@ -1302,8 +1315,8 @@ public class LivePlayActivity extends BaseActivity {
                         if (livePlayerManager.getLivePlayerType() != 3 && duration > 0 || livePlayerManager.getLivePlayerType() == 3 && duration >= 5*60*1000) {
                         sBar.setMax(duration);
                         sBar.setProgress((int)  mVideoView.getCurrentPosition());
-                        tv_currentpos.setText(durationToString((int)mVideoView.getCurrentPosition()));
-                        tv_duration.setText(durationToString(duration));
+                        tv_currentpos.setText(stringForTimeVod((int)mVideoView.getCurrentPosition()));
+                        tv_duration.setText(stringForTimeVod(duration));
                         showProgressBars();
                         isBack = true;
                         livePlayerManager.changeLivePlayerScale(mVideoView, 0, currentLiveChannelItem.getChannelName());
@@ -1985,7 +1998,7 @@ public class LivePlayActivity extends BaseActivity {
 
     //计算两个时间相差的秒数
     public static long getTime(String startTime, String endTime)  {
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+/*        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         long eTime = 0;
         try {
             eTime = df.parse(endTime).getTime();
@@ -2000,8 +2013,9 @@ public class LivePlayActivity extends BaseActivity {
         }
         long diff = (eTime - sTime) / 1000;
         return diff;
-    }
-    private  String durationToString(int duration) {
+    }*/
+    
+/*    private  String durationToString(int duration) {
         String result = "";
         int dur = duration / 1000;
         int hour=dur/3600;
@@ -2037,7 +2051,8 @@ public class LivePlayActivity extends BaseActivity {
             }
         }
         return result;
-    }
+    }*/
+    
     public void showProgressBars(){
         sBar.requestFocus();
         backcontroller.setVisibility(View.VISIBLE);
@@ -2061,7 +2076,7 @@ public class LivePlayActivity extends BaseActivity {
 
                     if(mVideoView != null){
                         sBar.setProgress((int) mVideoView.getCurrentPosition());
-                        tv_currentpos.setText(durationToString((int) mVideoView.getCurrentPosition()));
+                        tv_currentpos.setText(stringForTimeVod((int) mVideoView.getCurrentPosition()));
                     }
 
                 }
