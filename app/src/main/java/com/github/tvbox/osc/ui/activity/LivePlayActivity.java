@@ -94,7 +94,6 @@ import java.util.TimeZone;
 
 import xyz.doikki.videoplayer.player.VideoView;
 import xyz.doikki.videoplayer.util.PlayerUtils;
-import static xyz.doikki.videoplayer.util.PlayerUtils.stringForTimeVod;
 
 /**
  * @author pj567
@@ -1315,8 +1314,8 @@ public class LivePlayActivity extends BaseActivity {
                         if (livePlayerManager.getLivePlayerType() != 3 && duration > 0 || livePlayerManager.getLivePlayerType() == 3 && duration >= 5*60*1000) {
                         sBar.setMax(duration);
                         sBar.setProgress((int)  mVideoView.getCurrentPosition());
-                        tv_currentpos.setText(stringForTimeVod((int)mVideoView.getCurrentPosition()));
-                        tv_duration.setText(stringForTimeVod(duration));
+                        tv_currentpos.setText(durationToString((int)mVideoView.getCurrentPosition()));
+                        tv_duration.setText(durationToString(duration));
                         showProgressBars();
                         isBack = true;
                         livePlayerManager.changeLivePlayerScale(mVideoView, 0, currentLiveChannelItem.getChannelName());
@@ -2015,7 +2014,7 @@ public class LivePlayActivity extends BaseActivity {
         return diff;
     }*/
     
-/*    private  String durationToString(int duration) {
+    private  String durationToString(int duration) {
         String result = "";
         int dur = duration / 1000;
         int hour=dur/3600;
@@ -2051,7 +2050,7 @@ public class LivePlayActivity extends BaseActivity {
             }
         }
         return result;
-    }*/
+    }
     
     public void showProgressBars(){
         sBar.requestFocus();
@@ -2076,7 +2075,7 @@ public class LivePlayActivity extends BaseActivity {
 
                     if(mVideoView != null){
                         sBar.setProgress((int) mVideoView.getCurrentPosition());
-                        tv_currentpos.setText(stringForTimeVod((int) mVideoView.getCurrentPosition()));
+                        tv_currentpos.setText(durationToString((int) mVideoView.getCurrentPosition()));
                     }
 
                 }
