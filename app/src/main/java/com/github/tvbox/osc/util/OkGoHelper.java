@@ -130,7 +130,8 @@ public class OkGoHelper {
     }
     static OkHttpClient defaultClient = null;
     static OkHttpClient noRedirectClient = null;
-
+    static OkHttpClient cacheClient = null;
+    
     public static OkHttpClient getDefaultClient() {
         return defaultClient;
     }
@@ -177,8 +178,11 @@ public class OkGoHelper {
         builder.followSslRedirects(false);
         noRedirectClient = builder.build();
 
+        builder.cache(new okhttp3.Cache(new File(FileUtils.getCachePath() + "/pic/"), 50 * 1024 * 1024)); // 缓存 50 MB
+        cacheClient = builder.followRedirects(true).followSslRedirects(true).build();
+
         initExoOkHttpClient();
-        initPicasso(okHttpClient);
+        initPicasso(cacheClient);
     }
 
     static void initPicasso(OkHttpClient client) {
