@@ -74,6 +74,7 @@ public class VodController extends BaseController {
                         mNextBtn.requestFocus();
                         backBtn.setVisibility(ScreenUtils.isTv(context) ? INVISIBLE : VISIBLE);
                         showLockView();
+                        mHandler.postDelayed(mUpdateLayout, 255);   // Workaround Fix : SurfaceView
                         break;
                     }
                     case 1003: { // 隐藏底部菜单
@@ -145,6 +146,13 @@ public class VodController extends BaseController {
     int myHandleSeconds = 10000;//闲置多少毫秒秒关闭底栏  默认6秒
 
     int videoPlayState = 0;
+
+    private final Runnable mUpdateLayout = new Runnable() {
+        @Override
+        public void run() {
+            mBottomRoot.requestLayout();
+        }
+    };
 
     private Runnable myRunnable2 = new Runnable() {
         @Override
