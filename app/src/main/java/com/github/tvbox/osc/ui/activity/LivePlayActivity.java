@@ -12,6 +12,7 @@ import android.util.Base64;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -93,6 +94,7 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 import xyz.doikki.videoplayer.player.VideoView;
+import xyz.doikki.videoplayer.util.PlayerUtils;
 
 /**
  * @author pj567
@@ -102,7 +104,7 @@ import xyz.doikki.videoplayer.player.VideoView;
 public class LivePlayActivity extends BaseActivity {
     public static Context context;
     private VideoView mVideoView;
-    private TextView tvChannelInfo;
+    //private TextView tvChannelInfo;
     private TextView tvTime;
     private TextView tvNetSpeed;
     private LinearLayout tvLeftChannelListLayout;
@@ -217,7 +219,7 @@ public class LivePlayActivity extends BaseActivity {
         tvRightSettingLayout = findViewById(R.id.tvRightSettingLayout);
         mSettingGroupView = findViewById(R.id.mSettingGroupView);
         mSettingItemView = findViewById(R.id.mSettingItemView);
-        tvChannelInfo = findViewById(R.id.tvChannel);
+        //tvChannelInfo = findViewById(R.id.tvChannel);
         tvTime = findViewById(R.id.tvTime);
         tvNetSpeed = findViewById(R.id.tvNetSpeed);
 
@@ -502,6 +504,23 @@ public class LivePlayActivity extends BaseActivity {
     private void showBottomEpg() {
         if (isSHIYI)
             return;
+        if (tvLeftChannelListLayout.getVisibility() == View.VISIBLE) {
+            mHandler.removeCallbacks(mHideChannelListRun);
+            //mHandler.post(mHideChannelListRun);
+            tvLeftChannelListLayout.setVisibility(View.INVISIBLE);
+            //return;
+        }
+        if (tvRightSettingLayout.getVisibility() == View.VISIBLE) {
+            mHandler.removeCallbacks(mHideSettingLayoutRun);
+            //mHandler.post(mHideSettingLayoutRun);
+            tvRightSettingLayout.setVisibility(View.INVISIBLE);
+            liveSettingGroupAdapter.setSelectedGroupIndex(-1);
+            //return;
+        }
+        if (backcontroller.getVisibility() == View.VISIBLE){
+            backcontroller.setVisibility(View.GONE);
+            //return;
+        }
             tip_epg1.setText("暂无信息");
         if (channel_Name.getChannelName() != null) {
             ((TextView) findViewById(R.id.tv_channel_bar_name)).setText(channel_Name.getChannelName());
@@ -581,6 +600,7 @@ public class LivePlayActivity extends BaseActivity {
 
         }
         countDownTimerRightTop.start();
+        mHandler.postDelayed(mUpdateLayout, 255);   // Workaround Fix : SurfaceView
     }
 
     private void updateChannelIcon(String channelName, String logoUrl) {
@@ -632,7 +652,9 @@ public class LivePlayActivity extends BaseActivity {
             tvLeftChannelListLayout.setVisibility(View.INVISIBLE);
         } else if (tvRightSettingLayout.getVisibility() == View.VISIBLE) {
             mHandler.removeCallbacks(mHideSettingLayoutRun);
-            mHandler.post(mHideSettingLayoutRun);
+            //mHandler.post(mHideSettingLayoutRun);
+            tvRightSettingLayout.setVisibility(View.INVISIBLE);
+            liveSettingGroupAdapter.setSelectedGroupIndex(-1);
         } else if( backcontroller.getVisibility() == View.VISIBLE){
             backcontroller.setVisibility(View.GONE);
         }else if(isBack){
@@ -757,8 +779,19 @@ public class LivePlayActivity extends BaseActivity {
     private void showChannelList() {
         if (tvRightSettingLayout.getVisibility() == View.VISIBLE) {
             mHandler.removeCallbacks(mHideSettingLayoutRun);
-            mHandler.post(mHideSettingLayoutRun);
+            //mHandler.post(mHideSettingLayoutRun);
+            tvRightSettingLayout.setVisibility(View.INVISIBLE);
+            liveSettingGroupAdapter.setSelectedGroupIndex(-1);
             return;
+        }
+        if (ll_epg.getVisibility() == View.VISIBLE || ll_right_top_loading.getVisibility() == View.VISIBLE) {
+            ll_epg.setVisibility(View.GONE);
+            ll_right_top_loading.setVisibility(View.GONE);
+            //return;
+        }
+        if (backcontroller.getVisibility() == View.VISIBLE){
+            backcontroller.setVisibility(View.GONE);
+            //return;
         }
         if (tvLeftChannelListLayout.getVisibility() == View.INVISIBLE) {
             //重新载入上一次状态
@@ -785,6 +818,14 @@ public class LivePlayActivity extends BaseActivity {
         }
     }
 
+    private final Runnable mUpdateLayout = new Runnable() {
+        @Override
+        public void run() {
+            tvLeftChannelListLayout.requestLayout();
+            tvRightSettingLayout.requestLayout();
+        }
+    };
+
     private Runnable mFocusCurrentChannelAndShowChannelList = new Runnable() {
         @Override
         public void run() {
@@ -806,6 +847,7 @@ public class LivePlayActivity extends BaseActivity {
                         super.onAnimationEnd(animation);
                         mHandler.removeCallbacks(mHideChannelListRun);
                         mHandler.postDelayed(mHideChannelListRun, 5000);
+                        mHandler.postDelayed(mUpdateLayout, 255);   // Workaround Fix : SurfaceView
                     }
                 });
                 animator.start();
@@ -833,7 +875,7 @@ public class LivePlayActivity extends BaseActivity {
         }
     };
 
-    private void showChannelInfo() {
+    /*private void showChannelInfo() {
         tvChannelInfo.setText(String.format(Locale.getDefault(), "%d %s %s(%d/%d)", currentLiveChannelItem.getChannelNum(),
                 currentLiveChannelItem.getChannelName(), currentLiveChannelItem.getSourceName(),
                 currentLiveChannelItem.getSourceIndex() + 1, currentLiveChannelItem.getSourceNum()));
@@ -861,7 +903,7 @@ public class LivePlayActivity extends BaseActivity {
             tvChannelInfo.setVisibility(View.INVISIBLE);
         }
     };
-
+*/
     private boolean playChannel(int channelGroupIndex, int liveChannelIndex, boolean changeSource) {
         if ((channelGroupIndex == currentChannelGroupIndex && liveChannelIndex == currentLiveChannelIndex && !changeSource)
                 || (changeSource && currentLiveChannelItem.getSourceNum() == 1)) {
@@ -931,6 +973,16 @@ public class LivePlayActivity extends BaseActivity {
             mHandler.removeCallbacks(mHideChannelListRun);
             //mHandler.post(mHideChannelListRun);
             tvLeftChannelListLayout.setVisibility(View.INVISIBLE);
+            return;
+        }
+        if (ll_epg.getVisibility() == View.VISIBLE || ll_right_top_loading.getVisibility() == View.VISIBLE) {
+            ll_epg.setVisibility(View.GONE);
+            ll_right_top_loading.setVisibility(View.GONE);
+            //return;
+        }
+        if (backcontroller.getVisibility() == View.VISIBLE){
+            backcontroller.setVisibility(View.GONE);
+            //return;
         }
         if (tvRightSettingLayout.getVisibility() == View.INVISIBLE) {
             if (!isCurrentLiveChannelValid()) return;
@@ -967,6 +1019,7 @@ public class LivePlayActivity extends BaseActivity {
                         public void onAnimationEnd(Animator animation) {
                             super.onAnimationEnd(animation);
                             mHandler.postDelayed(mHideSettingLayoutRun, 5000);
+                            mHandler.postDelayed(mUpdateLayout, 255);   // Workaround Fix : SurfaceView
                         }
                     });
                     animator.start();
@@ -1278,8 +1331,23 @@ public class LivePlayActivity extends BaseActivity {
         LiveController controller = new LiveController(this);
         controller.setListener(new LiveController.LiveControlListener() {
             @Override
-            public boolean singleTap() {
-                showChannelList();
+            public boolean singleTap(MotionEvent e) {
+                int fiveScreen = PlayerUtils.getScreenWidth(mContext, true) / 5;
+
+                if (e.getX() > 0 && e.getX() < (fiveScreen * 2)) {
+                    // left side <<<<<
+                    showChannelList();
+                } else if ((e.getX() > (fiveScreen * 2)) && (e.getX() < (fiveScreen * 3))) {
+                    // middle screen
+                    if(isBack){
+                        showProgressBars();
+                    }else{
+                        showBottomEpg();
+                    }
+                } else if (e.getX() > (fiveScreen * 3)) {
+                    // right side >>>>>
+                    showSettingGroup();
+                }
                 return true;
             }
 
@@ -1984,7 +2052,7 @@ public class LivePlayActivity extends BaseActivity {
     }
 
     //计算两个时间相差的秒数
-    public static long getTime(String startTime, String endTime)  {
+/*    public static long getTime(String startTime, String endTime)  {
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         long eTime = 0;
         try {
@@ -2000,7 +2068,8 @@ public class LivePlayActivity extends BaseActivity {
         }
         long diff = (eTime - sTime) / 1000;
         return diff;
-    }
+    }*/
+    
     private  String durationToString(int duration) {
         String result = "";
         int dur = duration / 1000;
@@ -2038,11 +2107,29 @@ public class LivePlayActivity extends BaseActivity {
         }
         return result;
     }
+    
     public void showProgressBars(){
         sBar.requestFocus();
         backcontroller.setVisibility(View.VISIBLE);
-        ll_epg.setVisibility(View.GONE);
-
+        if (tvLeftChannelListLayout.getVisibility() == View.VISIBLE) {
+            mHandler.removeCallbacks(mHideChannelListRun);
+            //mHandler.post(mHideChannelListRun);
+            tvLeftChannelListLayout.setVisibility(View.INVISIBLE);
+            //return;
+        }
+        if (tvRightSettingLayout.getVisibility() == View.VISIBLE) {
+            mHandler.removeCallbacks(mHideSettingLayoutRun);
+            //mHandler.post(mHideSettingLayoutRun);
+            tvRightSettingLayout.setVisibility(View.INVISIBLE);
+            liveSettingGroupAdapter.setSelectedGroupIndex(-1);
+            //return;
+        }
+        if (ll_epg.getVisibility() == View.VISIBLE || ll_right_top_loading.getVisibility() == View.VISIBLE) {
+            ll_epg.setVisibility(View.GONE);
+            ll_right_top_loading.setVisibility(View.GONE);
+            //return;
+        }
+        
         if(mVideoView.isPlaying()){
             iv_play.setVisibility(View.INVISIBLE);
             iv_playpause.setBackground(ContextCompat.getDrawable(LivePlayActivity.context, R.drawable.vod_pause));
