@@ -784,13 +784,14 @@ public class LivePlayActivity extends BaseActivity {
             liveSettingGroupAdapter.setSelectedGroupIndex(-1);
             return;
         }
-        if (ll_epg.getVisibility() == View.VISIBLE) {
+        if (ll_epg.getVisibility() == View.VISIBLE || ll_right_top_loading.getVisibility() == View.VISIBLE) {
             ll_epg.setVisibility(View.GONE);
-            return;
+            ll_right_top_loading.setVisibility(View.GONE);
+            //return;
         }
         if (backcontroller.getVisibility() == View.VISIBLE){
             backcontroller.setVisibility(View.GONE);
-            return;
+            //return;
         }
         if (tvLeftChannelListLayout.getVisibility() == View.INVISIBLE) {
             //重新载入上一次状态
@@ -974,13 +975,14 @@ public class LivePlayActivity extends BaseActivity {
             tvLeftChannelListLayout.setVisibility(View.INVISIBLE);
             return;
         }
-        if (ll_epg.getVisibility() == View.VISIBLE) {
+        if (ll_epg.getVisibility() == View.VISIBLE || ll_right_top_loading.getVisibility() == View.VISIBLE) {
             ll_epg.setVisibility(View.GONE);
-            return;
+            ll_right_top_loading.setVisibility(View.GONE);
+            //return;
         }
         if (backcontroller.getVisibility() == View.VISIBLE){
             backcontroller.setVisibility(View.GONE);
-            return;
+            //return;
         }
         if (tvRightSettingLayout.getVisibility() == View.INVISIBLE) {
             if (!isCurrentLiveChannelValid()) return;
@@ -2122,8 +2124,9 @@ public class LivePlayActivity extends BaseActivity {
             liveSettingGroupAdapter.setSelectedGroupIndex(-1);
             //return;
         }
-        if (ll_epg.getVisibility() == View.VISIBLE) {
+        if (ll_epg.getVisibility() == View.VISIBLE || ll_right_top_loading.getVisibility() == View.VISIBLE) {
             ll_epg.setVisibility(View.GONE);
+            ll_right_top_loading.setVisibility(View.GONE);
             //return;
         }
         
