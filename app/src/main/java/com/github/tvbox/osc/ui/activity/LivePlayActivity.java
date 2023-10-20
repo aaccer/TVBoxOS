@@ -600,7 +600,6 @@ public class LivePlayActivity extends BaseActivity {
 
         }
         countDownTimerRightTop.start();
-        mHandler.postDelayed(mUpdateLayout, 255);   // Workaround Fix : SurfaceView
     }
 
     private void updateChannelIcon(String channelName, String logoUrl) {
@@ -818,14 +817,6 @@ public class LivePlayActivity extends BaseActivity {
         }
     }
 
-    private final Runnable mUpdateLayout = new Runnable() {
-        @Override
-        public void run() {
-            tvLeftChannelListLayout.requestLayout();
-            tvRightSettingLayout.requestLayout();
-        }
-    };
-
     private Runnable mFocusCurrentChannelAndShowChannelList = new Runnable() {
         @Override
         public void run() {
@@ -847,7 +838,6 @@ public class LivePlayActivity extends BaseActivity {
                         super.onAnimationEnd(animation);
                         mHandler.removeCallbacks(mHideChannelListRun);
                         mHandler.postDelayed(mHideChannelListRun, 5000);
-                        mHandler.postDelayed(mUpdateLayout, 255);   // Workaround Fix : SurfaceView
                     }
                 });
                 animator.start();
@@ -1019,7 +1009,6 @@ public class LivePlayActivity extends BaseActivity {
                         public void onAnimationEnd(Animator animation) {
                             super.onAnimationEnd(animation);
                             mHandler.postDelayed(mHideSettingLayoutRun, 5000);
-                            mHandler.postDelayed(mUpdateLayout, 255);   // Workaround Fix : SurfaceView
                         }
                     });
                     animator.start();
