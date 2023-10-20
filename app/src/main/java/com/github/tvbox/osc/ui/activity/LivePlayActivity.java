@@ -207,8 +207,8 @@ public class LivePlayActivity extends BaseActivity {
     protected void init() {
         context = this;
         epgStringAddress = Hawk.get(HawkConfig.EPG_URL,"");
-        if(epgStringAddress == null || epgStringAddress.length()==0)
-            epgStringAddress = "http://epg.51zmt.top:8000/api/diyp/";
+        //if(epgStringAddress == null || epgStringAddress.length()==0)
+            //epgStringAddress = "http://epg.51zmt.top:8000/api/diyp/";
 
         setLoadSir(findViewById(R.id.live_root));
         mVideoView = findViewById(R.id.mVideoView);
@@ -449,6 +449,11 @@ public class LivePlayActivity extends BaseActivity {
         //showEpg(date, new ArrayList());
         String savedEpgKey = channelName + "_" + liveEpgDateAdapter.getItem(liveEpgDateAdapter.getSelectedIndex()).getDatePresented();
         if (!hsEpg.containsKey(savedEpgKey)){
+            if(epgStringAddress==""){
+                showEpg(date, new ArrayList());
+                showBottomEpg();
+                return;
+            }
         String url;
         if(epgStringAddress.contains("{name}") && epgStringAddress.contains("{date}")){
             url= epgStringAddress.replace("{name}",URLEncoder.encode(epgTagName)).replace("{date}",timeFormat.format(date));
