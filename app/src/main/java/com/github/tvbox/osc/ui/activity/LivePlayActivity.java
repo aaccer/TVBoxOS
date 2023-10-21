@@ -513,19 +513,6 @@ public class LivePlayActivity extends BaseActivity {
     private void showBottomEpg() {
         //if (isSHIYI)
             //return;
-        if (tvLeftChannelListLayout.getVisibility() == View.VISIBLE) {
-            mHandler.removeCallbacks(mHideChannelListRun);
-            //mHandler.post(mHideChannelListRun);
-            tvLeftChannelListLayout.setVisibility(View.INVISIBLE);
-            //return;
-        }
-        if (tvRightSettingLayout.getVisibility() == View.VISIBLE) {
-            mHandler.removeCallbacks(mHideSettingLayoutRun);
-            //mHandler.post(mHideSettingLayoutRun);
-            tvRightSettingLayout.setVisibility(View.INVISIBLE);
-            liveSettingGroupAdapter.setSelectedGroupIndex(-1);
-            //return;
-        }
         if (backcontroller.getVisibility() == View.VISIBLE){
             backcontroller.setVisibility(View.GONE);
             //return;
@@ -1340,6 +1327,19 @@ public class LivePlayActivity extends BaseActivity {
                     showChannelList();
                 } else if ( (e.getRawX() > (fiveScreen * 2)) && (e.getRawX() < (fiveScreen * 3)) ) {
                     // middle screen
+                    if (tvLeftChannelListLayout.getVisibility() == View.VISIBLE) {
+                        mHandler.removeCallbacks(mHideChannelListRun);
+                        //mHandler.post(mHideChannelListRun);
+                        tvLeftChannelListLayout.setVisibility(View.INVISIBLE);
+                        //return;
+                    }
+                    if (tvRightSettingLayout.getVisibility() == View.VISIBLE) {
+                        mHandler.removeCallbacks(mHideSettingLayoutRun);
+                        //mHandler.post(mHideSettingLayoutRun);
+                        tvRightSettingLayout.setVisibility(View.INVISIBLE);
+                        liveSettingGroupAdapter.setSelectedGroupIndex(-1);
+                        //return;
+                    }
                     if(isBack){
                         if (backcontroller.getVisibility() == View.VISIBLE)
                             backcontroller.setVisibility(View.GONE);
@@ -2119,19 +2119,6 @@ public class LivePlayActivity extends BaseActivity {
     public void showProgressBars(){
         sBar.requestFocus();
         backcontroller.setVisibility(View.VISIBLE);
-        if (tvLeftChannelListLayout.getVisibility() == View.VISIBLE) {
-            mHandler.removeCallbacks(mHideChannelListRun);
-            //mHandler.post(mHideChannelListRun);
-            tvLeftChannelListLayout.setVisibility(View.INVISIBLE);
-            //return;
-        }
-        if (tvRightSettingLayout.getVisibility() == View.VISIBLE) {
-            mHandler.removeCallbacks(mHideSettingLayoutRun);
-            //mHandler.post(mHideSettingLayoutRun);
-            tvRightSettingLayout.setVisibility(View.INVISIBLE);
-            liveSettingGroupAdapter.setSelectedGroupIndex(-1);
-            //return;
-        }
         if (ll_epg.getVisibility() == View.VISIBLE || ll_right_top_loading.getVisibility() == View.VISIBLE) {
             ll_epg.setVisibility(View.GONE);
             ll_right_top_loading.setVisibility(View.GONE);
