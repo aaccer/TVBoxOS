@@ -397,7 +397,7 @@ public class LivePlayActivity extends BaseActivity {
             for (int b = 0; b < 24; b++) {
                 String starttime = b < 10 ? "0" + Integer.toString(b) + ":00" : Integer.toString(b) + ":00";
                 String endtime = b < 9 ? "0" + Integer.toString( b +1 ) + ":00" : Integer.toString( b +1 ) + ":00";
-                if(b == 23)endtime = "23:59";
+                //if(b == 23)endtime = "23:59";
                 Epginfo epgbcinfo = new Epginfo(date,"精彩节目",date, starttime, endtime,b);
                 arrayList.add(epgbcinfo);
             }
@@ -1324,9 +1324,9 @@ public class LivePlayActivity extends BaseActivity {
     private void initVideoView() {
         LiveController controller = new LiveController(this);
         controller.setListener(new LiveController.LiveControlListener() {
+        int fiveScreen = PlayerUtils.getScreenWidth(mContext, true) / 5;
             @Override
             public boolean singleTap(MotionEvent e) {
-                int fiveScreen = PlayerUtils.getScreenWidth(mContext, true) / 5;
 
                 if (e.getX() > 0 && e.getX() < (fiveScreen * 2)) {
                     // left side <<<<<
@@ -1334,9 +1334,16 @@ public class LivePlayActivity extends BaseActivity {
                 } else if ((e.getX() > (fiveScreen * 2)) && (e.getX() < (fiveScreen * 3))) {
                     // middle screen
                     if(isBack){
-                        showProgressBars();
+                        if (backcontroller.getVisibility() == View.VISIBLE)
+                            backcontroller.setVisibility(View.GONE);
+                        else
+                            showProgressBars();
                     }else{
-                        showBottomEpg();
+                        if (ll_epg.getVisibility() == View.VISIBLE || ll_right_top_loading.getVisibility() == View.VISIBLE) {
+                            ll_epg.setVisibility(View.GONE);
+                            ll_right_top_loading.setVisibility(View.GONE);
+                        }else
+                            showBottomEpg();
                     }
                 } else if (e.getX() > (fiveScreen * 3)) {
                     // right side >>>>>
