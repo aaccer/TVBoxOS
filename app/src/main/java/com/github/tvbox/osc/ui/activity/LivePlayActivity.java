@@ -674,6 +674,7 @@ public class LivePlayActivity extends BaseActivity {
             mVideoView.setUrl(currentLiveChannelItem.getUrl());
             mVideoView.start();
             epgListAdapter.setShiyiSelection(-1, false,timeFormat.format(liveEpgDateAdapter.getData().get(liveEpgDateAdapter.getSelectedIndex()).getDateParamVal()));
+            epgListAdapter.notifyDataSetChanged();
             //getEpg(liveEpgDateAdapter.getData().get(liveEpgDateAdapter.getSelectedIndex()).getDateParamVal(),false);
             }
             //isSHIYI=false;
@@ -1103,6 +1104,7 @@ public class LivePlayActivity extends BaseActivity {
                     mVideoView.setUrl(currentLiveChannelItem.getUrl());
                     mVideoView.start();
                     epgListAdapter.setShiyiSelection(-1, false,timeFormat.format(date));
+                    epgListAdapter.notifyDataSetChanged();
                     //showProgressBars(false);
                     return;
                 }else
@@ -1177,6 +1179,7 @@ public class LivePlayActivity extends BaseActivity {
                     mVideoView.setUrl(currentLiveChannelItem.getUrl());
                     mVideoView.start();
                     epgListAdapter.setShiyiSelection(-1, false,timeFormat.format(date));
+                    epgListAdapter.notifyDataSetChanged();
                     //showProgressBars(false);
                     return;
                 }else
