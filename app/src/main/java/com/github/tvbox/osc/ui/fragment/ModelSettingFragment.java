@@ -671,7 +671,7 @@ public class ModelSettingFragment extends BaseLazyFragment {
 
     private void onClickClearCache(View v) {
         FastClickCheckUtil.check(v);
-        String cachePath = FileUtils.getCachePath();
+        /*String cachePath = FileUtils.getCachePath();
         File cacheDir = new File(cachePath);
         if (!cacheDir.exists()) return;
         new Thread(() -> {
@@ -680,7 +680,8 @@ public class ModelSettingFragment extends BaseLazyFragment {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        }).start();
+        }).start();*/
+        FileUtils.clearAllCache();
         Toast.makeText(getContext(), "缓存已清空", Toast.LENGTH_LONG).show();
         return;
     }
