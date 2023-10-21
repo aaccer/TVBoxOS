@@ -682,7 +682,9 @@ public class ModelSettingFragment extends BaseLazyFragment {
             }
         }).start();*/
         FileUtils.clearAllCache();
-        Toast.makeText(getContext(), "缓存已清空", Toast.LENGTH_LONG).show();
+        StringBuilder a= FileUtils.getTotalCacheSize(getContext());
+        a.append("缓存已清空");
+        Toast.makeText(getContext(), a.toString(), Toast.LENGTH_LONG).show();
         return;
     }
 
