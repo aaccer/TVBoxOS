@@ -1331,7 +1331,7 @@ public class LivePlayActivity extends BaseActivity {
                 if (e.getX() > 0 && e.getX() < (fiveScreen * 2)) {
                     // left side <<<<<
                     showChannelList();
-                } else if ((e.getX() > (fiveScreen * 2)) && (e.getX() < (fiveScreen * 3))) {
+                } else if ( (e.getX() > (fiveScreen * 2)) && (e.getX() < (fiveScreen * 3)) && divEpg.getVisibility() == View.GONE ) {
                     // middle screen
                     if(isBack){
                         if (backcontroller.getVisibility() == View.VISIBLE)
