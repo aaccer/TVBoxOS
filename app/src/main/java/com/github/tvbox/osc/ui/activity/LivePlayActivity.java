@@ -1100,7 +1100,7 @@ public class LivePlayActivity extends BaseActivity {
                 }else
                 if (now.compareTo(selectedData.startdateTime) >= 0 && now.compareTo(selectedData.enddateTime) <= 0) {
                     mVideoView.release();
-                    //isSHIYI = false;
+                    isBack= false;
                     mVideoView.setUrl(currentLiveChannelItem.getUrl());
                     mVideoView.start();
                     epgListAdapter.setShiyiSelection(-1, false,timeFormat.format(date));
@@ -1175,7 +1175,7 @@ public class LivePlayActivity extends BaseActivity {
                 }else
                 if (now.compareTo(selectedData.startdateTime) >= 0 && now.compareTo(selectedData.enddateTime) <= 0) {
                     mVideoView.release();
-                    //isSHIYI = false;
+                    isBack= false;
                     mVideoView.setUrl(currentLiveChannelItem.getUrl());
                     mVideoView.start();
                     epgListAdapter.setShiyiSelection(-1, false,timeFormat.format(date));
@@ -1383,7 +1383,7 @@ public class LivePlayActivity extends BaseActivity {
                         showProgressBars();
                         isBack = true;
                         livePlayerManager.changeLivePlayerScale(mVideoView, 0, currentLiveChannelItem.getChannelName());
-                        } 
+                        }else isBack= false;
                         break;
                     case VideoView.STATE_BUFFERED:
                     case VideoView.STATE_PLAYING:
