@@ -433,7 +433,7 @@ public class LivePlayActivity extends BaseActivity {
         }
     }
 
-    public void getEpg(Date date, int showbottom) {
+    public void getEpg(Date date, boolean showbottom) {
         String channelName = channel_Name.getChannelName();
         SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy-MM-dd");
         timeFormat.setTimeZone(TimeZone.getTimeZone("GMT+8:00"));
@@ -673,7 +673,7 @@ public class LivePlayActivity extends BaseActivity {
             mVideoView.release();
             mVideoView.setUrl(currentLiveChannelItem.getUrl());
             mVideoView.start();
-            getEpg(new Date(),0);
+            getEpg(liveEpgDateAdapter.getData().get(liveEpgDateAdapter.getSelectedIndex()).getDateParamVal(),false);
             }
             isSHIYI=false;
         }else {
@@ -933,7 +933,7 @@ public class LivePlayActivity extends BaseActivity {
         }
         //showBottomEpg();
         //liveEpgDateAdapter.setSelectedIndex(1);
-        getEpg(new Date(),1);
+        getEpg(new Date(),true);
         backcontroller.setVisibility(View.GONE);
         //ll_right_top_huikan.setVisibility(View.GONE);
         mVideoView.setUrl(currentLiveChannelItem.getUrl());
@@ -1305,7 +1305,7 @@ public class LivePlayActivity extends BaseActivity {
                 mHandler.postDelayed(mHideChannelListRun, 5000);
                 //liveEpgDateAdapter.setFocusedIndex(position);
                 liveEpgDateAdapter.setSelectedIndex(position);
-                getEpg(liveEpgDateAdapter.getData().get(position).getDateParamVal(),0);
+                getEpg(liveEpgDateAdapter.getData().get(position).getDateParamVal(),false);
             }
         });
 
@@ -1318,7 +1318,7 @@ public class LivePlayActivity extends BaseActivity {
                 mHandler.postDelayed(mHideChannelListRun, 5000);
                 //liveEpgDateAdapter.setFocusedIndex(position);
                 liveEpgDateAdapter.setSelectedIndex(position);
-                getEpg(liveEpgDateAdapter.getData().get(position).getDateParamVal(),0);
+                getEpg(liveEpgDateAdapter.getData().get(position).getDateParamVal(),false);
             }
         });
     }
