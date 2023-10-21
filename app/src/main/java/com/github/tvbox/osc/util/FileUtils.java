@@ -33,7 +33,7 @@ public class FileUtils {
 
     public static File open(String str) {
         return new File(App.getInstance()
-            .getExternalCacheDir()
+            .getCacheDir()
             .getAbsolutePath() + "/qjscache_" + str + ".js");
     }
     
