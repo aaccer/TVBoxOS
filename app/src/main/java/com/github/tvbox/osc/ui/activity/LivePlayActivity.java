@@ -433,7 +433,7 @@ public class LivePlayActivity extends BaseActivity {
         }
     }
 
-    public void getEpg(Date date) {
+    public void getEpg(Date date, int showbottom) {
         String channelName = channel_Name.getChannelName();
         SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy-MM-dd");
         timeFormat.setTimeZone(TimeZone.getTimeZone("GMT+8:00"));
@@ -451,6 +451,7 @@ public class LivePlayActivity extends BaseActivity {
         if (!hsEpg.containsKey(savedEpgKey)){
             if(epgStringAddress==""){
                 showEpg(date, new ArrayList());
+                if(showbottom)
                 showBottomEpg();
                 return;
             }
@@ -482,11 +483,13 @@ public class LivePlayActivity extends BaseActivity {
                         hsEpg.put(savedEpgKey, arrayList);
                         //Date now=new Date();
                         //if(timeFormat.format(date).equals(timeFormat.format(now)))
+                        if(showbottom)
                         showBottomEpg();
                     }
                     @Override
                     public void onError(Response <String> paramString) {
                         showEpg(date, new ArrayList());
+                        if(showbottom)
                         showBottomEpg();
                     }
                     @Override
@@ -500,6 +503,7 @@ public class LivePlayActivity extends BaseActivity {
             showEpg(date, arrayList); 
             //Date now=new Date();
             //if(timeFormat.format(date).equals(timeFormat.format(now)))
+            if(showbottom)
             showBottomEpg();
             }
             //showBottomEpg();
@@ -669,7 +673,7 @@ public class LivePlayActivity extends BaseActivity {
             mVideoView.release();
             mVideoView.setUrl(currentLiveChannelItem.getUrl());
             mVideoView.start();
-            getEpg(new Date());
+            getEpg(new Date(),0);
             }
             isSHIYI=false;
         }else {
@@ -929,7 +933,7 @@ public class LivePlayActivity extends BaseActivity {
         }
         //showBottomEpg();
         //liveEpgDateAdapter.setSelectedIndex(1);
-        getEpg(new Date());
+        getEpg(new Date(),1);
         backcontroller.setVisibility(View.GONE);
         //ll_right_top_huikan.setVisibility(View.GONE);
         mVideoView.setUrl(currentLiveChannelItem.getUrl());
@@ -1266,6 +1270,10 @@ public class LivePlayActivity extends BaseActivity {
             calendar.add(Calendar.DAY_OF_MONTH, -1);
         }
         mEpgDateGridView.setAdapter(liveEpgDateAdapter);
+        liveEpgDateAdapter.setSelectedIndex(1);
+        //liveEpgDateAdapter.setFocusedIndex(1);
+        //mEpgDateGridView.setSelectedPosition(1);
+        mEpgDateGridView.setSelection(1);
         mEpgDateGridView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
@@ -1297,7 +1305,7 @@ public class LivePlayActivity extends BaseActivity {
                 mHandler.postDelayed(mHideChannelListRun, 5000);
                 //liveEpgDateAdapter.setFocusedIndex(position);
                 liveEpgDateAdapter.setSelectedIndex(position);
-                getEpg(liveEpgDateAdapter.getData().get(position).getDateParamVal());
+                getEpg(liveEpgDateAdapter.getData().get(position).getDateParamVal(),0);
             }
         });
 
@@ -1310,13 +1318,9 @@ public class LivePlayActivity extends BaseActivity {
                 mHandler.postDelayed(mHideChannelListRun, 5000);
                 //liveEpgDateAdapter.setFocusedIndex(position);
                 liveEpgDateAdapter.setSelectedIndex(position);
-                getEpg(liveEpgDateAdapter.getData().get(position).getDateParamVal());
+                getEpg(liveEpgDateAdapter.getData().get(position).getDateParamVal(),0);
             }
         });
-        liveEpgDateAdapter.setSelectedIndex(1);
-        //liveEpgDateAdapter.setFocusedIndex(1);
-        //mEpgDateGridView.setSelectedPosition(1);
-        mEpgDateGridView.setSelection(1);
     }
 
 
@@ -1324,14 +1328,13 @@ public class LivePlayActivity extends BaseActivity {
     private void initVideoView() {
         LiveController controller = new LiveController(this);
         controller.setListener(new LiveController.LiveControlListener() {
-        int fiveScreen = PlayerUtils.getScreenWidth(mContext, true) / 5;
             @Override
             public boolean singleTap(MotionEvent e) {
-
-                if (e.getX() > 0 && e.getX() < (fiveScreen * 2)) {
+                int fiveScreen = PlayerUtils.getScreenWidth(mContext, true) / 5;
+                if (e.getRawX() > 0 && e.getRawX() < (fiveScreen * 2)) {
                     // left side <<<<<
                     showChannelList();
-                } else if ( (e.getX() > (fiveScreen * 2)) && (e.getX() < (fiveScreen * 3)) && divEpg.getVisibility() == View.GONE ) {
+                } else if ( (e.getRawX() > (fiveScreen * 2)) && (e.getRawX() < (fiveScreen * 3)) ) {
                     // middle screen
                     if(isBack){
                         if (backcontroller.getVisibility() == View.VISIBLE)
@@ -1345,7 +1348,7 @@ public class LivePlayActivity extends BaseActivity {
                         }else
                             showBottomEpg();
                     }
-                } else if (e.getX() > (fiveScreen * 3)) {
+                } else if (e.getRawX() > (fiveScreen * 3)) {
                     // right side >>>>>
                     showSettingGroup();
                 }
