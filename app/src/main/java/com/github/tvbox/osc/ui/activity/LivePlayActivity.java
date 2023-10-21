@@ -175,7 +175,7 @@ public class LivePlayActivity extends BaseActivity {
     public static String day = formatDate.format(new Date());
     public static Date nowday = new Date();
 
-    private boolean isSHIYI = false;
+    //private boolean isSHIYI = false;
     private boolean isBack = false;
     private static String shiyi_time;//时移时间
     private static int shiyi_time_c;//时移时间差值
@@ -511,8 +511,8 @@ public class LivePlayActivity extends BaseActivity {
 
     //显示底部EPG
     private void showBottomEpg() {
-        if (isSHIYI)
-            return;
+        //if (isSHIYI)
+            //return;
         if (tvLeftChannelListLayout.getVisibility() == View.VISIBLE) {
             mHandler.removeCallbacks(mHideChannelListRun);
             //mHandler.post(mHideChannelListRun);
@@ -673,9 +673,10 @@ public class LivePlayActivity extends BaseActivity {
             mVideoView.release();
             mVideoView.setUrl(currentLiveChannelItem.getUrl());
             mVideoView.start();
-            getEpg(liveEpgDateAdapter.getData().get(liveEpgDateAdapter.getSelectedIndex()).getDateParamVal(),false);
+            epgListAdapter.setShiyiSelection(-1, false,timeFormat.format(liveEpgDateAdapter.getData().get(liveEpgDateAdapter.getSelectedIndex()).getDateParamVal()));
+            //getEpg(liveEpgDateAdapter.getData().get(liveEpgDateAdapter.getSelectedIndex()).getDateParamVal(),false);
             }
-            isSHIYI=false;
+            //isSHIYI=false;
         }else {
             mHandler.removeCallbacks(mConnectTimeoutChangeSourceRun);
             mHandler.removeCallbacks(mUpdateNetSpeedRun);
@@ -923,7 +924,7 @@ public class LivePlayActivity extends BaseActivity {
 
         channel_Name = currentLiveChannelItem;
         tv_right_top_channel_name.setText(channel_Name.getChannelName());
-        isSHIYI=false;
+        //isSHIYI=false;
         isBack = false;
         playUrl=currentLiveChannelItem.getUrl();
         if(currentLiveChannelItem.getUrl().indexOf("/PLTV/") !=-1 || currentLiveChannelItem.getUrl().indexOf("/TVOD/") !=-1){
@@ -1095,21 +1096,20 @@ public class LivePlayActivity extends BaseActivity {
                 Date now = new Date();
                 if(now.compareTo(selectedData.startdateTime) < 0){
                     return;
-                }
-                epgListAdapter.setSelectedEpgIndex(position);
+                }else
                 if (now.compareTo(selectedData.startdateTime) >= 0 && now.compareTo(selectedData.enddateTime) <= 0) {
                     mVideoView.release();
-                    isSHIYI = false;
+                    //isSHIYI = false;
                     mVideoView.setUrl(currentLiveChannelItem.getUrl());
                     mVideoView.start();
-                    //epgListAdapter.setShiyiSelection(-1, false,timeFormat.format(date));
+                    epgListAdapter.setShiyiSelection(-1, false,timeFormat.format(date));
                     //showProgressBars(false);
                     return;
-                }
+                }else
                 if (now.compareTo(selectedData.enddateTime) > 0) {
                     mVideoView.release();
                     shiyi_time = shiyiStartdate + "-" + shiyiEnddate;
-                    isSHIYI = true;
+                    //isSHIYI = true;
                     //mCanSeek=true;
                     //if(shiyiUrl.contains("/PLTV/") || shiyiUrl.contains("/TVOD/")){
                         shiyiUrl = shiyiUrl.replaceAll("/PLTV/", "/TVOD/");
@@ -1147,6 +1147,7 @@ public class LivePlayActivity extends BaseActivity {
                     showProgressBars();
                     isBack = true;*/
                 }
+                epgListAdapter.setSelectedEpgIndex(position);
             }
         });
 
@@ -1169,21 +1170,20 @@ public class LivePlayActivity extends BaseActivity {
                 Date now = new Date();
                 if(now.compareTo(selectedData.startdateTime) < 0){
                     return;
-                }
-                epgListAdapter.setSelectedEpgIndex(position);
+                }else
                 if (now.compareTo(selectedData.startdateTime) >= 0 && now.compareTo(selectedData.enddateTime) <= 0) {
                     mVideoView.release();
-                    isSHIYI = false;
+                    //isSHIYI = false;
                     mVideoView.setUrl(currentLiveChannelItem.getUrl());
                     mVideoView.start();
-                    //epgListAdapter.setShiyiSelection(-1, false,timeFormat.format(date));
+                    epgListAdapter.setShiyiSelection(-1, false,timeFormat.format(date));
                     //showProgressBars(false);
                     return;
-                }
+                }else
                 if (now.compareTo(selectedData.enddateTime) > 0) {
                     mVideoView.release();
                     shiyi_time = shiyiStartdate + "-" + shiyiEnddate;
-                    isSHIYI = true;
+                    //isSHIYI = true;
                     //mCanSeek=true;
                     //if(shiyiUrl.contains("/PLTV/") || shiyiUrl.contains("/TVOD/")){
                         shiyiUrl = shiyiUrl.replaceAll("/PLTV/", "/TVOD/");
@@ -1222,6 +1222,7 @@ public class LivePlayActivity extends BaseActivity {
                     showProgressBars();
                     isBack = true;*/
                 }
+                epgListAdapter.setSelectedEpgIndex(position);
             }
         });
     }
