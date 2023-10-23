@@ -6,4 +6,4 @@
 基于
 
 * [CatVodTVOfficial](https://github.com/CatVodTVOfficial)/[TVBoxOSC](https://github.com/CatVodTVOfficial/TVBoxOSC)
-* [q215613905](https://github.com/q215613905)/[TVBoxOS](https://github.com/q215613905/TVBoxOS)
+* [q215613905](https://github.com/q215613905)/[TVBoxOS](https://github.com/q215613905/TVBoxOS)   

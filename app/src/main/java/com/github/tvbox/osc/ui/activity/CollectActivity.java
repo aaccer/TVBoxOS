@@ -20,6 +20,7 @@ import com.github.tvbox.osc.databinding.ActivityCollectBinding;
 import com.github.tvbox.osc.event.RefreshEvent;
 import com.github.tvbox.osc.ui.adapter.CollectAdapter;
 import com.github.tvbox.osc.util.FastClickCheckUtil;
+import com.lxj.xpopup.XPopup;
 import com.owen.tvrecyclerview.widget.TvRecyclerView;
 import com.owen.tvrecyclerview.widget.V7GridLayoutManager;
 
@@ -48,11 +49,23 @@ public class CollectActivity extends BaseVbActivity<ActivityCollectBinding> {
         collectAdapter = new CollectAdapter();
         mBinding.mGridView.setAdapter(collectAdapter);
 
+        mBinding.titleBar.getRightView().setOnClickListener(view -> {
+            new XPopup.Builder(this)
+                    .asConfirm("提示", "确定清空?", () -> {
+                        RoomDataManger.deleteVodCollectAll();
+                        collectAdapter.setNewData(new ArrayList<>());
+                        mBinding.topTip.setVisibility(View.GONE);
+                    }).show();
+        });
+
         collectAdapter.setOnItemLongClickListener((adapter, view, position) -> {
             VodCollect vodInfo = collectAdapter.getData().get(position);
             if (vodInfo!=null){
                 collectAdapter.remove(position);
                 RoomDataManger.deleteVodCollect(vodInfo.getId());
+            }
+            if (collectAdapter.getData().isEmpty()){
+                mBinding.topTip.setVisibility(View.GONE);
             }
             return true;
         });
@@ -86,5 +99,8 @@ public class CollectActivity extends BaseVbActivity<ActivityCollectBinding> {
             vodInfoList.add(vodInfo);
         }
         collectAdapter.setNewData(vodInfoList);
+        if (!vodInfoList.isEmpty()){
+            mBinding.topTip.setVisibility(View.VISIBLE);
+        }
     }
 }

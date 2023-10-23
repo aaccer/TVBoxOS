@@ -59,6 +59,9 @@ public class HistoryActivity extends BaseVbActivity<ActivityHistoryBinding> {
             if (vodInfo != null) {
                 historyAdapter.remove(position);
                 RoomDataManger.deleteVodRecord(vodInfo.sourceKey, vodInfo);
+                if (historyAdapter.getData().isEmpty()){
+                    mBinding.topTip.setVisibility(View.GONE);
+                }
             } else {
                 ToastUtils.showLong("未查询到该条记录,请重试或清空全部记录");
             }
@@ -68,10 +71,9 @@ public class HistoryActivity extends BaseVbActivity<ActivityHistoryBinding> {
         mBinding.titleBar.getRightView().setOnClickListener(view -> {
             new XPopup.Builder(this)
                     .asConfirm("提示", "确定清空?", () -> {
-                        for (VodInfo datum : historyAdapter.getData()) {
-                            RoomDataManger.deleteVodRecord(datum.sourceKey, datum);
-                        }
+                        RoomDataManger.deleteVodRecordAll();
                         historyAdapter.setNewData(new ArrayList<>());
+                        mBinding.topTip.setVisibility(View.GONE);
                     }).show();
         });
 
@@ -98,6 +100,9 @@ public class HistoryActivity extends BaseVbActivity<ActivityHistoryBinding> {
             vodInfoList.add(vodInfo);
         }
         historyAdapter.setNewData(vodInfoList);
+        if (!vodInfoList.isEmpty()){
+            mBinding.topTip.setVisibility(View.VISIBLE);
+        }
     }
 
 
