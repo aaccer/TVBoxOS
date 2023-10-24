@@ -274,14 +274,16 @@ public class HomeActivity extends BaseActivity {
         }
         showLoading();
         if (dataInitOk && !jarInitOk) {
-            if (!useCacheConfig && Hawk.get(HawkConfig.HOME_DEFAULT_SHOW, false)){
-                jumpActivity(LivePlayActivity.class);
-            }
             if (!ApiConfig.get().getSpider().isEmpty()) {
                 ApiConfig.get().loadJar(useCacheConfig, ApiConfig.get().getSpider(), new ApiConfig.LoadConfigCallback() {
                     @Override
                     public void success() {
                         jarInitOk = true;
+                        if (!useCacheConfig){
+                            if (Hawk.get(HawkConfig.HOME_DEFAULT_SHOW, false)) {
+                                jumpActivity(LivePlayActivity.class);
+                            }
+                        }
                         mHandler.postDelayed(new Runnable() {
                             @Override
                             public void run() {
@@ -300,6 +302,9 @@ public class HomeActivity extends BaseActivity {
                     @Override
                     public void error(String msg) {
                         jarInitOk = true;
+                        if (Hawk.get(HawkConfig.HOME_DEFAULT_SHOW, false)) {
+                            jumpActivity(LivePlayActivity.class);
+                        }
                         mHandler.post(new Runnable() {
                             @Override
                             public void run() {
@@ -330,6 +335,9 @@ public class HomeActivity extends BaseActivity {
                 dataInitOk = true;
                 if (ApiConfig.get().getSpider().isEmpty()) {
                     jarInitOk = true;
+                    if (Hawk.get(HawkConfig.HOME_DEFAULT_SHOW, false)) {
+                        jumpActivity(LivePlayActivity.class);
+                    }
                 }
                 mHandler.postDelayed(new Runnable() {
                     @Override
