@@ -279,16 +279,15 @@ public class HomeActivity extends BaseActivity {
                     @Override
                     public void success() {
                         jarInitOk = true;
-                        if (!useCacheConfig){
-                            if (Hawk.get(HawkConfig.HOME_DEFAULT_SHOW, false)) {
-                                jumpActivity(LivePlayActivity.class);
-                            }
-                        }
                         mHandler.postDelayed(new Runnable() {
                             @Override
                             public void run() {
-                                if (!useCacheConfig)
+                                if (!useCacheConfig){
+                                    if (Hawk.get(HawkConfig.HOME_DEFAULT_SHOW, false)) {
+                                        jumpActivity(LivePlayActivity.class);
+                                    }
                                     Toast.makeText(HomeActivity.this, "自定义jar加载成功", Toast.LENGTH_SHORT).show();
+                                }
                                 initData();
                             }
                         }, 50);
@@ -302,12 +301,12 @@ public class HomeActivity extends BaseActivity {
                     @Override
                     public void error(String msg) {
                         jarInitOk = true;
-                        if (Hawk.get(HawkConfig.HOME_DEFAULT_SHOW, false)) {
-                            jumpActivity(LivePlayActivity.class);
-                        }
                         mHandler.post(new Runnable() {
                             @Override
                             public void run() {
+                                if (Hawk.get(HawkConfig.HOME_DEFAULT_SHOW, false)) {
+                                    jumpActivity(LivePlayActivity.class);
+                                }
                                 Toast.makeText(HomeActivity.this, "jar加载失败", Toast.LENGTH_SHORT).show();
                                 initData();
                             }
@@ -333,15 +332,15 @@ public class HomeActivity extends BaseActivity {
             @Override
             public void success() {
                 dataInitOk = true;
-                if (ApiConfig.get().getSpider().isEmpty()) {
-                    jarInitOk = true;
-                    if (Hawk.get(HawkConfig.HOME_DEFAULT_SHOW, false)) {
-                        jumpActivity(LivePlayActivity.class);
-                    }
-                }
                 mHandler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
+                        if (ApiConfig.get().getSpider().isEmpty()) {
+                            jarInitOk = true;
+                            if (Hawk.get(HawkConfig.HOME_DEFAULT_SHOW, false)) {
+                                jumpActivity(LivePlayActivity.class);
+                            }
+                        }
                         initData();
                     }
                 }, 50);
