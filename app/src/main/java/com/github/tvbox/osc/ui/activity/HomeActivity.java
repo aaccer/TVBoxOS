@@ -274,6 +274,9 @@ public class HomeActivity extends BaseActivity {
         }
         showLoading();
         if (dataInitOk && !jarInitOk) {
+            if (!useCacheConfig && Hawk.get(HawkConfig.HOME_DEFAULT_SHOW, false)){
+                jumpActivity(LivePlayActivity.class);
+            }
             if (!ApiConfig.get().getSpider().isEmpty()) {
                 ApiConfig.get().loadJar(useCacheConfig, ApiConfig.get().getSpider(), new ApiConfig.LoadConfigCallback() {
                     @Override
@@ -282,12 +285,8 @@ public class HomeActivity extends BaseActivity {
                         mHandler.postDelayed(new Runnable() {
                             @Override
                             public void run() {
-                                if (!useCacheConfig){
-                                    if (Hawk.get(HawkConfig.HOME_DEFAULT_SHOW, false)) {
-                                        jumpActivity(LivePlayActivity.class);
-                                    }
+                                if (!useCacheConfig)
                                     Toast.makeText(HomeActivity.this, "自定义jar加载成功", Toast.LENGTH_SHORT).show();
-                                }
                                 initData();
                             }
                         }, 50);
