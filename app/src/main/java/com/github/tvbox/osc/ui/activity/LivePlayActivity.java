@@ -1730,8 +1730,8 @@ public class LivePlayActivity extends BaseActivity {
                         Hawk.put(HawkConfig.LIVE_CROSS_GROUP, select);
                         break;
                     case 4:
-                        select = !Hawk.get(HawkConfig.LIVE_MAINPAGE, false);
-                        Hawk.put(HawkConfig.LIVE_MAINPAGE, select);
+                        select = !Hawk.get(HawkConfig.HOME_DEFAULT_SHOW, false);
+                        Hawk.put(HawkConfig.HOME_DEFAULT_SHOW, select);
                         break;
                 }
                 liveSettingItemAdapter.selectItem(position, select, false);
@@ -1875,7 +1875,7 @@ public class LivePlayActivity extends BaseActivity {
         liveSettingGroupList.get(4).getLiveSettingItems().get(1).setItemSelected(Hawk.get(HawkConfig.LIVE_SHOW_NET_SPEED, false));
         liveSettingGroupList.get(4).getLiveSettingItems().get(2).setItemSelected(Hawk.get(HawkConfig.LIVE_CHANNEL_REVERSE, false));
         liveSettingGroupList.get(4).getLiveSettingItems().get(3).setItemSelected(Hawk.get(HawkConfig.LIVE_CROSS_GROUP, false));
-        liveSettingGroupList.get(4).getLiveSettingItems().get(4).setItemSelected(Hawk.get(HawkConfig.LIVE_MAINPAGE, false));
+        liveSettingGroupList.get(4).getLiveSettingItems().get(4).setItemSelected(Hawk.get(HawkConfig.HOME_DEFAULT_SHOW, false));
         
     }
 
