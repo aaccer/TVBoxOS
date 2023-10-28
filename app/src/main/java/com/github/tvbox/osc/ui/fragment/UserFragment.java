@@ -222,10 +222,6 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
         tvHotList2.setAdapter(homeHotVodAdapter);
 
         initHomeHotVod(homeHotVodAdapter);
-
-        if (Hawk.get(HawkConfig.LIVE_MAINPAGE, false)) {
-            jumpActivity(LivePlayActivity.class);
-        }
     }
 
     private void initHomeHotVod(HomeHotVodAdapter adapter) {

@@ -175,7 +175,7 @@ public class LivePlayActivity extends BaseActivity {
     public static String day = formatDate.format(new Date());
     public static Date nowday = new Date();
 
-    private boolean isSHIYI = false;
+    //private boolean isSHIYI = false;
     private boolean isBack = false;
     private static String shiyi_time;//时移时间
     private static int shiyi_time_c;//时移时间差值
@@ -397,7 +397,7 @@ public class LivePlayActivity extends BaseActivity {
             for (int b = 0; b < 24; b++) {
                 String starttime = b < 10 ? "0" + Integer.toString(b) + ":00" : Integer.toString(b) + ":00";
                 String endtime = b < 9 ? "0" + Integer.toString( b +1 ) + ":00" : Integer.toString( b +1 ) + ":00";
-                if(b == 23)endtime = "23:59";
+                //if(b == 23)endtime = "23:59";
                 Epginfo epgbcinfo = new Epginfo(date,"精彩节目",date, starttime, endtime,b);
                 arrayList.add(epgbcinfo);
             }
@@ -433,7 +433,7 @@ public class LivePlayActivity extends BaseActivity {
         }
     }
 
-    public void getEpg(Date date) {
+    public void getEpg(Date date, boolean showbottom) {
         String channelName = channel_Name.getChannelName();
         SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy-MM-dd");
         timeFormat.setTimeZone(TimeZone.getTimeZone("GMT+8:00"));
@@ -451,6 +451,7 @@ public class LivePlayActivity extends BaseActivity {
         if (!hsEpg.containsKey(savedEpgKey)){
             if(epgStringAddress==""){
                 showEpg(date, new ArrayList());
+                if(showbottom)
                 showBottomEpg();
                 return;
             }
@@ -482,11 +483,13 @@ public class LivePlayActivity extends BaseActivity {
                         hsEpg.put(savedEpgKey, arrayList);
                         //Date now=new Date();
                         //if(timeFormat.format(date).equals(timeFormat.format(now)))
+                        if(showbottom)
                         showBottomEpg();
                     }
                     @Override
                     public void onError(Response <String> paramString) {
                         showEpg(date, new ArrayList());
+                        if(showbottom)
                         showBottomEpg();
                     }
                     @Override
@@ -500,6 +503,7 @@ public class LivePlayActivity extends BaseActivity {
             showEpg(date, arrayList); 
             //Date now=new Date();
             //if(timeFormat.format(date).equals(timeFormat.format(now)))
+            if(showbottom)
             showBottomEpg();
             }
             //showBottomEpg();
@@ -507,21 +511,8 @@ public class LivePlayActivity extends BaseActivity {
 
     //显示底部EPG
     private void showBottomEpg() {
-        if (isSHIYI)
-            return;
-        if (tvLeftChannelListLayout.getVisibility() == View.VISIBLE) {
-            mHandler.removeCallbacks(mHideChannelListRun);
-            //mHandler.post(mHideChannelListRun);
-            tvLeftChannelListLayout.setVisibility(View.INVISIBLE);
+        //if (isSHIYI)
             //return;
-        }
-        if (tvRightSettingLayout.getVisibility() == View.VISIBLE) {
-            mHandler.removeCallbacks(mHideSettingLayoutRun);
-            //mHandler.post(mHideSettingLayoutRun);
-            tvRightSettingLayout.setVisibility(View.INVISIBLE);
-            liveSettingGroupAdapter.setSelectedGroupIndex(-1);
-            //return;
-        }
         if (backcontroller.getVisibility() == View.VISIBLE){
             backcontroller.setVisibility(View.GONE);
             //return;
@@ -669,9 +660,11 @@ public class LivePlayActivity extends BaseActivity {
             mVideoView.release();
             mVideoView.setUrl(currentLiveChannelItem.getUrl());
             mVideoView.start();
-            getEpg(new Date());
+            epgListAdapter.setShiyiSelection(-1, false,timeFormat.format(liveEpgDateAdapter.getData().get(liveEpgDateAdapter.getSelectedIndex()).getDateParamVal()));
+            epgListAdapter.notifyDataSetChanged();
+            //getEpg(liveEpgDateAdapter.getData().get(liveEpgDateAdapter.getSelectedIndex()).getDateParamVal(),false);
             }
-            isSHIYI=false;
+            //isSHIYI=false;
         }else {
             mHandler.removeCallbacks(mConnectTimeoutChangeSourceRun);
             mHandler.removeCallbacks(mUpdateNetSpeedRun);
@@ -913,13 +906,22 @@ public class LivePlayActivity extends BaseActivity {
             Hawk.put(HawkConfig.LIVE_CHANNEL, currentLiveChannelItem.getChannelName());
             livePlayerManager.getLiveChannelPlayer(mVideoView, currentLiveChannelItem.getChannelName());
         }
-        if(currentLiveChannelItem.getChannelName().toString().indexOf("[exo]") != -1 && livePlayerManager.getLivePlayerType() != 3){
+        //if(currentLiveChannelItem.getChannelName().toString().indexOf("[exo]") != -1 && livePlayerManager.getLivePlayerType() != 3){
+            //livePlayerManager.changeLivePlayerType(mVideoView,3,currentLiveChannelItem.getChannelName());
+        //}
+        if(currentLiveChannelItem.getChannelSourceName(currentLiveChannelItem.getSourceIndex()).indexOf("[ijk硬解]") != -1 && livePlayerManager.getLivePlayerType() != 1){
+            livePlayerManager.changeLivePlayerType(mVideoView,1,currentLiveChannelItem.getChannelName());
+        }
+        if(currentLiveChannelItem.getChannelSourceName(currentLiveChannelItem.getSourceIndex()).indexOf("[ijk软解]") != -1 && livePlayerManager.getLivePlayerType() != 2){
+            livePlayerManager.changeLivePlayerType(mVideoView,2,currentLiveChannelItem.getChannelName());
+        }
+        if(currentLiveChannelItem.getChannelSourceName(currentLiveChannelItem.getSourceIndex()).indexOf("[exo]") != -1 && livePlayerManager.getLivePlayerType() != 3){
             livePlayerManager.changeLivePlayerType(mVideoView,3,currentLiveChannelItem.getChannelName());
         }
 
         channel_Name = currentLiveChannelItem;
         tv_right_top_channel_name.setText(channel_Name.getChannelName());
-        isSHIYI=false;
+        //isSHIYI=false;
         isBack = false;
         playUrl=currentLiveChannelItem.getUrl();
         if(currentLiveChannelItem.getUrl().indexOf("/PLTV/") !=-1 || currentLiveChannelItem.getUrl().indexOf("/TVOD/") !=-1){
@@ -929,7 +931,7 @@ public class LivePlayActivity extends BaseActivity {
         }
         //showBottomEpg();
         //liveEpgDateAdapter.setSelectedIndex(1);
-        getEpg(new Date());
+        getEpg(new Date(),true);
         backcontroller.setVisibility(View.GONE);
         //ll_right_top_huikan.setVisibility(View.GONE);
         mVideoView.setUrl(currentLiveChannelItem.getUrl());
@@ -1091,21 +1093,21 @@ public class LivePlayActivity extends BaseActivity {
                 Date now = new Date();
                 if(now.compareTo(selectedData.startdateTime) < 0){
                     return;
-                }
-                epgListAdapter.setSelectedEpgIndex(position);
+                }else
                 if (now.compareTo(selectedData.startdateTime) >= 0 && now.compareTo(selectedData.enddateTime) <= 0) {
                     mVideoView.release();
-                    isSHIYI = false;
+                    isBack= false;
                     mVideoView.setUrl(currentLiveChannelItem.getUrl());
                     mVideoView.start();
-                    //epgListAdapter.setShiyiSelection(-1, false,timeFormat.format(date));
+                    epgListAdapter.setShiyiSelection(-1, false,timeFormat.format(date));
+                    epgListAdapter.notifyDataSetChanged();
                     //showProgressBars(false);
                     return;
-                }
+                }else
                 if (now.compareTo(selectedData.enddateTime) > 0) {
                     mVideoView.release();
                     shiyi_time = shiyiStartdate + "-" + shiyiEnddate;
-                    isSHIYI = true;
+                    //isSHIYI = true;
                     //mCanSeek=true;
                     //if(shiyiUrl.contains("/PLTV/") || shiyiUrl.contains("/TVOD/")){
                         shiyiUrl = shiyiUrl.replaceAll("/PLTV/", "/TVOD/");
@@ -1143,6 +1145,7 @@ public class LivePlayActivity extends BaseActivity {
                     showProgressBars();
                     isBack = true;*/
                 }
+                epgListAdapter.setSelectedEpgIndex(position);
             }
         });
 
@@ -1165,21 +1168,21 @@ public class LivePlayActivity extends BaseActivity {
                 Date now = new Date();
                 if(now.compareTo(selectedData.startdateTime) < 0){
                     return;
-                }
-                epgListAdapter.setSelectedEpgIndex(position);
+                }else
                 if (now.compareTo(selectedData.startdateTime) >= 0 && now.compareTo(selectedData.enddateTime) <= 0) {
                     mVideoView.release();
-                    isSHIYI = false;
+                    isBack= false;
                     mVideoView.setUrl(currentLiveChannelItem.getUrl());
                     mVideoView.start();
-                    //epgListAdapter.setShiyiSelection(-1, false,timeFormat.format(date));
+                    epgListAdapter.setShiyiSelection(-1, false,timeFormat.format(date));
+                    epgListAdapter.notifyDataSetChanged();
                     //showProgressBars(false);
                     return;
-                }
+                }else
                 if (now.compareTo(selectedData.enddateTime) > 0) {
                     mVideoView.release();
                     shiyi_time = shiyiStartdate + "-" + shiyiEnddate;
-                    isSHIYI = true;
+                    //isSHIYI = true;
                     //mCanSeek=true;
                     //if(shiyiUrl.contains("/PLTV/") || shiyiUrl.contains("/TVOD/")){
                         shiyiUrl = shiyiUrl.replaceAll("/PLTV/", "/TVOD/");
@@ -1218,6 +1221,7 @@ public class LivePlayActivity extends BaseActivity {
                     showProgressBars();
                     isBack = true;*/
                 }
+                epgListAdapter.setSelectedEpgIndex(position);
             }
         });
     }
@@ -1266,6 +1270,10 @@ public class LivePlayActivity extends BaseActivity {
             calendar.add(Calendar.DAY_OF_MONTH, -1);
         }
         mEpgDateGridView.setAdapter(liveEpgDateAdapter);
+        liveEpgDateAdapter.setSelectedIndex(1);
+        //liveEpgDateAdapter.setFocusedIndex(1);
+        //mEpgDateGridView.setSelectedPosition(1);
+        mEpgDateGridView.setSelection(1);
         mEpgDateGridView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
@@ -1297,7 +1305,7 @@ public class LivePlayActivity extends BaseActivity {
                 mHandler.postDelayed(mHideChannelListRun, 5000);
                 //liveEpgDateAdapter.setFocusedIndex(position);
                 liveEpgDateAdapter.setSelectedIndex(position);
-                getEpg(liveEpgDateAdapter.getData().get(position).getDateParamVal());
+                getEpg(liveEpgDateAdapter.getData().get(position).getDateParamVal(),false);
             }
         });
 
@@ -1310,13 +1318,9 @@ public class LivePlayActivity extends BaseActivity {
                 mHandler.postDelayed(mHideChannelListRun, 5000);
                 //liveEpgDateAdapter.setFocusedIndex(position);
                 liveEpgDateAdapter.setSelectedIndex(position);
-                getEpg(liveEpgDateAdapter.getData().get(position).getDateParamVal());
+                getEpg(liveEpgDateAdapter.getData().get(position).getDateParamVal(),false);
             }
         });
-        liveEpgDateAdapter.setSelectedIndex(1);
-        //liveEpgDateAdapter.setFocusedIndex(1);
-        //mEpgDateGridView.setSelectedPosition(1);
-        mEpgDateGridView.setSelection(1);
     }
 
 
@@ -1327,18 +1331,37 @@ public class LivePlayActivity extends BaseActivity {
             @Override
             public boolean singleTap(MotionEvent e) {
                 int fiveScreen = PlayerUtils.getScreenWidth(mContext, true) / 5;
-
-                if (e.getX() > 0 && e.getX() < (fiveScreen * 2)) {
+                if (e.getRawX() > 0 && e.getRawX() < (fiveScreen * 2)) {
                     // left side <<<<<
                     showChannelList();
-                } else if ((e.getX() > (fiveScreen * 2)) && (e.getX() < (fiveScreen * 3))) {
+                } else if ( (e.getRawX() > (fiveScreen * 2)) && (e.getRawX() < (fiveScreen * 3)) ) {
                     // middle screen
-                    if(isBack){
-                        showProgressBars();
-                    }else{
-                        showBottomEpg();
+                    if (tvLeftChannelListLayout.getVisibility() == View.VISIBLE) {
+                        mHandler.removeCallbacks(mHideChannelListRun);
+                        //mHandler.post(mHideChannelListRun);
+                        tvLeftChannelListLayout.setVisibility(View.INVISIBLE);
+                        //return;
                     }
-                } else if (e.getX() > (fiveScreen * 3)) {
+                    if (tvRightSettingLayout.getVisibility() == View.VISIBLE) {
+                        mHandler.removeCallbacks(mHideSettingLayoutRun);
+                        //mHandler.post(mHideSettingLayoutRun);
+                        tvRightSettingLayout.setVisibility(View.INVISIBLE);
+                        liveSettingGroupAdapter.setSelectedGroupIndex(-1);
+                        //return;
+                    }
+                    if(isBack){
+                        if (backcontroller.getVisibility() == View.VISIBLE)
+                            backcontroller.setVisibility(View.GONE);
+                        else
+                            showProgressBars();
+                    }else{
+                        if (ll_epg.getVisibility() == View.VISIBLE || ll_right_top_loading.getVisibility() == View.VISIBLE) {
+                            ll_epg.setVisibility(View.GONE);
+                            ll_right_top_loading.setVisibility(View.GONE);
+                        }else
+                            showBottomEpg();
+                    }
+                } else if (e.getRawX() > (fiveScreen * 3)) {
                     // right side >>>>>
                     showSettingGroup();
                 }
@@ -1369,7 +1392,7 @@ public class LivePlayActivity extends BaseActivity {
                         showProgressBars();
                         isBack = true;
                         livePlayerManager.changeLivePlayerScale(mVideoView, 0, currentLiveChannelItem.getChannelName());
-                        } 
+                        }else isBack= false;
                         break;
                     case VideoView.STATE_BUFFERED:
                     case VideoView.STATE_PLAYING:
@@ -1716,8 +1739,8 @@ public class LivePlayActivity extends BaseActivity {
                         Hawk.put(HawkConfig.LIVE_CROSS_GROUP, select);
                         break;
                     case 4:
-                        select = !Hawk.get(HawkConfig.LIVE_MAINPAGE, false);
-                        Hawk.put(HawkConfig.LIVE_MAINPAGE, select);
+                        select = !Hawk.get(HawkConfig.HOME_DEFAULT_SHOW, false);
+                        Hawk.put(HawkConfig.HOME_DEFAULT_SHOW, select);
                         break;
                 }
                 liveSettingItemAdapter.selectItem(position, select, false);
@@ -1861,7 +1884,7 @@ public class LivePlayActivity extends BaseActivity {
         liveSettingGroupList.get(4).getLiveSettingItems().get(1).setItemSelected(Hawk.get(HawkConfig.LIVE_SHOW_NET_SPEED, false));
         liveSettingGroupList.get(4).getLiveSettingItems().get(2).setItemSelected(Hawk.get(HawkConfig.LIVE_CHANNEL_REVERSE, false));
         liveSettingGroupList.get(4).getLiveSettingItems().get(3).setItemSelected(Hawk.get(HawkConfig.LIVE_CROSS_GROUP, false));
-        liveSettingGroupList.get(4).getLiveSettingItems().get(4).setItemSelected(Hawk.get(HawkConfig.LIVE_MAINPAGE, false));
+        liveSettingGroupList.get(4).getLiveSettingItems().get(4).setItemSelected(Hawk.get(HawkConfig.HOME_DEFAULT_SHOW, false));
         
     }
 
@@ -1871,7 +1894,8 @@ public class LivePlayActivity extends BaseActivity {
         for (int j = 0; j < currentSourceNames.size(); j++) {
             LiveSettingItem liveSettingItem = new LiveSettingItem();
             liveSettingItem.setItemIndex(j);
-            liveSettingItem.setItemName(currentSourceNames.get(j));
+            String sourceName=currentSourceNames.get(j).replace("[ijk硬解]", "").replace("[ijk软解]", "").replace("[exo]", "");
+            liveSettingItem.setItemName(sourceName);
             liveSettingItemList.add(liveSettingItem);
         }
         liveSettingGroupList.get(0).setLiveSettingItems(liveSettingItemList);
@@ -2105,19 +2129,6 @@ public class LivePlayActivity extends BaseActivity {
     public void showProgressBars(){
         sBar.requestFocus();
         backcontroller.setVisibility(View.VISIBLE);
-        if (tvLeftChannelListLayout.getVisibility() == View.VISIBLE) {
-            mHandler.removeCallbacks(mHideChannelListRun);
-            //mHandler.post(mHideChannelListRun);
-            tvLeftChannelListLayout.setVisibility(View.INVISIBLE);
-            //return;
-        }
-        if (tvRightSettingLayout.getVisibility() == View.VISIBLE) {
-            mHandler.removeCallbacks(mHideSettingLayoutRun);
-            //mHandler.post(mHideSettingLayoutRun);
-            tvRightSettingLayout.setVisibility(View.INVISIBLE);
-            liveSettingGroupAdapter.setSelectedGroupIndex(-1);
-            //return;
-        }
         if (ll_epg.getVisibility() == View.VISIBLE || ll_right_top_loading.getVisibility() == View.VISIBLE) {
             ll_epg.setVisibility(View.GONE);
             ll_right_top_loading.setVisibility(View.GONE);
