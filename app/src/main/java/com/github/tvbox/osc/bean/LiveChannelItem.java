@@ -94,6 +94,11 @@ public class LiveChannelItem {
         return channelSourceNames;
     }
 
+    public String getChannelSourceName(int index) {
+        if(index < 0 || index >= channelSourceNames.size())return channelSourceNames.get(0);
+        return channelSourceNames.get(index);
+    }
+
     public void setChannelSourceNames(ArrayList<String> channelSourceNames) {
         this.channelSourceNames = channelSourceNames;
     }
