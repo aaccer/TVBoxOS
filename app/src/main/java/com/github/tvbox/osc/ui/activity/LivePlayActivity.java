@@ -906,7 +906,16 @@ public class LivePlayActivity extends BaseActivity {
             Hawk.put(HawkConfig.LIVE_CHANNEL, currentLiveChannelItem.getChannelName());
             livePlayerManager.getLiveChannelPlayer(mVideoView, currentLiveChannelItem.getChannelName());
         }
-        if(currentLiveChannelItem.getChannelName().toString().indexOf("[exo]") != -1 && livePlayerManager.getLivePlayerType() != 3){
+        //if(currentLiveChannelItem.getChannelName().toString().indexOf("[exo]") != -1 && livePlayerManager.getLivePlayerType() != 3){
+            //livePlayerManager.changeLivePlayerType(mVideoView,3,currentLiveChannelItem.getChannelName());
+        //}
+        if(currentLiveChannelItem.getChannelSourceName(currentLiveChannelItem.getSourceIndex()).indexOf("[ijk硬解]") != -1 && livePlayerManager.getLivePlayerType() != 1){
+            livePlayerManager.changeLivePlayerType(mVideoView,1,currentLiveChannelItem.getChannelName());
+        }
+        if(currentLiveChannelItem.getChannelSourceName(currentLiveChannelItem.getSourceIndex()).indexOf("[ijk软解]") != -1 && livePlayerManager.getLivePlayerType() != 2){
+            livePlayerManager.changeLivePlayerType(mVideoView,2,currentLiveChannelItem.getChannelName());
+        }
+        if(currentLiveChannelItem.getChannelSourceName(currentLiveChannelItem.getSourceIndex()).indexOf("[exo]") != -1 && livePlayerManager.getLivePlayerType() != 3){
             livePlayerManager.changeLivePlayerType(mVideoView,3,currentLiveChannelItem.getChannelName());
         }
 
@@ -1885,7 +1894,8 @@ public class LivePlayActivity extends BaseActivity {
         for (int j = 0; j < currentSourceNames.size(); j++) {
             LiveSettingItem liveSettingItem = new LiveSettingItem();
             liveSettingItem.setItemIndex(j);
-            liveSettingItem.setItemName(currentSourceNames.get(j));
+            String sourceName=currentSourceNames.get(j).replace("[ijk硬解]", "").replace("[ijk软解]", "").replace("[exo]", "");
+            liveSettingItem.setItemName(sourceName);
             liveSettingItemList.add(liveSettingItem);
         }
         liveSettingGroupList.get(0).setLiveSettingItems(liveSettingItemList);
