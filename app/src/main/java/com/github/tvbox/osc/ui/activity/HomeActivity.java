@@ -337,8 +337,10 @@ public class HomeActivity extends BaseActivity {
                     public void run() {
                         if (ApiConfig.get().getSpider().isEmpty()) {
                             jarInitOk = true;
-                            if (Hawk.get(HawkConfig.HOME_DEFAULT_SHOW, false)) {
-                                jumpActivity(LivePlayActivity.class);
+                            if (!useCacheConfig){
+                                if (Hawk.get(HawkConfig.HOME_DEFAULT_SHOW, false)) {
+                                    jumpActivity(LivePlayActivity.class);
+                                }
                             }
                         }
                         initData();
