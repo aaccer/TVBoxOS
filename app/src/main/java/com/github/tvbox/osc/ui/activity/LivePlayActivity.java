@@ -1330,11 +1330,11 @@ public class LivePlayActivity extends BaseActivity {
         controller.setListener(new LiveController.LiveControlListener() {
             @Override
             public boolean singleTap(MotionEvent e) {
-                int fiveScreen = PlayerUtils.getScreenWidth(mContext, true) / 5;
-                if (e.getRawX() > 0 && e.getRawX() < (fiveScreen * 2)) {
+                int divideScreen = PlayerUtils.getScreenWidth(mContext, true) / 3;
+                if (e.getRawX() > 0 && e.getRawX() < divideScreen) {
                     // left side <<<<<
                     showChannelList();
-                } else if ( (e.getRawX() > (fiveScreen * 2)) && (e.getRawX() < (fiveScreen * 3)) ) {
+                } else if ( (e.getRawX() >= divideScreen) && (e.getRawX() <= (divideScreen * 2)) ) {
                     // middle screen
                     if (tvLeftChannelListLayout.getVisibility() == View.VISIBLE) {
                         mHandler.removeCallbacks(mHideChannelListRun);
@@ -1361,7 +1361,7 @@ public class LivePlayActivity extends BaseActivity {
                         }else
                             showBottomEpg();
                     }
-                } else if (e.getRawX() > (fiveScreen * 3)) {
+                } else if (e.getRawX() > (divideScreen * 2)) {
                     // right side >>>>>
                     showSettingGroup();
                 }
