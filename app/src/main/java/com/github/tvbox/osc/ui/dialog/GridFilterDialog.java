@@ -100,7 +100,7 @@ public class GridFilterDialog extends BaseDialog {
         selectChange = false;
         super.show();
         WindowManager.LayoutParams layoutParams = getWindow().getAttributes();
-        layoutParams.gravity = Gravity.BOTTOM;
+        layoutParams.gravity = Gravity.TOP;
         layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
         layoutParams.height = ViewGroup.LayoutParams.WRAP_CONTENT;
         layoutParams.dimAmount = 0f;
