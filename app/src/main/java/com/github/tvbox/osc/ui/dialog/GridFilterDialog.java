@@ -104,7 +104,7 @@ public class GridFilterDialog extends BaseDialog {
         layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
         layoutParams.height = ViewGroup.LayoutParams.WRAP_CONTENT;
         //layoutParams.dimAmount = 0f;
-        getWindow().getDecorView().setPadding(0, 120, 0, 0);
+        getWindow().getDecorView().setPadding(0, 0, 0, 0);
         getWindow().setAttributes(layoutParams);
     }
 }
