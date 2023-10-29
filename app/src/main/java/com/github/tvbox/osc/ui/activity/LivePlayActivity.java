@@ -1330,19 +1330,6 @@ public class LivePlayActivity extends BaseActivity {
         controller.setListener(new LiveController.LiveControlListener() {
             @Override
             public boolean singleTap(MotionEvent e) {
-                if (tvLeftChannelListLayout.getVisibility() == View.VISIBLE) {
-                    mHandler.removeCallbacks(mHideChannelListRun);
-                    //mHandler.post(mHideChannelListRun);
-                    tvLeftChannelListLayout.setVisibility(View.INVISIBLE);
-                    return true;
-                }
-                if (tvRightSettingLayout.getVisibility() == View.VISIBLE) {
-                    mHandler.removeCallbacks(mHideSettingLayoutRun);
-                    //mHandler.post(mHideSettingLayoutRun);
-                    tvRightSettingLayout.setVisibility(View.INVISIBLE);
-                    liveSettingGroupAdapter.setSelectedGroupIndex(-1);
-                    return true;
-                }
                 if (backcontroller.getVisibility() == View.VISIBLE){
                     backcontroller.setVisibility(View.GONE);
                     return true;
@@ -1358,6 +1345,19 @@ public class LivePlayActivity extends BaseActivity {
                     showChannelList();
                 } else if ( (e.getRawX() >= divideScreen) && (e.getRawX() <= (divideScreen * 2)) ) {
                     // middle screen
+                    if (tvLeftChannelListLayout.getVisibility() == View.VISIBLE) {
+                        mHandler.removeCallbacks(mHideChannelListRun);
+                        //mHandler.post(mHideChannelListRun);
+                        tvLeftChannelListLayout.setVisibility(View.INVISIBLE);
+                        return true;
+                    }
+                    if (tvRightSettingLayout.getVisibility() == View.VISIBLE) {
+                        mHandler.removeCallbacks(mHideSettingLayoutRun);
+                        //mHandler.post(mHideSettingLayoutRun);
+                        tvRightSettingLayout.setVisibility(View.INVISIBLE);
+                        liveSettingGroupAdapter.setSelectedGroupIndex(-1);
+                        return true;
+                    }
                     if(isBack){
                         showProgressBars();
                     }else{
