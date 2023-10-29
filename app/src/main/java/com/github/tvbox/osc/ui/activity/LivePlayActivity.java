@@ -1330,36 +1330,38 @@ public class LivePlayActivity extends BaseActivity {
         controller.setListener(new LiveController.LiveControlListener() {
             @Override
             public boolean singleTap(MotionEvent e) {
+                if (tvLeftChannelListLayout.getVisibility() == View.VISIBLE) {
+                    mHandler.removeCallbacks(mHideChannelListRun);
+                    //mHandler.post(mHideChannelListRun);
+                    tvLeftChannelListLayout.setVisibility(View.INVISIBLE);
+                    return true;
+                }
+                if (tvRightSettingLayout.getVisibility() == View.VISIBLE) {
+                    mHandler.removeCallbacks(mHideSettingLayoutRun);
+                    //mHandler.post(mHideSettingLayoutRun);
+                    tvRightSettingLayout.setVisibility(View.INVISIBLE);
+                    liveSettingGroupAdapter.setSelectedGroupIndex(-1);
+                    return true;
+                }
+                if (backcontroller.getVisibility() == View.VISIBLE){
+                    backcontroller.setVisibility(View.GONE);
+                    return true;
+                }
+                if (ll_epg.getVisibility() == View.VISIBLE || ll_right_top_loading.getVisibility() == View.VISIBLE) {
+                    ll_epg.setVisibility(View.GONE);
+                    ll_right_top_loading.setVisibility(View.GONE);
+                    return true;
+                }
                 int divideScreen = PlayerUtils.getScreenWidth(mContext, true) / 3;
                 if (e.getRawX() > 0 && e.getRawX() < divideScreen) {
                     // left side <<<<<
                     showChannelList();
                 } else if ( (e.getRawX() >= divideScreen) && (e.getRawX() <= (divideScreen * 2)) ) {
                     // middle screen
-                    if (tvLeftChannelListLayout.getVisibility() == View.VISIBLE) {
-                        mHandler.removeCallbacks(mHideChannelListRun);
-                        //mHandler.post(mHideChannelListRun);
-                        tvLeftChannelListLayout.setVisibility(View.INVISIBLE);
-                        //return;
-                    }
-                    if (tvRightSettingLayout.getVisibility() == View.VISIBLE) {
-                        mHandler.removeCallbacks(mHideSettingLayoutRun);
-                        //mHandler.post(mHideSettingLayoutRun);
-                        tvRightSettingLayout.setVisibility(View.INVISIBLE);
-                        liveSettingGroupAdapter.setSelectedGroupIndex(-1);
-                        //return;
-                    }
                     if(isBack){
-                        if (backcontroller.getVisibility() == View.VISIBLE)
-                            backcontroller.setVisibility(View.GONE);
-                        else
-                            showProgressBars();
+                        showProgressBars();
                     }else{
-                        if (ll_epg.getVisibility() == View.VISIBLE || ll_right_top_loading.getVisibility() == View.VISIBLE) {
-                            ll_epg.setVisibility(View.GONE);
-                            ll_right_top_loading.setVisibility(View.GONE);
-                        }else
-                            showBottomEpg();
+                        showBottomEpg();
                     }
                 } else if (e.getRawX() > (divideScreen * 2)) {
                     // right side >>>>>
