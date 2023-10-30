@@ -140,7 +140,7 @@ public class VodController extends BaseController {
     TextView mVideoSize;
     public SimpleSubtitleView mSubtitleView;
     public TextView mZimuBtn;
-    TextView mAudioTrackBtn;
+    public TextView mAudioTrackBtn;
     public TextView mLandscapePortraitBtn;
     private ImageView mIvPlayStatus;
     private View mChooseSeries;
@@ -965,7 +965,6 @@ public class VodController extends BaseController {
             case VideoView.STATE_PLAYING:
                 initLandscapePortraitBtnInfo();
                 startProgress();
-                LogUtils.d("STATE_PLAYING");
                 mIvPlayStatus.setImageResource(R.drawable.ic_pause);
                 break;
             case VideoView.STATE_PAUSED:

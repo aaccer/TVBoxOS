@@ -14,44 +14,23 @@
 
         <TextView
             android:id="@+id/tv_title"
-            android:text="添加订阅"
-            android:textColor="@color/colorPrimary"
-            android:layout_width="wrap_content"
-            android:textSize="16sp"
-            android:layout_height="wrap_content"/>
-
-        <TextView
-            android:id="@+id/tv_local"
-            android:text="本地导入"
+            android:text="直播源"
             android:textColor="@color/colorPrimary"
             android:layout_width="wrap_content"
             android:textSize="16sp"
             android:layout_height="wrap_content"
+            android:gravity="center"/>
+
+        <ImageView
+            android:id="@+id/iv_history"
+            android:layout_width="34dp"
+            android:layout_height="24dp"
+            android:paddingHorizontal="6dp"
             android:layout_alignParentRight="true"
-            android:drawableLeft="@drawable/ic_file_24"
-            android:drawablePadding="4dp"/>
+            android:src="@drawable/ic_history_48"
+            app:tint="@color/colorPrimary"/>
     </RelativeLayout>
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:layout_marginTop="10dp"
-        android:layout_width="match_parent"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
-        android:layout_height="wrap_content">
-
-        <EditText
-            android:id="@+id/et_name"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@null"
-            android:layout_marginTop="10dp"
-            android:hint="自定义订阅名"
-            android:inputType="textUri"
-            android:textColor="@color/text_gray"
-            android:textSize="14sp"
-            android:maxLength="10"
-            android:singleLine="true"/>
-
-    </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
@@ -65,8 +44,9 @@
             android:layout_height="wrap_content"
             android:background="@null"
             android:layout_marginTop="10dp"
-            android:hint="地址 例: https://..."
-            android:inputType="textUri"
+            android:hint="清空则跟随订阅"
+            android:ellipsize="middle"
+            android:singleLine="true"
             android:textColor="@color/text_gray"
             android:textSize="14sp"/>
 
@@ -98,7 +78,7 @@
             android:layout_height="33dp"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             app:strokeColor="@color/colorPrimary"
-            android:text="添 加"/>
+            android:text="设 置"/>
 
     </LinearLayout>
 </LinearLayout>
