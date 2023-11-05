@@ -90,6 +90,9 @@ dependencies {
     implementation project(":player")
     implementation project(":quickjs")
 
+    implementation 'androidx.annotation:annotation:1.6.0'
+    implementation "androidx.media3:media3-common:1.1.1"
+    
     implementation 'net.sourceforge.streamsupport:android-retrofuture:1.7.4'
 /*    implementation('org.xwalk:xwalk_shared_library:23.53.589.4') {
         exclude group: 'com.android.support'
