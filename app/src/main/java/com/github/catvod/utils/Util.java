@@ -7,7 +7,6 @@ import android.text.TextUtils;
 import android.util.Base64;
 
 import com.github.catvod.Init;
-import com.google.android.exoplayer2.util.Util;
 import com.google.common.net.HttpHeaders;
 
 import java.io.File;
@@ -129,7 +128,7 @@ public class Util {
 
     public static String format(StringBuilder builder, Formatter formatter, long timeMs) {
         try {
-            return Util.getStringForTime(builder, formatter, timeMs);
+            return com.google.android.exoplayer2.util.Util.getStringForTime(builder, formatter, timeMs);
         } catch (Exception e) {
             return "";
         }
