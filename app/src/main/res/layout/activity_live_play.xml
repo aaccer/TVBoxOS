@@ -36,7 +36,7 @@
 				android:layout_height="120sp"
 				android:id="@+id/iv_play"
 				android:visibility="gone"
-				android:background="@drawable/vod_pause"/>
+				android:background="@drawable/vod_play"/>
 
 		</LinearLayout>
 
@@ -58,7 +58,7 @@
 				android:layout_width="30dp"
 				android:layout_height="30dp"
 				android:id="@+id/iv_playpause"
-				android:background="@drawable/vod_pause"/>
+				android:background="@drawable/vod_play"/>
 
 			<TextView
 				android:id="@+id/tv_currentpos"
