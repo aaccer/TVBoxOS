@@ -327,7 +327,7 @@ public class LivePlayActivity extends BaseActivity {
                     mVideoView.pause();
                     //countDownTimer.cancel();
                     //iv_play.setVisibility(View.VISIBLE);
-                    iv_playpause.setBackground(ContextCompat.getDrawable(LivePlayActivity.context, R.drawable.icon_play));
+                    iv_playpause.setBackground(ContextCompat.getDrawable(LivePlayActivity.context, R.drawable.vod_pause));
                 }else{
                     mVideoView.start();
                     //iv_play.setVisibility(View.INVISIBLE);
@@ -375,7 +375,7 @@ public class LivePlayActivity extends BaseActivity {
                             mVideoView.pause();
                             //countDownTimer.cancel();
                             //iv_play.setVisibility(View.VISIBLE);
-                            iv_playpause.setBackground(ContextCompat.getDrawable(LivePlayActivity.context, R.drawable.icon_play));
+                            iv_playpause.setBackground(ContextCompat.getDrawable(LivePlayActivity.context, R.drawable.vod_pause));
                         }else{
                             mVideoView.start();
                             //iv_play.setVisibility(View.INVISIBLE);
@@ -2142,7 +2142,7 @@ public class LivePlayActivity extends BaseActivity {
             iv_playpause.setBackground(ContextCompat.getDrawable(LivePlayActivity.context, R.drawable.vod_play));
         }else{
             //iv_play.setVisibility(View.VISIBLE);
-            iv_playpause.setBackground(ContextCompat.getDrawable(LivePlayActivity.context, R.drawable.icon_play));
+            iv_playpause.setBackground(ContextCompat.getDrawable(LivePlayActivity.context, R.drawable.vod_pause));
         }
         if(countDownTimer3!=null){
             countDownTimer3.cancel();
