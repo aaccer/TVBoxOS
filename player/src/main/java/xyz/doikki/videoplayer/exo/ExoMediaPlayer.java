@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.view.Surface;
 import android.view.SurfaceHolder;
+import androidx.annotation.NonNull;
 
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
@@ -48,7 +49,7 @@ public class ExoMediaPlayer extends AbstractPlayer implements Player.Listener {
 
     private LoadControl mLoadControl;
     private RenderersFactory mRenderersFactory;
-    private TrackSelector mTrackSelector;
+    private DefaultTrackSelector mTrackSelector;
 
     public ExoMediaPlayer(Context context) {
         mAppContext = context.getApplicationContext();
@@ -76,11 +77,11 @@ public class ExoMediaPlayer extends AbstractPlayer implements Player.Listener {
         mInternalPlayer.addListener(this);
     }
 
-    public TrackSelector getTrackSelector() {
+    public DefaultTrackSelector getTrackSelector() {
         return mTrackSelector;
     }
 
-    public void setTrackSelector(TrackSelector trackSelector) {
+    public void setTrackSelector(DefaultTrackSelector trackSelector) {
         mTrackSelector = trackSelector;
     }
 
@@ -256,7 +257,7 @@ public class ExoMediaPlayer extends AbstractPlayer implements Player.Listener {
     }
 
     @Override
-    public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
+    public void onTracksChanged(@NonNull TrackGroupArray trackGroups, @NonNull TrackSelectionArray trackSelections) {
         trackNameProvider = new ExoTrackNameProvider(mAppContext.getResources());
         mTrackSelections = trackSelections;
     }
