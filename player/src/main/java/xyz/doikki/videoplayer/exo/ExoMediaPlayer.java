@@ -48,7 +48,7 @@ public class ExoMediaPlayer extends AbstractPlayer implements Player.Listener {
 
     private LoadControl mLoadControl;
     private RenderersFactory mRenderersFactory;
-    private TrackSelector mTrackSelector;
+    private DefaultTrackSelector mTrackSelector;
 
     public ExoMediaPlayer(Context context) {
         mAppContext = context.getApplicationContext();
@@ -57,23 +57,21 @@ public class ExoMediaPlayer extends AbstractPlayer implements Player.Listener {
 
     @Override
     public void initPlayer() {
-        if (mRenderersFactory == null) {
-            mRenderersFactory = new DefaultRenderersFactory(mAppContext);
-        }
-        mRenderersFactory.setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_PREFER);
-        if (mTrackSelector == null) {
-            mTrackSelector = new DefaultTrackSelector(mAppContext);
-        }
-        if (mLoadControl == null) {
-            mLoadControl =new DefaultLoadControl();
-        }
-        mTrackSelector.setParameters(mTrackSelector.getParameters().buildUpon().setTunnelingEnabled(true));
-        mInternalPlayer = new ExoPlayer.Builder(mAppContext)
-                .setLoadControl(mLoadControl)
-                .setRenderersFactory(mRenderersFactory)
-                .setTrackSelector(mTrackSelector).build();
-
+        mInternalPlayer = new SimpleExoPlayer.Builder(
+                mAppContext,
+                mRenderersFactory == null ? mRenderersFactory = new DefaultRenderersFactory(mAppContext) : mRenderersFactory,
+                mTrackSelector == null ? mTrackSelector = new DefaultTrackSelector(mAppContext) : mTrackSelector,
+                new DefaultMediaSourceFactory(mAppContext),
+                mLoadControl == null ? mLoadControl = new DefaultLoadControl() : mLoadControl,
+                DefaultBandwidthMeter.getSingletonInstance(mAppContext),
+                new AnalyticsCollector(Clock.DEFAULT))
+                .build();
         setOptions();
+
+        //播放器日志
+        if (VideoViewManager.getConfig().mIsEnableLog && mTrackSelector instanceof MappingTrackSelector) {
+            mInternalPlayer.addAnalyticsListener(new EventLogger((MappingTrackSelector) mTrackSelector, "ExoPlayer"));
+        }
 
         mInternalPlayer.addListener(this);
     }
@@ -258,7 +256,7 @@ public class ExoMediaPlayer extends AbstractPlayer implements Player.Listener {
     }
 
     @Override
-    public void onTracksChanged(@NonNull TrackGroupArray trackGroups, @NonNull TrackSelectionArray trackSelections) {
+    public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
         trackNameProvider = new ExoTrackNameProvider(mAppContext.getResources());
         mTrackSelections = trackSelections;
     }
