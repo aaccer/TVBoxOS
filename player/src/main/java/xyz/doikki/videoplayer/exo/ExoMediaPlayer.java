@@ -48,7 +48,7 @@ public class ExoMediaPlayer extends AbstractPlayer implements Player.Listener {
 
     private LoadControl mLoadControl;
     private RenderersFactory mRenderersFactory;
-    private DefaultTrackSelector mTrackSelector;
+    private TrackSelector mTrackSelector;
 
     public ExoMediaPlayer(Context context) {
         mAppContext = context.getApplicationContext();
@@ -76,7 +76,7 @@ public class ExoMediaPlayer extends AbstractPlayer implements Player.Listener {
         mInternalPlayer.addListener(this);
     }
 
-    public DefaultTrackSelector getTrackSelector() {
+    public TrackSelector getTrackSelector() {
         return mTrackSelector;
     }
 
