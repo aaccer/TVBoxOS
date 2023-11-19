@@ -1058,7 +1058,10 @@ public class PlayActivity extends BaseActivity {
         if (reset) {
             CacheManager.delete(MD5.string2MD5(progressKey), 0);
             CacheManager.delete(MD5.string2MD5(subtitleCacheKey), 0);
-        /*}else{
+            if(mController.mSubtitleView.getVisibility() == View.VISIBLE){
+                mController.mSubtitleView.reset();
+            }
+        }/*else{
             try{
                 int playerType = mVodPlayerCfg.getInt("pl");
                 if(playerType==1){
@@ -1068,8 +1071,8 @@ public class PlayActivity extends BaseActivity {
                 }
             }catch (JSONException e) {
                 e.printStackTrace();
-            }*/
-        }
+            }
+        }*/
         if(Jianpian.isJpUrl(vs.url)){//荐片地址特殊判断
             String jp_url= vs.url;
             mController.showParse(false);
