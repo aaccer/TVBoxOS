@@ -44,7 +44,7 @@ public class EXOmPlayer extends ExoMediaPlayer {
                             TrackInfoBean t = new TrackInfoBean();
                             t.name = trackName;
                             t.language = "";
-                            t.trackId = formatIndex;
+                            t.index = formatIndex;
                             t.selected = !StringUtils.isEmpty(audioId) && audioId.equals(format.id);
                             t.trackGroupId = groupIndex;
                             t.renderId = groupArrayIndex;
@@ -54,7 +54,7 @@ public class EXOmPlayer extends ExoMediaPlayer {
                             TrackInfoBean t = new TrackInfoBean();
                             t.name = trackName;
                             t.language = "";
-                            t.trackId = formatIndex;
+                            t.index = formatIndex;
                             t.selected = !StringUtils.isEmpty(subtitleId) && subtitleId.equals(format.id);
                             t.trackGroupId = groupIndex;
                             t.renderId = groupArrayIndex;
@@ -98,7 +98,7 @@ public class EXOmPlayer extends ExoMediaPlayer {
                 }
             } else {
                 TrackGroupArray trackGroupArray = trackInfo.getTrackGroups(videoTrackBean.renderId);
-                SelectionOverride override = new SelectionOverride(videoTrackBean.trackGroupId, videoTrackBean.trackId);
+                SelectionOverride override = new SelectionOverride(videoTrackBean.trackGroupId, videoTrackBean.index);
                 ParametersBuilder parametersBuilder = getTrackSelector().buildUponParameters();
                 parametersBuilder.setRendererDisabled(videoTrackBean.renderId, false);
                 parametersBuilder.setSelectionOverride(videoTrackBean.renderId, trackGroupArray, override);
@@ -109,7 +109,7 @@ public class EXOmPlayer extends ExoMediaPlayer {
     }
 
     public void setOnTimedTextListener(Player.Listener listener) {
-        mMediaPlayer.addListener(listener);
+        mInternalPlayer.addListener(listener);
     }
 
 }
