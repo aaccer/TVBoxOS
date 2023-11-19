@@ -17,6 +17,7 @@ import com.google.android.exoplayer2.analytics.AnalyticsCollector;
 import com.google.android.exoplayer2.source.DefaultMediaSourceFactory;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
@@ -36,7 +37,9 @@ public class ExoMediaPlayer extends AbstractPlayer implements Player.Listener {
     protected SimpleExoPlayer mInternalPlayer;
     protected MediaSource mMediaSource;
     protected ExoMediaSourceHelper mMediaSourceHelper;
-
+    protected ExoTrackNameProvider trackNameProvider;
+    protected TrackSelectionArray mTrackSelections;
+    
     private PlaybackParameters mSpeedPlaybackParameters;
 
     private boolean mIsPreparing;
@@ -69,6 +72,10 @@ public class ExoMediaPlayer extends AbstractPlayer implements Player.Listener {
         }
 
         mInternalPlayer.addListener(this);
+    }
+
+    public DefaultTrackSelector getTrackSelector() {
+        return mTrackSelector;
     }
 
     public void setTrackSelector(TrackSelector trackSelector) {
@@ -244,6 +251,12 @@ public class ExoMediaPlayer extends AbstractPlayer implements Player.Listener {
     @Override
     public long getTcpSpeed() {
         return PlayerUtils.getNetSpeed(mAppContext);
+    }
+
+    @Override
+    public void onTracksChanged(@NonNull TrackGroupArray trackGroups, @NonNull TrackSelectionArray trackSelections) {
+        trackNameProvider = new ExoTrackNameProvider(mAppContext.getResources());
+        mTrackSelections = trackSelections;
     }
 
     @Override
