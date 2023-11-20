@@ -58,7 +58,7 @@ public class ExoMediaPlayer extends AbstractPlayer implements Player.Listener {
 
     @Override
     public void initPlayer() {
-/*        mInternalPlayer = new SimpleExoPlayer.Builder(
+        mInternalPlayer = new ExoPlayer.Builder(
                 mAppContext,
                 mRenderersFactory == null ? mRenderersFactory = new DefaultRenderersFactory(mAppContext) : mRenderersFactory,
                 mTrackSelector == null ? mTrackSelector = new DefaultTrackSelector(mAppContext) : mTrackSelector,
@@ -73,7 +73,7 @@ public class ExoMediaPlayer extends AbstractPlayer implements Player.Listener {
         if (VideoViewManager.getConfig().mIsEnableLog && mTrackSelector instanceof MappingTrackSelector) {
             mInternalPlayer.addAnalyticsListener(new EventLogger((MappingTrackSelector) mTrackSelector, "ExoPlayer"));
         }
-*/
+/*
         if (mRenderersFactory == null) {
             mRenderersFactory = new DefaultRenderersFactory(mAppContext);
         }
@@ -91,7 +91,7 @@ public class ExoMediaPlayer extends AbstractPlayer implements Player.Listener {
                 .setTrackSelector(mTrackSelector).build();
 
         setOptions();
-
+*/
         mInternalPlayer.addListener(this);
     }
 
