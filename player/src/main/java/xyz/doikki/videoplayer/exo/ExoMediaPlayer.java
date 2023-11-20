@@ -42,7 +42,7 @@ public class ExoMediaPlayer extends AbstractPlayer implements Player.Listener {
     protected ExoMediaSourceHelper mMediaSourceHelper;
     protected ExoTrackNameProvider trackNameProvider;
     protected TrackSelectionArray mTrackSelections;
-    
+
     private PlaybackParameters mSpeedPlaybackParameters;
 
     private boolean mIsPreparing;
@@ -98,7 +98,7 @@ public class ExoMediaPlayer extends AbstractPlayer implements Player.Listener {
     public DefaultTrackSelector getTrackSelector() {
         return mTrackSelector;
     }
-
+/*
     public void setTrackSelector(DefaultTrackSelector trackSelector) {
         mTrackSelector = trackSelector;
     }
@@ -110,7 +110,7 @@ public class ExoMediaPlayer extends AbstractPlayer implements Player.Listener {
     public void setLoadControl(LoadControl loadControl) {
         mLoadControl = loadControl;
     }
-
+*/
     @Override
     public void setDataSource(String path, Map<String, String> headers) {
         mMediaSource = mMediaSourceHelper.getMediaSource(path, headers);
