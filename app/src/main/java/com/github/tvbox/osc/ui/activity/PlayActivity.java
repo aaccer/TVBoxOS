@@ -261,10 +261,11 @@ public class PlayActivity extends BaseActivity {
         SubtitleDialog subtitleDialog = new SubtitleDialog(PlayActivity.this);
         //int playerType = mVodPlayerCfg.getInt("pl");
         //if (mController.mSubtitleView.hasInternal && playerType == 1) {
-            //subtitleDialog.selectInternal.setVisibility(View.VISIBLE);
-        //} else {
-            //subtitleDialog.selectInternal.setVisibility(View.GONE);
-        //}
+        if (mController.mSubtitleView.hasInternal && playerType == 1) {
+            subtitleDialog.selectInternal.setVisibility(View.VISIBLE);
+        } else {
+            subtitleDialog.selectInternal.setVisibility(View.GONE);
+        }
         subtitleDialog.setSubtitleViewListener(new SubtitleDialog.SubtitleViewListener() {
             @Override
             public void setTextSize(int size) {
