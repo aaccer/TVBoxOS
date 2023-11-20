@@ -48,7 +48,7 @@ public class ExoMediaPlayer extends AbstractPlayer implements Player.Listener {
     private boolean mIsPreparing;
 
     private LoadControl mLoadControl;
-    private DefaultRenderersFactory mRenderersFactory;
+    private RenderersFactory mRenderersFactory;
     private DefaultTrackSelector mTrackSelector;
 
     public ExoMediaPlayer(Context context) {
