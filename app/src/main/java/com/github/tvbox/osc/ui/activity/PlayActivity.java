@@ -261,7 +261,7 @@ public class PlayActivity extends BaseActivity {
         SubtitleDialog subtitleDialog = new SubtitleDialog(PlayActivity.this);
         //int playerType = mVodPlayerCfg.getInt("pl");
         //if (mController.mSubtitleView.hasInternal && playerType == 1) {
-        if (mController.mSubtitleView.hasInternal && playerType == 1) {
+        if (mController.mSubtitleView.hasInternal) {
             subtitleDialog.selectInternal.setVisibility(View.VISIBLE);
         } else {
             subtitleDialog.selectInternal.setVisibility(View.GONE);
