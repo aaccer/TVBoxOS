@@ -4,10 +4,12 @@ import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.view.Surface;
 import android.view.SurfaceHolder;
+import androidx.annotation.NonNull;
 
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.ExoPlaybackException;
+import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.LoadControl;
 import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
@@ -16,7 +18,9 @@ import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.analytics.AnalyticsCollector;
 import com.google.android.exoplayer2.source.DefaultMediaSourceFactory;
 import com.google.android.exoplayer2.source.MediaSource;
+import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
@@ -36,14 +40,16 @@ public class ExoMediaPlayer extends AbstractPlayer implements Player.Listener {
     protected SimpleExoPlayer mInternalPlayer;
     protected MediaSource mMediaSource;
     protected ExoMediaSourceHelper mMediaSourceHelper;
+    protected ExoTrackNameProvider trackNameProvider;
+    protected TrackSelectionArray mTrackSelections;
 
     private PlaybackParameters mSpeedPlaybackParameters;
 
     private boolean mIsPreparing;
 
     private LoadControl mLoadControl;
-    private RenderersFactory mRenderersFactory;
-    private TrackSelector mTrackSelector;
+    private DefaultRenderersFactory mRenderersFactory;
+    private DefaultTrackSelector mTrackSelector;
 
     public ExoMediaPlayer(Context context) {
         mAppContext = context.getApplicationContext();
@@ -67,15 +73,18 @@ public class ExoMediaPlayer extends AbstractPlayer implements Player.Listener {
         if (VideoViewManager.getConfig().mIsEnableLog && mTrackSelector instanceof MappingTrackSelector) {
             mInternalPlayer.addAnalyticsListener(new EventLogger((MappingTrackSelector) mTrackSelector, "ExoPlayer"));
         }
-
         mInternalPlayer.addListener(this);
     }
 
-    public void setTrackSelector(TrackSelector trackSelector) {
+    public DefaultTrackSelector getTrackSelector() {
+        return mTrackSelector;
+    }
+
+    public void setTrackSelector(DefaultTrackSelector trackSelector) {
         mTrackSelector = trackSelector;
     }
 
-    public void setRenderersFactory(RenderersFactory renderersFactory) {
+    public void setRenderersFactory(DefaultRenderersFactory renderersFactory) {
         mRenderersFactory = renderersFactory;
     }
 
@@ -244,6 +253,12 @@ public class ExoMediaPlayer extends AbstractPlayer implements Player.Listener {
     @Override
     public long getTcpSpeed() {
         return PlayerUtils.getNetSpeed(mAppContext);
+    }
+
+    @Override
+    public void onTracksChanged(@NonNull TrackGroupArray trackGroups, @NonNull TrackSelectionArray trackSelections) {
+        trackNameProvider = new ExoTrackNameProvider(mAppContext.getResources());
+        mTrackSelections = trackSelections;
     }
 
     @Override
