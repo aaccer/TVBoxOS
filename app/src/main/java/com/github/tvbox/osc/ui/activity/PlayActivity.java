@@ -480,6 +480,7 @@ public class PlayActivity extends BaseActivity {
                 //return val.index + " : " + val.language;
                 String name = val.name.replace("TIMEDTEXT,", "");
                 name = name.replace("N/A,", "");
+                name = name.replace("null", "");
                 name = name.replace(" ", "");
                 return name + (StringUtils.isEmpty(val.language) ? "" : " " + val.language);
             }
