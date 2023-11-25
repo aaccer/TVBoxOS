@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.DialogInterface;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -12,6 +13,8 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
 
 import com.blankj.utilcode.util.SPUtils;
+import com.blankj.utilcode.util.ToastUtils;
+import com.github.tvbox.osc.BuildConfig;
 import com.github.tvbox.osc.R;
 import com.github.tvbox.osc.api.ApiConfig;
 import com.github.tvbox.osc.base.BaseLazyFragment;
@@ -41,6 +44,7 @@ import com.hjq.permissions.OnPermissionCallback;
 import com.hjq.permissions.Permission;
 import com.hjq.permissions.XXPermissions;
 import com.lxj.xpopup.XPopup;
+import com.lxj.xpopup.interfaces.OnInputConfirmListener;
 import com.orhanobut.hawk.Hawk;
 
 import org.greenrobot.eventbus.EventBus;
@@ -487,6 +491,7 @@ public class ModelSettingFragment extends BaseLazyFragment {
                 ArrayList<Integer> types = new ArrayList<>();
                 types.add(0);
                 types.add(1);
+                types.add(2);
                 SelectDialog<Integer> dialog = new SelectDialog<>(mActivity);
                 dialog.setTip("主页内容显示");
                 dialog.setAdapter(new SelectDialogAdapter.SelectDialogInterface<Integer>() {
@@ -683,6 +688,18 @@ public class ModelSettingFragment extends BaseLazyFragment {
             });
             dialog.show();
         }));
+
+        findViewById(R.id.llTMDB).setVisibility(BuildConfig.DEBUG?View.VISIBLE:View.GONE);
+        findViewById(R.id.llTMDB).setOnClickListener(view -> {
+            String token = Hawk.get(HawkConfig.TOKEN_TMDB, "");
+            new XPopup.Builder(mActivity)
+                    .asInputConfirm("IMDB", "", token, "请录入token,不必带Bearer", text -> {
+                        if (!TextUtils.isEmpty(text)){
+                            Hawk.put(HawkConfig.TOKEN_TMDB,text);
+                            ToastUtils.showShort("设置成功");
+                        }
+                    }, null, R.layout.dialog_input).show();
+        });
     }
 
     private void onClickIjkCachePlay(View v) {
@@ -719,10 +736,13 @@ public class ModelSettingFragment extends BaseLazyFragment {
     }
 
     String getHomeRecName(int type) {
-        if (type == 1) {
-            return "站点推荐";
-        } else {
-            return "豆瓣热播";
+        switch (type) {
+            case 0:
+                return "豆瓣热播";
+            case 1:
+                return "站点推荐";
+            default:
+                return "关闭";
         }
     }
 

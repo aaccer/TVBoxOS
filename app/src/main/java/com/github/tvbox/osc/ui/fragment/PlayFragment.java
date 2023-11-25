@@ -452,7 +452,7 @@ public class PlayFragment extends BaseLazyFragment {
         subtitleDialog.setLocalFileChooserListener(new SubtitleDialog.LocalFileChooserListener() {
             @Override
             public void openLocalFileChooserDialog() {
-                new ChooserDialog(getActivity())
+                new ChooserDialog(getActivity(),R.style.FileChooser)
                         .withFilter(false, false, "srt", "ass", "scc", "stl", "ttml")
                         .withStartFile("/storage/emulated/0/Download")
                         .withChosenListener(new ChooserDialog.Result() {
@@ -707,18 +707,21 @@ public class PlayFragment extends BaseLazyFragment {
             } else {
                 if (mController.mSubtitleView.hasInternal) {//有则使用内置字幕
                     mController.mSubtitleView.isInternal = true;
-                    if (trackInfo != null) {
+                    if (trackInfo != null && !trackInfo.getSubtitle().isEmpty()) {
                         List<TrackInfoBean> subtitleTrackList = trackInfo.getSubtitle();
                         int selectedIndex = trackInfo.getSubtitleSelected(true);
-                        for (TrackInfoBean subtitleTrackInfoBean : subtitleTrackList) {
+                        boolean hasCh =false;
+                        for(TrackInfoBean subtitleTrackInfoBean : subtitleTrackList) {
                             String lowerLang = subtitleTrackInfoBean.language.toLowerCase();
-                            if (lowerLang.startsWith("zh") || lowerLang.startsWith("ch")) {
+                            if (lowerLang.contains("zh") || lowerLang.contains("ch")) {
+                                hasCh=true;
                                 if (selectedIndex != subtitleTrackInfoBean.index) {
-                                    ((IjkMediaPlayer) (mVideoView.getMediaPlayer())).setTrack(subtitleTrackInfoBean.index);
+                                    ((IjkMediaPlayer)(mVideoView.getMediaPlayer())).setTrack(subtitleTrackInfoBean.index);
                                     break;
                                 }
                             }
                         }
+                        if(!hasCh)((IjkMediaPlayer)(mVideoView.getMediaPlayer())).setTrack(subtitleTrackList.get(0).index);
                     }
                 }
             }
@@ -960,8 +963,9 @@ public class PlayFragment extends BaseLazyFragment {
         if (mVodInfo == null) return;
         VodInfo.VodSeries vs = mVodInfo.seriesMap.get(mVodInfo.playFlag).get(mVodInfo.playIndex);
         EventBus.getDefault().post(new RefreshEvent(RefreshEvent.TYPE_REFRESH, mVodInfo.playIndex));
-        setTip("正在获取播放信息", true, false);
+        EventBus.getDefault().post(new RefreshEvent(RefreshEvent.TYPE_REFRESH_NOTIFY, mVodInfo.name + "&&" + vs.name));
         String playTitleInfo = mVodInfo.name + " " + vs.name;
+        setTip("正在获取播放信息", true, false);
         mController.setTitle(playTitleInfo);
 
         stopParse();
@@ -973,6 +977,17 @@ public class PlayFragment extends BaseLazyFragment {
         if (reset) {
             CacheManager.delete(MD5.string2MD5(progressKey), 0);
             CacheManager.delete(MD5.string2MD5(subtitleCacheKey), 0);
+        } else{
+            try{
+                int playerType = mVodPlayerCfg.getInt("pl");
+                if(playerType==1){
+                    mController.mSubtitleView.setVisibility(View.VISIBLE);
+                }else {
+                    mController.mSubtitleView.setVisibility(View.GONE);
+                }
+            }catch (JSONException e) {
+                e.printStackTrace();
+            }
         }
 
         if (Jianpian.isJpUrl(vs.url)) {//荐片地址特殊判断
