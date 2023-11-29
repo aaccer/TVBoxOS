@@ -40,7 +40,7 @@ public class SearchCheckboxDialog extends BaseDialog{
         if (context instanceof Activity) {
             setOwnerActivity((Activity) context);
         }
-        setCanceledOnTouchOutside(false);
+        setCanceledOnTouchOutside(true);
         setCancelable(true);
         mSourceList = sourceList;
         mCheckSourcees = checkedSources;
