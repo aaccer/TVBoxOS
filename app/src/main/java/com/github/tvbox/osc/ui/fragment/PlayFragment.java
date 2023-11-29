@@ -853,7 +853,12 @@ public class PlayFragment extends BaseLazyFragment {
                             if (lowerLang.startsWith("zh") || lowerLang.startsWith("ch")) {
                                 //hasCh=true;
                                 if (selectedIndex != subtitleTrackInfoBean.index) {
-                                    ((IjkMediaPlayer)(mVideoView.getMediaPlayer())).setTrack(subtitleTrackInfoBean.index);
+                                    if (mVideoView.getMediaPlayer() instanceof IjkMediaPlayer) {
+                                        ((IjkMediaPlayer)(mVideoView.getMediaPlayer())).setTrack(subtitleTrackInfoBean.index);
+                                    }
+                                    if (mVideoView.getMediaPlayer() instanceof EXOmPlayer) {
+                                        ((EXOmPlayer)(mVideoView.getMediaPlayer())).selectExoTrack(subtitleTrackInfoBean);
+                                    }
                                     break;
                                 }
                             }
