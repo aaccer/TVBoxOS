@@ -940,13 +940,17 @@ public class LivePlayActivity extends BaseActivity {
             currentLiveChannelItem.setinclude_back(false);
         }
         //showBottomEpg();
-        liveChannelItemAdapter.setNewData(getLiveChannels(currentChannelGroupIndex));
-        if (currentLiveChannelIndex > -1)
-            mLiveChannelView.scrollToPosition(currentLiveChannelIndex);
-        mLiveChannelView.setSelection(currentLiveChannelIndex);
-        if (currentChannelGroupIndex > -1)
-            mChannelGroupView.scrollToPosition(currentChannelGroupIndex);
-        mChannelGroupView.setSelection(currentChannelGroupIndex);
+        //liveChannelItemAdapter.setNewData(getLiveChannels(channelGroupIndex));
+        if (channelGroupIndex == currentChannelGroupIndex){
+        //if (liveChannelIndex > -1)
+            //mLiveChannelView.scrollToPosition(liveChannelIndex);
+        mLiveChannelView.setSelection(liveChannelIndex);
+        //if (channelGroupIndex > -1)
+            //mChannelGroupView.scrollToPosition(channelGroupIndex);
+        mChannelGroupView.setSelection(channelGroupIndex);
+        liveChannelGroupAdapter.setSelectedGroupIndex(channelGroupIndex);
+        liveChannelItemAdapter.setSelectedChannelIndex(liveChannelIndex);
+        }
         //liveEpgDateAdapter.setSelectedIndex(1);
         getEpg(new Date(),true);
         backcontroller.setVisibility(View.GONE);
