@@ -939,6 +939,8 @@ public class LivePlayActivity extends BaseActivity {
         }else {
             currentLiveChannelItem.setinclude_back(false);
         }
+        //liveEpgDateAdapter.setSelectedIndex(1);
+        getEpg(new Date(),true);
         //showBottomEpg();
         //liveChannelItemAdapter.setNewData(getLiveChannels(channelGroupIndex));
         if (channelGroupIndex == currentChannelGroupIndex && tvLeftChannelListLayout.getVisibility() == View.VISIBLE){
@@ -953,8 +955,6 @@ public class LivePlayActivity extends BaseActivity {
         //liveChannelGroupAdapter.setFocusedGroupIndex(channelGroupIndex);
         liveChannelItemAdapter.setFocusedChannelIndex(liveChannelIndex);
         }
-        //liveEpgDateAdapter.setSelectedIndex(1);
-        getEpg(new Date(),true);
         backcontroller.setVisibility(View.GONE);
         //ll_right_top_huikan.setVisibility(View.GONE);
         mVideoView.setUrl(currentLiveChannelItem.getUrl());
