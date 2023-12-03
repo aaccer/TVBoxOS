@@ -678,6 +678,16 @@ public class LivePlayActivity extends BaseActivity {
             int keyCode = event.getKeyCode();
             if (keyCode == KeyEvent.KEYCODE_MENU) {
                 showSettingGroup();
+            }else if (keyCode == KeyEvent.KEYCODE_CHANNEL_UP) {
+                if (Hawk.get(HawkConfig.LIVE_CHANNEL_REVERSE, false))
+                    playNext();
+                else
+                    playPrevious();
+            }else if (keyCode == KeyEvent.KEYCODE_CHANNEL_DOWN) {
+                if (Hawk.get(HawkConfig.LIVE_CHANNEL_REVERSE, false))
+                    playPrevious();
+                else
+                    playNext();
             } else if (!isListOrSettingLayoutVisible()) {
                 switch (keyCode) {
                     case KeyEvent.KEYCODE_DPAD_UP:
