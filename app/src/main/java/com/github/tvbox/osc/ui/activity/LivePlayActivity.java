@@ -941,15 +941,17 @@ public class LivePlayActivity extends BaseActivity {
         }
         //showBottomEpg();
         //liveChannelItemAdapter.setNewData(getLiveChannels(channelGroupIndex));
-        if (channelGroupIndex == currentChannelGroupIndex){
+        if (channelGroupIndex == currentChannelGroupIndex && tvLeftChannelListLayout.getVisibility() == View.VISIBLE){
         //if (liveChannelIndex > -1)
             //mLiveChannelView.scrollToPosition(liveChannelIndex);
         mLiveChannelView.setSelection(liveChannelIndex);
         //if (channelGroupIndex > -1)
             //mChannelGroupView.scrollToPosition(channelGroupIndex);
-        mChannelGroupView.setSelection(channelGroupIndex);
-        liveChannelGroupAdapter.setSelectedGroupIndex(channelGroupIndex);
+        //mChannelGroupView.setSelection(channelGroupIndex);
+        //liveChannelGroupAdapter.setSelectedGroupIndex(channelGroupIndex);
         liveChannelItemAdapter.setSelectedChannelIndex(liveChannelIndex);
+        //liveChannelGroupAdapter.setFocusedGroupIndex(channelGroupIndex);
+        liveChannelItemAdapter.setFocusedChannelIndex(liveChannelIndex);
         }
         //liveEpgDateAdapter.setSelectedIndex(1);
         getEpg(new Date(),true);
