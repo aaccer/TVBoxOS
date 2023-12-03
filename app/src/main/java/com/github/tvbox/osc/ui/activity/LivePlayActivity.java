@@ -422,13 +422,13 @@ public class LivePlayActivity extends BaseActivity {
                 mRightEpgList.setSelection(i);
                 epgListAdapter.setSelectedEpgIndex(i);
                 int finalI = i;
-                mRightEpgList.post(new Runnable() {
+                /*mRightEpgList.post(new Runnable() {
                     @Override
                     public void run() {
                         mRightEpgList.smoothScrollToPosition(finalI);
                     }
-                });
-                //mRightEpgList.scrollToPosition(finalI);
+                });*/
+                mRightEpgList.scrollToPosition(finalI);
             }
         }
     }
@@ -807,7 +807,7 @@ public class LivePlayActivity extends BaseActivity {
                 mLiveChannelView.scrollToPosition(currentLiveChannelIndex);
             mLiveChannelView.setSelection(currentLiveChannelIndex);
             if (currentChannelGroupIndex > -1)
-            mChannelGroupView.scrollToPosition(currentChannelGroupIndex);
+                mChannelGroupView.scrollToPosition(currentChannelGroupIndex);
             mChannelGroupView.setSelection(currentChannelGroupIndex);
             //if(divEpg.getVisibility() == View.VISIBLE){
             //if(liveEpgDateAdapter.getSelectedIndex() > -1)
@@ -940,6 +940,13 @@ public class LivePlayActivity extends BaseActivity {
             currentLiveChannelItem.setinclude_back(false);
         }
         //showBottomEpg();
+        liveChannelItemAdapter.setNewData(getLiveChannels(currentChannelGroupIndex));
+        if (currentLiveChannelIndex > -1)
+            mLiveChannelView.scrollToPosition(currentLiveChannelIndex);
+        mLiveChannelView.setSelection(currentLiveChannelIndex);
+        if (currentChannelGroupIndex > -1)
+            mChannelGroupView.scrollToPosition(currentChannelGroupIndex);
+        mChannelGroupView.setSelection(currentChannelGroupIndex);
         //liveEpgDateAdapter.setSelectedIndex(1);
         getEpg(new Date(),true);
         backcontroller.setVisibility(View.GONE);
