@@ -620,7 +620,7 @@ public class LivePlayActivity extends BaseActivity {
         divEpg.setVisibility(View.VISIBLE);
         divLoadEpgleft.setVisibility(View.VISIBLE);
         divLoadEpg.setVisibility(View.GONE);
-        //epgListAdapter.notifyDataSetChanged();
+        epgListAdapter.notifyDataSetChanged();
         //mRightEpgList.setSelectedPosition(epgListAdapter.getSelectedIndex());
         //mRightEpgList.scrollToPosition(epgListAdapter.getSelectedIndex());
         mRightEpgList.post(new Runnable() {
@@ -741,7 +741,7 @@ public class LivePlayActivity extends BaseActivity {
                         divLoadEpg.setVisibility(View.GONE);
                         mChannelGroupView.setVisibility(View.GONE);
                         divEpg.setVisibility(View.VISIBLE);
-                        //epgListAdapter.notifyDataSetChanged();
+                        epgListAdapter.notifyDataSetChanged();
                         //mRightEpgList.scrollToPosition(epgListAdapter.getSelectedIndex());
                         mRightEpgList.post(new Runnable() {
                             @Override
@@ -800,6 +800,8 @@ public class LivePlayActivity extends BaseActivity {
             backcontroller.setVisibility(View.GONE);
             //return;
         }
+        if(divEpg.getVisibility() == View.VISIBLE)
+          epgListAdapter.notifyDataSetChanged();
         if (tvLeftChannelListLayout.getVisibility() == View.INVISIBLE) {
             //重新载入上一次状态
             liveChannelItemAdapter.setNewData(getLiveChannels(currentChannelGroupIndex));
