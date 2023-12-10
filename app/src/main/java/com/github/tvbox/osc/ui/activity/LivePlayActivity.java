@@ -406,6 +406,26 @@ public class LivePlayActivity extends BaseActivity {
             epgListAdapter.CanBack(currentLiveChannelItem.getinclude_back());
             epgListAdapter.setNewData(epgdata);
             epgListAdapter.notifyDataSetChanged();
+
+            Date now = new Date();
+            int i = -1;
+            int size = epgdata.size() - 1;
+            while (size >= 0) {
+                if (now.compareTo(((Epginfo) epgdata.get(size)).startdateTime) >= 0) {
+                    break;
+                }
+                size--;
+            }
+            i = size;
+            if (i >= 0 && now.compareTo(epgdata.get(i).enddateTime) <= 0) {
+                //mRightEpgList.setSelectedPosition(i);
+                mRightEpgList.setSelection(i);
+                //epgListAdapter.setSelectedEpgIndex(i);
+                mRightEpgList.scrollToPosition(i);
+                //if (tvLeftChannelListLayout.getVisibility() == View.VISIBLE&&liveChannelItemAdapter.getSelectedChannelIndex()>=0) {
+                    //liveChannelItemAdapter.setFocusedChannelIndex(liveChannelItemAdapter.getSelectedChannelIndex());
+                //}
+            }
         }
     }
 
