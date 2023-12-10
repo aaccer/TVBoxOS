@@ -598,14 +598,16 @@ public class LivePlayActivity extends BaseActivity {
         divLoadEpgleft.setVisibility(View.VISIBLE);
         divLoadEpg.setVisibility(View.GONE);
         epgListAdapter.notifyDataSetChanged();
-        int i = epgdata.size() - 1;
         Date now = new Date();
-        while (i >= 0) {
-            if (now.compareTo(((Epginfo) epgdata.get(i)).startdateTime) >= 0) {
+        int i = -1;
+        int size = epgdata.size() - 1;
+        while (size >= 0) {
+            if (now.compareTo(((Epginfo) epgdata.get(size)).startdateTime) >= 0) {
                 break;
             }
-            i--;
+            size--;
         }
+        i = size;
         if (i >= 0 && now.compareTo(epgdata.get(i).enddateTime) <= 0) {
             //mRightEpgList.setSelectedPosition(i);
             mRightEpgList.setSelection(i);
@@ -731,14 +733,16 @@ public class LivePlayActivity extends BaseActivity {
                         mChannelGroupView.setVisibility(View.GONE);
                         divEpg.setVisibility(View.VISIBLE);
                         epgListAdapter.notifyDataSetChanged();
-                        int i = epgdata.size() - 1;
                         Date now = new Date();
-                        while (i >= 0) {
-                            if (now.compareTo(((Epginfo) epgdata.get(i)).startdateTime) >= 0) {
+                        int i = -1;
+                        int size = epgdata.size() - 1;
+                        while (size >= 0) {
+                            if (now.compareTo(((Epginfo) epgdata.get(size)).startdateTime) >= 0) {
                                 break;
                             }
-                            i--;
+                            size--;
                         }
+                        i = size;
                         if (i >= 0 && now.compareTo(epgdata.get(i).enddateTime) <= 0) {
                             //mRightEpgList.setSelectedPosition(i);
                             mRightEpgList.setSelection(i);
