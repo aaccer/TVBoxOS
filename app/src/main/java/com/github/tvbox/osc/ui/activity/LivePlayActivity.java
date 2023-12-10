@@ -406,7 +406,6 @@ public class LivePlayActivity extends BaseActivity {
             epgListAdapter.CanBack(currentLiveChannelItem.getinclude_back());
             epgListAdapter.setNewData(epgdata);
             epgListAdapter.notifyDataSetChanged();
-
             Date now = new Date();
             int i = -1;
             int size = epgdata.size() - 1;
@@ -417,14 +416,11 @@ public class LivePlayActivity extends BaseActivity {
                 size--;
             }
             i = size;
-            if (i >= 0 && now.compareTo(epgdata.get(i).enddateTime) <= 0) {
+            if (i >= 0 && now.compareTo(epgdata.get(i).enddateTime) <= 0 && divEpg.getVisibility() == View.VISIBLE) {
                 //mRightEpgList.setSelectedPosition(i);
                 mRightEpgList.setSelection(i);
                 epgListAdapter.setSelectedEpgIndex(i);
                 mRightEpgList.scrollToPosition(i);
-                if (tvLeftChannelListLayout.getVisibility() == View.VISIBLE&&liveChannelItemAdapter.getSelectedChannelIndex()>=0) {
-                    liveChannelItemAdapter.setFocusedChannelIndex(liveChannelItemAdapter.getSelectedChannelIndex());
-                }
             }
         }
     }
@@ -617,27 +613,29 @@ public class LivePlayActivity extends BaseActivity {
         divEpg.setVisibility(View.VISIBLE);
         divLoadEpgleft.setVisibility(View.VISIBLE);
         divLoadEpg.setVisibility(View.GONE);
-        epgListAdapter.notifyDataSetChanged();
-        Date now = new Date();
-        int i = -1;
-        int size = epgdata.size() - 1;
-        while (size >= 0) {
-            if (now.compareTo(((Epginfo) epgdata.get(size)).startdateTime) >= 0) {
-                break;
-            }
-            size--;
-        }
-        i = size;
-        if (i >= 0 && now.compareTo(epgdata.get(i).enddateTime) <= 0) {
-            //mRightEpgList.setSelectedPosition(i);
-            mRightEpgList.setSelection(i);
-            epgListAdapter.setSelectedEpgIndex(i);
-            mRightEpgList.post(new Runnable() {
-                @Override
-                public void run() {
-                    mRightEpgList.scrollToPosition(epgListAdapter.getSelectedIndex());
+        if(!isBack){
+            epgListAdapter.notifyDataSetChanged();
+            Date now = new Date();
+            int i = -1;
+            int size = epgdata.size() - 1;
+            while (size >= 0) {
+                if (now.compareTo(((Epginfo) epgdata.get(size)).startdateTime) >= 0) {
+                    break;
                 }
-            });
+                size--;
+            }
+            i = size;
+            if (i >= 0 && now.compareTo(epgdata.get(i).enddateTime) <= 0) {
+                //mRightEpgList.setSelectedPosition(i);
+                mRightEpgList.setSelection(i);
+                epgListAdapter.setSelectedEpgIndex(i);
+                mRightEpgList.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        mRightEpgList.scrollToPosition(epgListAdapter.getSelectedIndex());
+                    }
+                });
+            }
         }
     }
 
@@ -752,27 +750,29 @@ public class LivePlayActivity extends BaseActivity {
                         divLoadEpg.setVisibility(View.GONE);
                         mChannelGroupView.setVisibility(View.GONE);
                         divEpg.setVisibility(View.VISIBLE);
-                        epgListAdapter.notifyDataSetChanged();
-                        Date now = new Date();
-                        int i = -1;
-                        int size = epgdata.size() - 1;
-                        while (size >= 0) {
-                            if (now.compareTo(((Epginfo) epgdata.get(size)).startdateTime) >= 0) {
-                                break;
-                            }
-                            size--;
-                        }
-                        i = size;
-                        if (i >= 0 && now.compareTo(epgdata.get(i).enddateTime) <= 0) {
-                            //mRightEpgList.setSelectedPosition(i);
-                            mRightEpgList.setSelection(i);
-                            epgListAdapter.setSelectedEpgIndex(i);
-                            mRightEpgList.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    mRightEpgList.scrollToPosition(epgListAdapter.getSelectedIndex());
+                        if(!isBack){
+                            epgListAdapter.notifyDataSetChanged();
+                            Date now = new Date();
+                            int i = -1;
+                            int size = epgdata.size() - 1;
+                            while (size >= 0) {
+                                if (now.compareTo(((Epginfo) epgdata.get(size)).startdateTime) >= 0) {
+                                    break;
                                 }
-                            });
+                                size--;
+                            }
+                            i = size;
+                            if (i >= 0 && now.compareTo(epgdata.get(i).enddateTime) <= 0) {
+                                //mRightEpgList.setSelectedPosition(i);
+                                mRightEpgList.setSelection(i);
+                                epgListAdapter.setSelectedEpgIndex(i);
+                                mRightEpgList.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        mRightEpgList.scrollToPosition(epgListAdapter.getSelectedIndex());
+                                    }
+                                });
+                            }
                         }
                     }
                 }
@@ -1436,14 +1436,14 @@ public class LivePlayActivity extends BaseActivity {
                         tv_right_top_tipnetspeed.setText("[" + mVideoView.getVideoSize()[0] + " x " + mVideoView.getVideoSize()[1] + "]");
                         }
                         int duration = (int) mVideoView.getDuration();
-                        if (livePlayerManager.getLivePlayerType() != 3 && duration > 0 || livePlayerManager.getLivePlayerType() == 3 && duration >= 5*60*1000) {
-                        sBar.setMax(duration);
-                        sBar.setProgress((int)  mVideoView.getCurrentPosition());
-                        tv_currentpos.setText(durationToString((int)mVideoView.getCurrentPosition()));
-                        tv_duration.setText(durationToString(duration));
-                        showProgressBars();
-                        isBack = true;
-                        livePlayerManager.changeLivePlayerScale(mVideoView, 0, currentLiveChannelItem.getChannelName());
+                        if (livePlayerManager.getLivePlayerType() != 3 && duration > 0 || livePlayerManager.getLivePlayerType() == 3 && duration >= 3*60*1000) {
+                            sBar.setMax(duration);
+                            sBar.setProgress((int)  mVideoView.getCurrentPosition());
+                            tv_currentpos.setText(durationToString((int)mVideoView.getCurrentPosition()));
+                            tv_duration.setText(durationToString(duration));
+                            showProgressBars();
+                            isBack = true;
+                            livePlayerManager.changeLivePlayerScale(mVideoView, 0, currentLiveChannelItem.getChannelName());
                         }else isBack= false;
                         break;
                     case VideoView.STATE_BUFFERED:
