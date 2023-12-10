@@ -615,7 +615,7 @@ public class LivePlayActivity extends BaseActivity {
             mRightEpgList.post(new Runnable() {
                 @Override
                 public void run() {
-                    mRightEpgList.scrollToPosition(i);
+                    mRightEpgList.scrollToPosition(epgListAdapter.getSelectedIndex());
                 }
             });
         }
@@ -750,7 +750,7 @@ public class LivePlayActivity extends BaseActivity {
                             mRightEpgList.post(new Runnable() {
                                 @Override
                                 public void run() {
-                                    mRightEpgList.scrollToPosition(i);
+                                    mRightEpgList.scrollToPosition(epgListAdapter.getSelectedIndex());
                                 }
                             });
                         }
