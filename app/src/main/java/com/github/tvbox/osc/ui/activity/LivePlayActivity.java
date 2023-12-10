@@ -420,11 +420,11 @@ public class LivePlayActivity extends BaseActivity {
             if (i >= 0 && now.compareTo(epgdata.get(i).enddateTime) <= 0) {
                 //mRightEpgList.setSelectedPosition(i);
                 mRightEpgList.setSelection(i);
-                //epgListAdapter.setSelectedEpgIndex(i);
+                epgListAdapter.setSelectedEpgIndex(i);
                 mRightEpgList.scrollToPosition(i);
-                //if (tvLeftChannelListLayout.getVisibility() == View.VISIBLE&&liveChannelItemAdapter.getSelectedChannelIndex()>=0) {
-                    //liveChannelItemAdapter.setFocusedChannelIndex(liveChannelItemAdapter.getSelectedChannelIndex());
-                //}
+                if (tvLeftChannelListLayout.getVisibility() == View.VISIBLE&&liveChannelItemAdapter.getSelectedChannelIndex()>=0) {
+                    liveChannelItemAdapter.setFocusedChannelIndex(liveChannelItemAdapter.getSelectedChannelIndex());
+                }
             }
         }
     }
