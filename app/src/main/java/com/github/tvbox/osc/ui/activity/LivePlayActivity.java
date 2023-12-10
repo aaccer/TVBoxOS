@@ -174,6 +174,7 @@ public class LivePlayActivity extends BaseActivity {
     public static SimpleDateFormat formatDate1 = new SimpleDateFormat("MM-dd");
     public static String day = formatDate.format(new Date());
     public static Date nowday = new Date();
+    private List<Epginfo> epgdata = new ArrayList<>();
 
     //private boolean isSHIYI = false;
     private boolean isBack = false;
@@ -390,8 +391,6 @@ public class LivePlayActivity extends BaseActivity {
     }
 
     //获取EPG并存储 // 百川epg  DIYP epg   51zmt epg ------- 自建EPG格式输出格式请参考 51zmt
-    private List<Epginfo> epgdata = new ArrayList<>();
-
     private void showEpg(Date date, ArrayList<Epginfo> arrayList) {
         if (arrayList == null || arrayList.size() <= 0) {
             for (int b = 0; b < 24; b++) {
@@ -407,29 +406,6 @@ public class LivePlayActivity extends BaseActivity {
             epgListAdapter.CanBack(currentLiveChannelItem.getinclude_back());
             epgListAdapter.setNewData(epgdata);
             epgListAdapter.notifyDataSetChanged();
-
-            int i = -1;
-            int size = epgdata.size() - 1;
-            while (size >= 0) {
-                if (new Date().compareTo(((Epginfo) epgdata.get(size)).startdateTime) >= 0) {
-                    break;
-                }
-                size--;
-            }
-            i = size;
-            if (i >= 0 && new Date().compareTo(epgdata.get(i).enddateTime) <= 0) {
-                //mRightEpgList.setSelectedPosition(i);
-                mRightEpgList.setSelection(i);
-                epgListAdapter.setSelectedEpgIndex(i);
-                int finalI = i;
-                /*mRightEpgList.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        mRightEpgList.smoothScrollToPosition(finalI);
-                    }
-                });*/
-                mRightEpgList.scrollToPosition(finalI);
-            }
         }
     }
 
@@ -517,6 +493,7 @@ public class LivePlayActivity extends BaseActivity {
             backcontroller.setVisibility(View.GONE);
             //return;
         }
+        Date now = new Date();
             tip_epg1.setText("暂无信息");
         if (channel_Name.getChannelName() != null) {
             ((TextView) findViewById(R.id.tv_channel_bar_name)).setText(channel_Name.getChannelName());
@@ -532,7 +509,7 @@ public class LivePlayActivity extends BaseActivity {
                 if (arrayList != null && arrayList.size() > 0) {
                     int size = arrayList.size() - 1;
                     while (size >= 0) {
-                        if (new Date().compareTo(((Epginfo) arrayList.get(size)).startdateTime) >= 0) {
+                        if (now.compareTo(((Epginfo) arrayList.get(size)).startdateTime) >= 0) {
                             tip_epg1.setText(((Epginfo) arrayList.get(size)).start + "--" + ((Epginfo) arrayList.get(size)).end);
                             ((TextView) findViewById(R.id.tv_current_program_name)).setText(((Epginfo) arrayList.get(size)).title);
                             if (size != arrayList.size() - 1) {
@@ -621,15 +598,27 @@ public class LivePlayActivity extends BaseActivity {
         divLoadEpgleft.setVisibility(View.VISIBLE);
         divLoadEpg.setVisibility(View.GONE);
         epgListAdapter.notifyDataSetChanged();
-        //mRightEpgList.setSelectedPosition(epgListAdapter.getSelectedIndex());
-        //mRightEpgList.scrollToPosition(epgListAdapter.getSelectedIndex());
-        mRightEpgList.post(new Runnable() {
-            @Override
-            public void run() {
-                mRightEpgList.scrollToPosition(epgListAdapter.getSelectedIndex());
+        int i = epgdata.size() - 1;
+        Date now = new Date();
+        while (i >= 0) {
+            if (now.compareTo(((Epginfo) epgdata.get(i)).startdateTime) >= 0) {
+                break;
             }
-        });
+            i--;
+        }
+        if (i >= 0 && now.compareTo(epgdata.get(i).enddateTime) <= 0) {
+            //mRightEpgList.setSelectedPosition(i);
+            mRightEpgList.setSelection(i);
+            epgListAdapter.setSelectedEpgIndex(i);
+            mRightEpgList.post(new Runnable() {
+                @Override
+                public void run() {
+                    mRightEpgList.scrollToPosition(i);
+                }
+            });
+        }
     }
+
     //频道列表
     public  void divLoadEpgLeft(View view) {
         mChannelGroupView.setVisibility(View.VISIBLE);
@@ -742,13 +731,25 @@ public class LivePlayActivity extends BaseActivity {
                         mChannelGroupView.setVisibility(View.GONE);
                         divEpg.setVisibility(View.VISIBLE);
                         epgListAdapter.notifyDataSetChanged();
-                        //mRightEpgList.scrollToPosition(epgListAdapter.getSelectedIndex());
-                        mRightEpgList.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                mRightEpgList.scrollToPosition(epgListAdapter.getSelectedIndex());
+                        int i = epgdata.size() - 1;
+                        Date now = new Date();
+                        while (i >= 0) {
+                            if (now.compareTo(((Epginfo) epgdata.get(i)).startdateTime) >= 0) {
+                                break;
                             }
-                        });
+                            i--;
+                        }
+                        if (i >= 0 && now.compareTo(epgdata.get(i).enddateTime) <= 0) {
+                            //mRightEpgList.setSelectedPosition(i);
+                            mRightEpgList.setSelection(i);
+                            epgListAdapter.setSelectedEpgIndex(i);
+                            mRightEpgList.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    mRightEpgList.scrollToPosition(i);
+                                }
+                            });
+                        }
                     }
                 }
             }
