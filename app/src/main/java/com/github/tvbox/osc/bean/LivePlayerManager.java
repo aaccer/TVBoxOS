@@ -103,12 +103,7 @@ public class LivePlayerManager {
     }
 
     public JSONObject getCurrentPlayerConfig() {
-        try {
-            return currentPlayerConfig;
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return defaultPlayerConfig;
+        return currentPlayerConfig;
     }
     public void changeLivePlayerType(VideoView videoView, int playerType) {
         String channelName="";
