@@ -941,8 +941,8 @@ public class LivePlayActivity extends BaseActivity {
             currentLiveChannelIndex = liveChannelIndex;
             currentLiveChannelItem = getLiveChannels(currentChannelGroupIndex).get(currentLiveChannelIndex);
             Hawk.put(HawkConfig.LIVE_CHANNEL, currentLiveChannelItem.getChannelName());
-            livePlayerManager.getLiveChannelPlayer(mVideoView, currentLiveChannelItem.getChannelName());
         }
+        livePlayerManager.getLiveChannelPlayer(mVideoView, currentLiveChannelItem.getChannelName());
         if(currentLiveChannelItem.getChannelSourceName(currentLiveChannelItem.getSourceIndex()).indexOf("[ijk硬解]") != -1 && livePlayerManager.getLivePlayerType() != 1){
             livePlayerManager.changeLivePlayerType(mVideoView,1);
         }else
@@ -968,16 +968,11 @@ public class LivePlayActivity extends BaseActivity {
         //showBottomEpg();
         //liveChannelItemAdapter.setNewData(getLiveChannels(channelGroupIndex));
         if (channelGroupIndex == currentChannelGroupIndex && tvLeftChannelListLayout.getVisibility() == View.VISIBLE){
-        //if (liveChannelIndex > -1)
-            //mLiveChannelView.scrollToPosition(liveChannelIndex);
-        mLiveChannelView.setSelection(liveChannelIndex);
-        //if (channelGroupIndex > -1)
-            //mChannelGroupView.scrollToPosition(channelGroupIndex);
-        //mChannelGroupView.setSelection(channelGroupIndex);
-        //liveChannelGroupAdapter.setSelectedGroupIndex(channelGroupIndex);
-        liveChannelItemAdapter.setSelectedChannelIndex(liveChannelIndex);
-        //liveChannelGroupAdapter.setFocusedGroupIndex(channelGroupIndex);
-        liveChannelItemAdapter.setFocusedChannelIndex(liveChannelIndex);
+            if (currentLiveChannelIndex > -1)
+                mLiveChannelView.scrollToPosition(liveChannelIndex);
+            mLiveChannelView.setSelection(liveChannelIndex);
+            //liveChannelItemAdapter.setSelectedChannelIndex(liveChannelIndex);
+            //liveChannelItemAdapter.setFocusedChannelIndex(liveChannelIndex);
         }
         backcontroller.setVisibility(View.GONE);
         //ll_right_top_huikan.setVisibility(View.GONE);
