@@ -963,18 +963,20 @@ public class LivePlayActivity extends BaseActivity {
         }else {
             currentLiveChannelItem.setinclude_back(false);
         }
-        //liveEpgDateAdapter.setSelectedIndex(1);
-        getEpg(new Date(),true);
         //showBottomEpg();
-        //liveChannelItemAdapter.setNewData(getLiveChannels(channelGroupIndex));
-        if (channelGroupIndex == currentChannelGroupIndex && tvLeftChannelListLayout.getVisibility() == View.VISIBLE){
-            if (currentLiveChannelIndex > -1)
+        liveChannelItemAdapter.setNewData(getLiveChannels(channelGroupIndex));
+        if (tvLeftChannelListLayout.getVisibility() == View.VISIBLE){
+            if (channelGroupIndex > -1)
+                mChannelGroupView.scrollToPosition(channelGroupIndex);
+            mChannelGroupView.setSelection(channelGroupIndex);
+            if (liveChannelIndex > -1)
                 mLiveChannelView.scrollToPosition(liveChannelIndex);
             mLiveChannelView.setSelection(liveChannelIndex);
             //liveChannelItemAdapter.setSelectedChannelIndex(liveChannelIndex);
             //liveChannelItemAdapter.setFocusedChannelIndex(liveChannelIndex);
         }
         backcontroller.setVisibility(View.GONE);
+        getEpg(new Date(),true);
         //ll_right_top_huikan.setVisibility(View.GONE);
         mVideoView.setUrl(currentLiveChannelItem.getUrl());
        // showChannelInfo();
