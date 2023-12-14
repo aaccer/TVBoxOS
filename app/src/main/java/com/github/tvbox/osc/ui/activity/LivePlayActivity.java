@@ -974,6 +974,7 @@ public class LivePlayActivity extends BaseActivity {
             mLiveChannelView.setSelection(liveChannelIndex);
             //liveChannelItemAdapter.setSelectedChannelIndex(liveChannelIndex);
             //liveChannelItemAdapter.setFocusedChannelIndex(liveChannelIndex);
+            mHandler.postDelayed(mFocusCurrentChannelAndShowChannelList, 200);
         }
         backcontroller.setVisibility(View.GONE);
         getEpg(new Date(),true);
