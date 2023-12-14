@@ -964,7 +964,7 @@ public class LivePlayActivity extends BaseActivity {
             currentLiveChannelItem.setinclude_back(false);
         }
         //showBottomEpg();
-        if (tvLeftChannelListLayout.getVisibility() == View.VISIBLE){
+        if (!supportsTouch() && tvLeftChannelListLayout.getVisibility() == View.VISIBLE){
             liveChannelItemAdapter.setNewData(getLiveChannels(channelGroupIndex));
             if (channelGroupIndex > -1)
                 mChannelGroupView.scrollToPosition(channelGroupIndex);
