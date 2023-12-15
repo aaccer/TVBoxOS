@@ -964,17 +964,9 @@ public class LivePlayActivity extends BaseActivity {
             currentLiveChannelItem.setinclude_back(false);
         }
         //showBottomEpg();
-        if (!supportsTouch() && tvLeftChannelListLayout.getVisibility() == View.VISIBLE){
-            liveChannelItemAdapter.setNewData(getLiveChannels(channelGroupIndex));
-            if (channelGroupIndex > -1)
-                mChannelGroupView.scrollToPosition(channelGroupIndex);
-            mChannelGroupView.setSelection(channelGroupIndex);
-            if (liveChannelIndex > -1)
-                mLiveChannelView.scrollToPosition(liveChannelIndex);
-            mLiveChannelView.setSelection(liveChannelIndex);
-            //liveChannelItemAdapter.setSelectedChannelIndex(liveChannelIndex);
-            //liveChannelItemAdapter.setFocusedChannelIndex(liveChannelIndex);
-            mHandler.postDelayed(mFocusCurrentChannelAndShowChannelList, 200);
+        if (tvLeftChannelListLayout.getVisibility() == View.VISIBLE){
+            mHandler.removeCallbacks(mHideChannelListRun);
+            tvLeftChannelListLayout.setVisibility(View.INVISIBLE);
         }
         backcontroller.setVisibility(View.GONE);
         getEpg(new Date(),true);
