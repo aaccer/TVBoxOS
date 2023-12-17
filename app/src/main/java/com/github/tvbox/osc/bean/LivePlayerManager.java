@@ -102,6 +102,14 @@ public class LivePlayerManager {
         return 0;
     }
 
+    public JSONObject getCurrentPlayerConfig() {
+        return currentPlayerConfig;
+    }
+    public void changeLivePlayerType(VideoView videoView, int playerType) {
+        String channelName="";
+        changeLivePlayerType(videoView,playerType, channelName);
+    }
+
     public void changeLivePlayerType(VideoView videoView, int playerType, String channelName) {
         JSONObject playerConfig = currentPlayerConfig;
         try {
@@ -127,12 +135,12 @@ public class LivePlayerManager {
             e.printStackTrace();
         }
         PlayerHelper.updateCfg(videoView, playerConfig);
-
-        if (playerConfig.toString().equals(defaultPlayerConfig.toString()))
-            Hawk.delete(channelName);
-        else
-            Hawk.put(channelName, playerConfig);
-
+        if(channelName!=""){
+            if (playerConfig.toString().equals(defaultPlayerConfig.toString()))
+                Hawk.delete(channelName);
+            else
+                Hawk.put(channelName, playerConfig);
+        }
         currentPlayerConfig = playerConfig;
     }
 

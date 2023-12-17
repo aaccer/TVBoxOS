@@ -941,19 +941,16 @@ public class LivePlayActivity extends BaseActivity {
             currentLiveChannelIndex = liveChannelIndex;
             currentLiveChannelItem = getLiveChannels(currentChannelGroupIndex).get(currentLiveChannelIndex);
             Hawk.put(HawkConfig.LIVE_CHANNEL, currentLiveChannelItem.getChannelName());
-            livePlayerManager.getLiveChannelPlayer(mVideoView, currentLiveChannelItem.getChannelName());
         }
-        //if(currentLiveChannelItem.getChannelName().toString().indexOf("[exo]") != -1 && livePlayerManager.getLivePlayerType() != 3){
-            //livePlayerManager.changeLivePlayerType(mVideoView,3,currentLiveChannelItem.getChannelName());
-        //}
+        livePlayerManager.getLiveChannelPlayer(mVideoView, currentLiveChannelItem.getChannelName());
         if(currentLiveChannelItem.getChannelSourceName(currentLiveChannelItem.getSourceIndex()).indexOf("[ijk硬解]") != -1 && livePlayerManager.getLivePlayerType() != 1){
-            livePlayerManager.changeLivePlayerType(mVideoView,1,currentLiveChannelItem.getChannelName());
-        }
+            livePlayerManager.changeLivePlayerType(mVideoView,1);
+        }else
         if(currentLiveChannelItem.getChannelSourceName(currentLiveChannelItem.getSourceIndex()).indexOf("[ijk软解]") != -1 && livePlayerManager.getLivePlayerType() != 2){
-            livePlayerManager.changeLivePlayerType(mVideoView,2,currentLiveChannelItem.getChannelName());
-        }
+            livePlayerManager.changeLivePlayerType(mVideoView,2);
+        }else
         if(currentLiveChannelItem.getChannelSourceName(currentLiveChannelItem.getSourceIndex()).indexOf("[exo]") != -1 && livePlayerManager.getLivePlayerType() != 3){
-            livePlayerManager.changeLivePlayerType(mVideoView,3,currentLiveChannelItem.getChannelName());
+            livePlayerManager.changeLivePlayerType(mVideoView,3);
         }
 
         channel_Name = currentLiveChannelItem;
@@ -966,23 +963,18 @@ public class LivePlayActivity extends BaseActivity {
         }else {
             currentLiveChannelItem.setinclude_back(false);
         }
-        //liveEpgDateAdapter.setSelectedIndex(1);
-        getEpg(new Date(),true);
         //showBottomEpg();
-        //liveChannelItemAdapter.setNewData(getLiveChannels(channelGroupIndex));
-        if (channelGroupIndex == currentChannelGroupIndex && tvLeftChannelListLayout.getVisibility() == View.VISIBLE){
-        //if (liveChannelIndex > -1)
-            //mLiveChannelView.scrollToPosition(liveChannelIndex);
-        mLiveChannelView.setSelection(liveChannelIndex);
-        //if (channelGroupIndex > -1)
-            //mChannelGroupView.scrollToPosition(channelGroupIndex);
-        //mChannelGroupView.setSelection(channelGroupIndex);
-        //liveChannelGroupAdapter.setSelectedGroupIndex(channelGroupIndex);
-        liveChannelItemAdapter.setSelectedChannelIndex(liveChannelIndex);
-        //liveChannelGroupAdapter.setFocusedGroupIndex(channelGroupIndex);
-        liveChannelItemAdapter.setFocusedChannelIndex(liveChannelIndex);
+        if (tvLeftChannelListLayout.getVisibility() == View.VISIBLE){
+            mHandler.removeCallbacks(mHideChannelListRun);
+            tvLeftChannelListLayout.setVisibility(View.INVISIBLE);
+        }
+        if (tvRightSettingLayout.getVisibility() == View.VISIBLE) {
+            mHandler.removeCallbacks(mHideSettingLayoutRun);
+            tvRightSettingLayout.setVisibility(View.INVISIBLE);
+            liveSettingGroupAdapter.setSelectedGroupIndex(-1);
         }
         backcontroller.setVisibility(View.GONE);
+        getEpg(new Date(),true);
         //ll_right_top_huikan.setVisibility(View.GONE);
         mVideoView.setUrl(currentLiveChannelItem.getUrl());
        // showChannelInfo();
