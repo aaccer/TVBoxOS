@@ -968,6 +968,11 @@ public class LivePlayActivity extends BaseActivity {
             mHandler.removeCallbacks(mHideChannelListRun);
             tvLeftChannelListLayout.setVisibility(View.INVISIBLE);
         }
+        if (tvRightSettingLayout.getVisibility() == View.VISIBLE) {
+            mHandler.removeCallbacks(mHideSettingLayoutRun);
+            tvRightSettingLayout.setVisibility(View.INVISIBLE);
+            liveSettingGroupAdapter.setSelectedGroupIndex(-1);
+        }
         backcontroller.setVisibility(View.GONE);
         getEpg(new Date(),true);
         //ll_right_top_huikan.setVisibility(View.GONE);
