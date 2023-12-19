@@ -1,10 +1,13 @@
 package com.github.tvbox.osc.ui.fragment;
 
+import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.view.animation.BounceInterpolator;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.github.tvbox.osc.R;
@@ -13,9 +16,11 @@ import com.github.tvbox.osc.base.BaseLazyFragment;
 import com.github.tvbox.osc.bean.Movie;
 import com.github.tvbox.osc.bean.VodInfo;
 import com.github.tvbox.osc.cache.RoomDataManger;
+import com.github.tvbox.osc.data.CustomData;
 import com.github.tvbox.osc.event.ServerEvent;
 import com.github.tvbox.osc.ui.activity.CollectActivity;
 import com.github.tvbox.osc.ui.activity.DetailActivity;
+import com.github.tvbox.osc.ui.activity.FastSearchActivity;
 import com.github.tvbox.osc.ui.activity.HistoryActivity;
 import com.github.tvbox.osc.ui.activity.LivePlayActivity;
 import com.github.tvbox.osc.ui.activity.PushActivity;
@@ -24,6 +29,8 @@ import com.github.tvbox.osc.ui.activity.SettingActivity;
 import com.github.tvbox.osc.ui.adapter.HomeHotVodAdapter;
 import com.github.tvbox.osc.util.FastClickCheckUtil;
 import com.github.tvbox.osc.util.HawkConfig;
+import com.github.tvbox.osc.util.RemoteConfigName;
+import com.github.tvbox.osc.util.UA;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -33,6 +40,8 @@ import com.lzy.okgo.callback.AbsCallback;
 import com.lzy.okgo.model.Response;
 import com.orhanobut.hawk.Hawk;
 import com.owen.tvrecyclerview.widget.TvRecyclerView;
+import com.owen.tvrecyclerview.widget.V7GridLayoutManager;
+import com.owen.tvrecyclerview.widget.V7LinearLayoutManager;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -54,8 +63,11 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
     private LinearLayout tvHistory;
     private LinearLayout tvCollect;
     private LinearLayout tvPush;
+    private LinearLayout tvGame;
     private HomeHotVodAdapter homeHotVodAdapter;
     private List<Movie.Video> homeSourceRec;
+    TvRecyclerView tvHotList1;
+    TvRecyclerView tvHotList2;
 
     public static UserFragment newInstance() {
         return new UserFragment();
@@ -72,9 +84,18 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
 
     @Override
     protected void onFragmentResume() {
+        if(Hawk.get(HawkConfig.HOME_REC_STYLE, false)){
+            tvHotList1.setVisibility(View.VISIBLE);
+            tvHotList2.setVisibility(View.GONE);
+            tvHotList1.setHasFixedSize(true);
+            tvHotList1.setLayoutManager(new V7GridLayoutManager(this.mContext, 5));
+        }else {
+            tvHotList1.setVisibility(View.GONE);
+            tvHotList2.setVisibility(View.VISIBLE);
+        }
         super.onFragmentResume();
         if (Hawk.get(HawkConfig.HOME_REC, 0) == 2) {
-            List<VodInfo> allVodRecord = RoomDataManger.getAllVodRecord(10);
+            List<VodInfo> allVodRecord = RoomDataManger.getAllVodRecord(30);
             List<Movie.Video> vodList = new ArrayList<>();
             for (VodInfo vodInfo : allVodRecord) {
                 Movie.Video vod = new Movie.Video();
@@ -104,19 +125,30 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
         tvCollect = findViewById(R.id.tvFavorite);
         tvHistory = findViewById(R.id.tvHistory);
         tvPush = findViewById(R.id.tvPush);
+        tvGame = findViewById(R.id.tvGame);
         tvLive.setOnClickListener(this);
         tvSearch.setOnClickListener(this);
         tvSetting.setOnClickListener(this);
         tvHistory.setOnClickListener(this);
         tvPush.setOnClickListener(this);
         tvCollect.setOnClickListener(this);
+        tvGame.setOnClickListener(this);
         tvLive.setOnFocusChangeListener(focusChangeListener);
         tvSearch.setOnFocusChangeListener(focusChangeListener);
         tvSetting.setOnFocusChangeListener(focusChangeListener);
         tvHistory.setOnFocusChangeListener(focusChangeListener);
         tvPush.setOnFocusChangeListener(focusChangeListener);
         tvCollect.setOnFocusChangeListener(focusChangeListener);
-        TvRecyclerView tvHotList = findViewById(R.id.tvHotList);
+        tvGame.setOnFocusChangeListener(focusChangeListener);
+        tvHistory.setVisibility(CustomData.getInstance().GetHomeButtonVisition(RemoteConfigName.HomeButtons_HistoryButton)?View.VISIBLE:View.GONE);
+        tvPush.setVisibility(CustomData.getInstance().GetHomeButtonVisition(RemoteConfigName.HomeButtons_PushButton)?View.VISIBLE:View.GONE);
+        tvCollect.setVisibility(CustomData.getInstance().GetHomeButtonVisition(RemoteConfigName.HomeButtons_CollectionButton)?View.VISIBLE:View.GONE);
+        tvGame.setVisibility(CustomData.getInstance().GetHomeButtonVisition(RemoteConfigName.HomeButtons_CloudGameButton)?View.VISIBLE:View.GONE);
+        tvLive.setVisibility(CustomData.getInstance().GetHomeButtonVisition(RemoteConfigName.HomeButtons_LiveButton)?View.VISIBLE:View.GONE);
+        tvSearch.setVisibility(CustomData.getInstance().GetHomeButtonVisition(RemoteConfigName.HomeButtons_SearchButton)?View.VISIBLE:View.GONE);
+        tvSetting.setVisibility(CustomData.getInstance().GetHomeButtonVisition(RemoteConfigName.HomeButtons_SettingButton)?View.VISIBLE:View.GONE);
+        tvHotList1 = findViewById(R.id.tvHotList1);
+        tvHotList2 = findViewById(R.id.tvHotList2);
         homeHotVodAdapter = new HomeHotVodAdapter();
         homeHotVodAdapter.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
             @Override
@@ -128,16 +160,39 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
                     Bundle bundle = new Bundle();
                     bundle.putString("id", vod.id);
                     bundle.putString("sourceKey", vod.sourceKey);
-                    jumpActivity(DetailActivity.class, bundle);
+                    if(Hawk.get(HawkConfig.HOME_REC, 0)==1 && Hawk.get(HawkConfig.FAST_SEARCH_MODE, false)){
+                        bundle.putString("title", vod.name);
+                        jumpActivity(FastSearchActivity.class, bundle);
+                    }else {
+                        jumpActivity(DetailActivity.class, bundle);
+                    }
                 } else {
-                    Intent newIntent = new Intent(mContext, SearchActivity.class);
+                    Intent newIntent;
+                    if(Hawk.get(HawkConfig.FAST_SEARCH_MODE, false)){
+                        newIntent = new Intent(mContext, FastSearchActivity.class);
+                    }else {
+                        newIntent = new Intent(mContext, SearchActivity.class);
+                    }
                     newIntent.putExtra("title", vod.name);
                     newIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     mActivity.startActivity(newIntent);
                 }
             }
         });
-        tvHotList.setOnItemListener(new TvRecyclerView.OnItemListener() {
+
+        homeHotVodAdapter.setOnItemLongClickListener(new BaseQuickAdapter.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(BaseQuickAdapter adapter, View view, int position) {
+                if (ApiConfig.get().getSourceBeanList().isEmpty()) return true;
+                Movie.Video vod = ((Movie.Video) adapter.getItem(position));
+                Bundle bundle = new Bundle();
+                bundle.putString("title", vod.name);
+                jumpActivity(FastSearchActivity.class, bundle);
+                return true;
+            }
+        });
+
+        tvHotList1.setOnItemListener(new TvRecyclerView.OnItemListener() {
             @Override
             public void onItemPreSelected(TvRecyclerView parent, View itemView, int position) {
                 itemView.animate().scaleX(1.0f).scaleY(1.0f).setDuration(300).setInterpolator(new BounceInterpolator()).start();
@@ -146,6 +201,7 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
             @Override
             public void onItemSelected(TvRecyclerView parent, View itemView, int position) {
                 itemView.animate().scaleX(1.05f).scaleY(1.05f).setDuration(300).setInterpolator(new BounceInterpolator()).start();
+                playTTS(homeHotVodAdapter.getItem(position).name);
             }
 
             @Override
@@ -153,7 +209,25 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
 
             }
         });
-        tvHotList.setAdapter(homeHotVodAdapter);
+        tvHotList1.setAdapter(homeHotVodAdapter);
+        tvHotList2.setOnItemListener(new TvRecyclerView.OnItemListener() {
+            @Override
+            public void onItemPreSelected(TvRecyclerView parent, View itemView, int position) {
+                itemView.animate().scaleX(1.0f).scaleY(1.0f).setDuration(300).setInterpolator(new BounceInterpolator()).start();
+            }
+
+            @Override
+            public void onItemSelected(TvRecyclerView parent, View itemView, int position) {
+                itemView.animate().scaleX(1.05f).scaleY(1.05f).setDuration(300).setInterpolator(new BounceInterpolator()).start();
+                playTTS(homeHotVodAdapter.getItem(position).name);
+            }
+
+            @Override
+            public void onItemClick(TvRecyclerView parent, View itemView, int position) {
+
+            }
+        });
+        tvHotList2.setAdapter(homeHotVodAdapter);
 
         initHomeHotVod(homeHotVodAdapter);
     }
@@ -177,11 +251,17 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
             if (requestDay.equals(today)) {
                 String json = Hawk.get("home_hot", "");
                 if (!json.isEmpty()) {
-                    adapter.setNewData(loadHots(json));
-                    return;
+                    ArrayList<Movie.Video> hotMovies = loadHots(json);
+                    if (hotMovies != null && hotMovies.size() > 0) {
+                        adapter.setNewData(hotMovies);
+                        return;
+                    }
                 }
             }
-            OkGo.<String>get("https://movie.douban.com/j/new_search_subjects?sort=U&range=0,10&tags=&playable=1&start=0&year_range=" + year + "," + year).execute(new AbsCallback<String>() {
+            String doubanUrl = "https://movie.douban.com/j/new_search_subjects?sort=U&range=0,10&tags=&playable=1&start=0&year_range=" + year + "," + year;
+            OkGo.<String>get(doubanUrl)
+                    .headers("User-Agent", UA.randomOne())
+                    .execute(new AbsCallback<String>() {
                 @Override
                 public void onSuccess(Response<String> response) {
                     String netJson = response.body();
@@ -227,8 +307,10 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
     private View.OnFocusChangeListener focusChangeListener = new View.OnFocusChangeListener() {
         @Override
         public void onFocusChange(View v, boolean hasFocus) {
-            if (hasFocus)
+            if (hasFocus) {
                 v.animate().scaleX(1.05f).scaleY(1.05f).setDuration(300).setInterpolator(new BounceInterpolator()).start();
+                playTTS(v.findViewWithTag("desc"));
+            }
             else
                 v.animate().scaleX(1.0f).scaleY(1.0f).setDuration(300).setInterpolator(new BounceInterpolator()).start();
         }
@@ -249,6 +331,17 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
             jumpActivity(PushActivity.class);
         } else if (v.getId() == R.id.tvFavorite) {
             jumpActivity(CollectActivity.class);
+        } else if (v.getId() == R.id.tvGame) {
+            // 打开网址 这个是通过打开android自带的浏览器进行的打开网址
+            Uri uri = Uri.parse("https://gamer.qq.com");
+            Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+            if (intent.resolveActivity(this.mContext.getPackageManager()) != null) {
+                // 网址正确 跳转成功
+                startActivity(intent);
+            } else {
+                //网址不正确 跳转失败 提示错误
+                Toast.makeText(this.mContext, "网址输入错误，请重新输入！", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 

@@ -4,29 +4,37 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
 import android.util.DisplayMetrics;
 import android.view.View;
+import android.view.animation.BounceInterpolator;
+import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.PermissionChecker;
 
+import com.github.tvbox.osc.R;
 import com.github.tvbox.osc.callback.EmptyCallback;
 import com.github.tvbox.osc.callback.LoadingCallback;
 import com.github.tvbox.osc.util.AppManager;
+import com.github.tvbox.osc.util.TTSService;
 import com.kingja.loadsir.callback.Callback;
 import com.kingja.loadsir.core.LoadService;
 import com.kingja.loadsir.core.LoadSir;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
 import me.jessyan.autosize.AutoSizeCompat;
 import me.jessyan.autosize.internal.CustomAdapt;
+import xyz.doikki.videoplayer.util.CutoutUtil;
 
 /**
  * @author pj567
@@ -55,6 +63,7 @@ public abstract class BaseActivity extends AppCompatActivity implements CustomAd
         super.onCreate(savedInstanceState);
         setContentView(getLayoutResID());
         mContext = this;
+        CutoutUtil.adaptCutoutAboveAndroidP(mContext, true);//设置刘海
         AppManager.getInstance().addActivity(this);
         init();
     }
@@ -63,6 +72,7 @@ public abstract class BaseActivity extends AppCompatActivity implements CustomAd
     protected void onResume() {
         super.onResume();
         hideSysBar();
+        changeWallpaper(false);
     }
 
     public void hideSysBar() {
@@ -171,4 +181,55 @@ public abstract class BaseActivity extends AppCompatActivity implements CustomAd
         return !(screenRatio >= 4.0f);
     }
 
+    protected static BitmapDrawable globalWp = null;
+
+    public void changeWallpaper(boolean force) {
+        if (!force && globalWp != null)
+            getWindow().setBackgroundDrawable(globalWp);
+        try {
+            File wp = new File(getFilesDir().getAbsolutePath() + "/wp");
+            if (wp.exists()) {
+                BitmapFactory.Options opts = new BitmapFactory.Options();
+                opts.inJustDecodeBounds = true;
+                BitmapFactory.decodeFile(wp.getAbsolutePath(), opts);
+                // 从Options中获取图片的分辨率
+                int imageHeight = opts.outHeight;
+                int imageWidth = opts.outWidth;
+                int picHeight = 720;
+                int picWidth = 1080;
+                int scaleX = imageWidth / picWidth;
+                int scaleY = imageHeight / picHeight;
+                int scale = 1;
+                if (scaleX > scaleY && scaleY >= 1) {
+                    scale = scaleX;
+                }
+                if (scaleX < scaleY && scaleX >= 1) {
+                    scale = scaleY;
+                }
+                opts.inJustDecodeBounds = false;
+                // 采样率
+                opts.inSampleSize = scale;
+                globalWp = new BitmapDrawable(BitmapFactory.decodeFile(wp.getAbsolutePath(), opts));
+            } else {
+                globalWp = null;
+            }
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+            globalWp = null;
+        }
+        if (globalWp != null)
+            getWindow().setBackgroundDrawable(globalWp);
+        else
+            getWindow().setBackgroundDrawableResource(R.drawable.app_bg);
+    }
+
+    //播放文字转语音
+    public void playTTS(String text){
+        if (!text.isEmpty())
+            TTSService.getInstance().play(text);
+    }
+    public void playTTS(android.widget.TextView text){
+        if (text!=null)
+            TTSService.getInstance().play(text.getText().toString());
+    }
 }

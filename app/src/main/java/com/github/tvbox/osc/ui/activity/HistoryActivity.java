@@ -9,6 +9,7 @@ import android.widget.TextView;
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.github.tvbox.osc.R;
 import com.github.tvbox.osc.base.BaseActivity;
+import com.github.tvbox.osc.bean.Movie;
 import com.github.tvbox.osc.bean.VodInfo;
 import com.github.tvbox.osc.cache.RoomDataManger;
 import com.github.tvbox.osc.event.RefreshEvent;
@@ -68,6 +69,12 @@ public class HistoryActivity extends BaseActivity {
                 toggleDelMode();
             }
         });
+        tvDel.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean b) {
+                if (b) playTTS(tvDel);
+            }
+        });
         mGridView.setOnInBorderKeyEventListener(new TvRecyclerView.OnInBorderKeyEventListener() {
             @Override
             public boolean onInBorderKeyEvent(int direction, View focused) {
@@ -87,6 +94,7 @@ public class HistoryActivity extends BaseActivity {
             @Override
             public void onItemSelected(TvRecyclerView parent, View itemView, int position) {
                 itemView.animate().scaleX(1.05f).scaleY(1.05f).setDuration(300).setInterpolator(new BounceInterpolator()).start();
+                playTTS(historyAdapter.getItem(position).name);
             }
 
             @Override
@@ -100,31 +108,31 @@ public class HistoryActivity extends BaseActivity {
                 FastClickCheckUtil.check(view);
                 VodInfo vodInfo = historyAdapter.getData().get(position);
 
-                //HistoryDialog historyDialog = new HistoryDialog().build(mContext, vodInfo).setOnHistoryListener(new HistoryDialog.OnHistoryListener() {
-                //    @Override
-                //    public void onLook(VodInfo vodInfo) {
-                //        if (vodInfo != null) {
-                //            Bundle bundle = new Bundle();
-                //            bundle.putInt("id", vodInfo.id);
-                //            bundle.putString("sourceKey", vodInfo.sourceKey);
-                //            jumpActivity(DetailActivity.class, bundle);
-                //        }
-                //    }
-
-                //    @Override
-                //    public void onDelete(VodInfo vodInfo) {
-                //        if (vodInfo != null) {
-                //               for (int i = 0; i < historyAdapter.getData().size(); i++) {
-                //                    if (vodInfo.id == historyAdapter.getData().get(i).id) {
-                //                        historyAdapter.remove(i);
-                //                        break;
-                //                    }
-                //                }
-                //                RoomDataManger.deleteVodRecord(vodInfo.sourceKey, vodInfo);
-                //        }
-                //    }
-                //});
-                //historyDialog.show();
+//                HistoryDialog historyDialog = new HistoryDialog().build(mContext, vodInfo).setOnHistoryListener(new HistoryDialog.OnHistoryListener() {
+//                    @Override
+//                    public void onLook(VodInfo vodInfo) {
+//                        if (vodInfo != null) {
+//                            Bundle bundle = new Bundle();
+//                            bundle.putInt("id", vodInfo.id);
+//                            bundle.putString("sourceKey", vodInfo.sourceKey);
+//                            jumpActivity(DetailActivity.class, bundle);
+//                        }
+//                    }
+//
+//                    @Override
+//                    public void onDelete(VodInfo vodInfo) {
+//                        if (vodInfo != null) {
+//                               for (int i = 0; i < historyAdapter.getData().size(); i++) {
+//                                    if (vodInfo.id == historyAdapter.getData().get(i).id) {
+//                                        historyAdapter.remove(i);
+//                                        break;
+//                                    }
+//                                }
+//                                RoomDataManger.deleteVodRecord(vodInfo.sourceKey, vodInfo);
+//                        }
+//                    }
+//                });
+//                historyDialog.show();
 
                 if (vodInfo != null) {
                     if (delMode) {
@@ -139,12 +147,23 @@ public class HistoryActivity extends BaseActivity {
                 }
             }
         });
+        historyAdapter.setOnItemLongClickListener(new BaseQuickAdapter.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(BaseQuickAdapter adapter, View view, int position) {
+                FastClickCheckUtil.check(view);
+                VodInfo vodInfo = historyAdapter.getData().get(position);
+                historyAdapter.remove(position);
+                RoomDataManger.deleteVodRecord(vodInfo.sourceKey, vodInfo);
+                return true;
+            }
+        });
     }
 
     private void initData() {
         List<VodInfo> allVodRecord = RoomDataManger.getAllVodRecord(100);
         List<VodInfo> vodInfoList = new ArrayList<>();
         for (VodInfo vodInfo : allVodRecord) {
+            if (vodInfo.playNote != null && !vodInfo.playNote.isEmpty())vodInfo.note = "上次看到" + vodInfo.playNote;
             vodInfoList.add(vodInfo);
         }
         historyAdapter.setNewData(vodInfoList);
