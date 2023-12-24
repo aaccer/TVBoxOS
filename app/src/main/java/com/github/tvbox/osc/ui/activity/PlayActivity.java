@@ -224,6 +224,7 @@ public class PlayActivity extends BaseActivity {
             @Override
             public void errReplay() {
                 errorWithRetry("视频播放出错", false);
+                PlayActivity.this.playNext(false);
             }
 
             @Override
