@@ -243,6 +243,7 @@ public class PlayFragment extends BaseLazyFragment {
             @Override
             public void errReplay() {
                 errorWithRetry("视频播放出错", false);
+                Toast.makeText(mContext, "视频出错，播放下一集", Toast.LENGTH_SHORT).show();
                 PlayFragment.this.playNext(false);
             }
 
