@@ -224,8 +224,6 @@ public class PlayActivity extends BaseActivity {
             @Override
             public void errReplay() {
                 errorWithRetry("视频播放出错", false);
-                Toast.makeText(mContext, "视频出错，播放下一集", Toast.LENGTH_SHORT).show();
-                PlayActivity.this.playNext(false);
             }
 
             @Override
@@ -531,6 +529,8 @@ public class PlayActivity extends BaseActivity {
                     }
                 }
             });
+            Toast.makeText(mContext, "视频出错，播放下一集", Toast.LENGTH_SHORT).show();
+            playNext(false);
         }
     }
 
