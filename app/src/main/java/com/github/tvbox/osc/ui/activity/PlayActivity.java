@@ -831,7 +831,7 @@ public class PlayActivity extends BaseActivity {
                         //boolean hasCh =false;
                         for(TrackInfoBean subtitleTrackInfoBean : subtitleTrackList) {
                             String lowerLang = subtitleTrackInfoBean.language.toLowerCase();
-                            String subName = subtitleTrackInfoBean.name;
+                            String subName = subtitleTrackInfoBean.name.toLowerCase();
                             if (lowerLang.contains("中") || lowerLang.startsWith("zh") || lowerLang.startsWith("chi") || subName.contains("中") || subName.contains("zh") || subName.contains("chi")) {
                                 //hasCh=true;
                                 if (selectedIndex != subtitleTrackInfoBean.index) {
