@@ -548,6 +548,8 @@ public class PlayFragment extends BaseLazyFragment {
                     }
                 }
             });
+            Toast.makeText(mContext, "视频出错，播放下一集", Toast.LENGTH_SHORT).show();
+            playNext(false);
         }
     }
 
@@ -850,7 +852,8 @@ public class PlayFragment extends BaseLazyFragment {
                         //boolean hasCh =false;
                         for(TrackInfoBean subtitleTrackInfoBean : subtitleTrackList) {
                             String lowerLang = subtitleTrackInfoBean.language.toLowerCase();
-                            if (lowerLang.startsWith("zh") || lowerLang.startsWith("ch")) {
+                            String subName = subtitleTrackInfoBean.name.toLowerCase();
+                            if (lowerLang.contains("中") || lowerLang.startsWith("zh") || lowerLang.startsWith("chi") || subName.contains("中") || subName.contains("zh") || subName.contains("chi")) {
                                 //hasCh=true;
                                 if (selectedIndex != subtitleTrackInfoBean.index) {
                                     if (mVideoView.getMediaPlayer() instanceof IjkMediaPlayer) {

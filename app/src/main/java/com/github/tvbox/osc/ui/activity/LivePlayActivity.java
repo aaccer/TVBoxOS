@@ -933,6 +933,7 @@ public class LivePlayActivity extends BaseActivity {
         if ((channelGroupIndex == currentChannelGroupIndex && liveChannelIndex == currentLiveChannelIndex && !changeSource)
                 || (changeSource && currentLiveChannelItem.getSourceNum() == 1)) {
            // showChannelInfo();
+           showBottomEpg();
             return true;
         }
         mVideoView.release();
@@ -1376,7 +1377,7 @@ public class LivePlayActivity extends BaseActivity {
                     backcontroller.setVisibility(View.GONE);
                     return true;
                 }
-                if (ll_epg.getVisibility() == View.VISIBLE || ll_right_top_loading.getVisibility() == View.VISIBLE) {
+                if (ll_epg.getVisibility() == View.VISIBLE) {
                     ll_epg.setVisibility(View.GONE);
                     ll_right_top_loading.setVisibility(View.GONE);
                     return true;
