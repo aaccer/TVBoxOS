@@ -1856,6 +1856,13 @@ public class LivePlayActivity extends BaseActivity {
                     }
                 });
             }
+
+            @Override
+            public void onError(Response<String> response) {
+                super.onError(response);
+                Toast.makeText(App.getInstance(), "直播地址网络请求失败", Toast.LENGTH_LONG).show();
+                finish();
+            }
         });
     }
 
