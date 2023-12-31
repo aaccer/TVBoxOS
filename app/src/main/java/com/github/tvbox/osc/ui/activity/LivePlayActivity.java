@@ -1490,7 +1490,7 @@ public class LivePlayActivity extends BaseActivity {
             currentLiveChangeSourceTimes++;
             if(currentLiveChannelItem.getSourceNum() == 1){
                 if(currentLiveChangeSourceTimes == 1){
-                    if (!isCurrentLiveChannelValid()) return;
+                    //if (!isCurrentLiveChannelValid()) return;
                     playChannel(currentChannelGroupIndex, currentLiveChannelIndex, true);
                 }else{
                     currentLiveChangeSourceTimes = 0;
@@ -2123,7 +2123,7 @@ public class LivePlayActivity extends BaseActivity {
     }
 
     private boolean isCurrentLiveChannelValid() {
-        if (currentLiveChannelItem == null || mVideoView == null) {
+        if (currentLiveChannelItem == null) {
             Toast.makeText(App.getInstance(), "请先选择频道", Toast.LENGTH_SHORT).show();
             return false;
         }
