@@ -722,7 +722,10 @@ public class LivePlayActivity extends BaseActivity {
                         if(isBack){
                             showProgressBars();
                         }else{
-                            playNextSource();
+                            if(currentLiveChannelItem.getSourceNum() != 1)
+                                playNextSource();
+                            else
+                                showBottomEpg();
                         }
                         break;
                     case KeyEvent.KEYCODE_DPAD_CENTER:
