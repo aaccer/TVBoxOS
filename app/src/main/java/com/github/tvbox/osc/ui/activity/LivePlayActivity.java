@@ -501,6 +501,10 @@ public class LivePlayActivity extends BaseActivity {
             //showBottomEpg();
     }
 
+    public void getEpg(Date date) {
+    getEpg(date,true);
+    }
+
     //显示底部EPG
     private void showBottomEpg() {
         //if (isSHIYI)
@@ -666,12 +670,13 @@ public class LivePlayActivity extends BaseActivity {
             Toast.makeText(App.getInstance(), "退出时移模式", Toast.LENGTH_SHORT).show();
             //playPreSource();
             if (playUrl.indexOf("?playseek=") >= 0) {
-            mVideoView.release();
-            mVideoView.setUrl(currentLiveChannelItem.getUrl());
-            mVideoView.start();
+            //mVideoView.release();
+            //mVideoView.setUrl(currentLiveChannelItem.getUrl());
+            //mVideoView.start();
             epgListAdapter.setShiyiSelection(-1, false,timeFormat.format(liveEpgDateAdapter.getData().get(liveEpgDateAdapter.getSelectedIndex()).getDateParamVal()));
-            epgListAdapter.notifyDataSetChanged();
+            //epgListAdapter.notifyDataSetChanged();
             //getEpg(liveEpgDateAdapter.getData().get(liveEpgDateAdapter.getSelectedIndex()).getDateParamVal(),false);
+            playChannel(currentChannelGroupIndex, currentLiveChannelIndex, true);
             }
             //isSHIYI=false;
         }else {
@@ -978,7 +983,7 @@ public class LivePlayActivity extends BaseActivity {
             liveSettingGroupAdapter.setSelectedGroupIndex(-1);
         }
         backcontroller.setVisibility(View.GONE);
-        getEpg(new Date(),true);
+        getEpg(new Date());
         //ll_right_top_huikan.setVisibility(View.GONE);
         mVideoView.setUrl(currentLiveChannelItem.getUrl());
        // showChannelInfo();
@@ -1493,7 +1498,7 @@ public class LivePlayActivity extends BaseActivity {
         @Override
         public void run() {
             currentLiveChangeSourceTimes++;
-            if(currentLiveChannelItem.getSourceNum() == 1){
+            if(currentLiveChannelItem.getSourceNum() == 1 || playUrl.indexOf("?playseek=") >= 0){
                 if(currentLiveChangeSourceTimes == 1){
                     //if (!isCurrentLiveChannelValid()) return;
                     playChannel(currentChannelGroupIndex, currentLiveChannelIndex, true);
