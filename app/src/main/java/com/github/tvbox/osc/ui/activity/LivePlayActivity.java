@@ -1469,13 +1469,15 @@ public class LivePlayActivity extends BaseActivity {
                     if(isBack){  //手机换源和显示时移控制栏
                         showProgressBars();
                     }else{
+                        if(currentLiveChannelItem.getSourceNum() != 1)
                         playNextSource();
                     }
                 else
                     if(isBack){
                         showProgressBars();
                     }else{
-                    playPreSource();
+                        if(currentLiveChannelItem.getSourceNum() != 1)
+                        playPreSource();
                     }
             }
         });
