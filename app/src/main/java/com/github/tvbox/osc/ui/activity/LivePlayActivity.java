@@ -1455,7 +1455,7 @@ public class LivePlayActivity extends BaseActivity {
                         break;
                     case VideoView.STATE_BUFFERING:
                         mHandler.removeCallbacks(mConnectTimeoutChangeSourceRun);
-                        mHandler.postDelayed(mConnectTimeoutChangeSourceRun, (Hawk.get(HawkConfig.LIVE_CONNECT_TIMEOUT, 1) + 1) * 3000);
+                        mHandler.postDelayed(mConnectTimeoutChangeSourceRun, (Hawk.get(HawkConfig.LIVE_CONNECT_TIMEOUT, 0) + 1) * 3000);
                         break;
                 }
             }
@@ -1488,12 +1488,21 @@ public class LivePlayActivity extends BaseActivity {
         @Override
         public void run() {
             currentLiveChangeSourceTimes++;
-            if (currentLiveChannelItem.getSourceNum() == currentLiveChangeSourceTimes) {
-                currentLiveChangeSourceTimes = 0;
-                Integer[] groupChannelIndex = getNextChannel(Hawk.get(HawkConfig.LIVE_CHANNEL_REVERSE, false) ? -1 : 1);
-                playChannel(groupChannelIndex[0], groupChannelIndex[1], false);
-            } else {
-                playNextSource();
+            if(currentLiveChannelItem.getSourceNum() == 1){
+                if(currentLiveChangeSourceTimes == 1){
+                    if (!isCurrentLiveChannelValid()) return;
+                    playChannel(currentChannelGroupIndex, currentLiveChannelIndex, true);
+                }else{
+                    currentLiveChangeSourceTimes = 0;
+                    playNext();
+                }
+            }else{
+                if (currentLiveChannelItem.getSourceNum() == currentLiveChangeSourceTimes) {
+                    currentLiveChangeSourceTimes = 0;
+                    playNext();
+                } else {
+                    playNextSource();
+                }
             }
         }
     };
@@ -1931,7 +1940,7 @@ public class LivePlayActivity extends BaseActivity {
             liveSettingGroup.setLiveSettingItems(liveSettingItemList);
             liveSettingGroupList.add(liveSettingGroup);
         }
-        liveSettingGroupList.get(3).getLiveSettingItems().get(Hawk.get(HawkConfig.LIVE_CONNECT_TIMEOUT, 1)).setItemSelected(true);
+        liveSettingGroupList.get(3).getLiveSettingItems().get(Hawk.get(HawkConfig.LIVE_CONNECT_TIMEOUT, 0)).setItemSelected(true);
         liveSettingGroupList.get(4).getLiveSettingItems().get(0).setItemSelected(Hawk.get(HawkConfig.LIVE_SHOW_TIME, false));
         liveSettingGroupList.get(4).getLiveSettingItems().get(1).setItemSelected(Hawk.get(HawkConfig.LIVE_SHOW_NET_SPEED, false));
         liveSettingGroupList.get(4).getLiveSettingItems().get(2).setItemSelected(Hawk.get(HawkConfig.LIVE_CHANNEL_REVERSE, false));
@@ -2114,7 +2123,7 @@ public class LivePlayActivity extends BaseActivity {
     }
 
     private boolean isCurrentLiveChannelValid() {
-        if (currentLiveChannelItem == null) {
+        if (currentLiveChannelItem == null || mVideoView == null) {
             Toast.makeText(App.getInstance(), "请先选择频道", Toast.LENGTH_SHORT).show();
             return false;
         }
