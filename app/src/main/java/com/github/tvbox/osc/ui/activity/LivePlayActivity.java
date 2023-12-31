@@ -930,8 +930,8 @@ public class LivePlayActivity extends BaseActivity {
     };
 */
     private boolean playChannel(int channelGroupIndex, int liveChannelIndex, boolean changeSource) {
-        if ((channelGroupIndex == currentChannelGroupIndex && liveChannelIndex == currentLiveChannelIndex && !changeSource)
-                || (changeSource && currentLiveChannelItem.getSourceNum() == 1)) {
+        if ((channelGroupIndex == currentChannelGroupIndex && liveChannelIndex == currentLiveChannelIndex && !changeSource)){
+                //|| (changeSource && currentLiveChannelItem.getSourceNum() == 1)) {
            // showChannelInfo();
            showBottomEpg();
             return true;
