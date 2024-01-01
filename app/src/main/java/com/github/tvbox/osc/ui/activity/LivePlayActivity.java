@@ -1498,7 +1498,7 @@ public class LivePlayActivity extends BaseActivity {
         @Override
         public void run() {
             currentLiveChangeSourceTimes++;
-            if(currentLiveChannelItem.getSourceNum() == 1 || playUrl.indexOf("?playseek=") >= 0){
+            if(currentLiveChannelItem.getSourceNum() == 1&&!isback || playUrl.indexOf("?playseek=") >= 0){
                 if(currentLiveChangeSourceTimes == 1){
                     //if (!isCurrentLiveChannelValid()) return;
                     playChannel(currentChannelGroupIndex, currentLiveChannelIndex, true);
