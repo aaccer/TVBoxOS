@@ -936,6 +936,9 @@ public class PlayFragment extends BaseLazyFragment {
                                     headers.put(key, hds.getString(key));
                                     if (key.equalsIgnoreCase("user-agent")) {
                                         webUserAgent = hds.getString(key).trim();
+                                    }else
+                                    if (key.equalsIgnoreCase("cookie")) {
+                                        CookieManager cookieManager = CookieManager.getInstance().setCookie(url, hds.getString(key).trim());
                                     }
                                 }
                                 webHeaderMap = headers;
@@ -1312,6 +1315,9 @@ public class PlayFragment extends BaseLazyFragment {
                         Iterator<String> keys = headerJson.keys();
                         while (keys.hasNext()) {
                             String key = keys.next();
+                            if (key.equalsIgnoreCase("cookie")) {
+                                CookieManager cookieManager = CookieManager.getInstance().setCookie(webUrl, headerJson.getString(key).trim());
+                            }
                             if (key.equalsIgnoreCase("user-agent")) {
                                 webUserAgent = headerJson.getString(key).trim();
                             }else {
@@ -1594,7 +1600,7 @@ public class PlayFragment extends BaseLazyFragment {
                     }else {
                         mXwalkWebView.loadUrl(url);
                     }
-                }
+                }else
                 if (mSysWebView != null) {
                     mSysWebView.stopLoading();
                     if(webUserAgent != null) {
@@ -1627,7 +1633,7 @@ public class PlayFragment extends BaseLazyFragment {
                         mXwalkWebView.onDestroy();
                         mXwalkWebView = null;
                     }
-                }
+                }else
                 if (mSysWebView != null) {
                     mSysWebView.stopLoading();
                     mSysWebView.loadUrl("about:blank");
