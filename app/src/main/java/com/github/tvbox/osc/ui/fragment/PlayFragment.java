@@ -936,10 +936,10 @@ public class PlayFragment extends BaseLazyFragment {
                                     headers.put(key, hds.getString(key));
                                     if (key.equalsIgnoreCase("user-agent")) {
                                         webUserAgent = hds.getString(key).trim();
-                                    }else
-                                    if (key.equalsIgnoreCase("cookie")) {
-                                        CookieManager.getInstance().setCookie(url, hds.getString(key).trim());
-                                    }
+                                    }//else
+                                    //if (key.equalsIgnoreCase("cookie")) {
+                                        //CookieManager.getInstance().setCookie(url, hds.getString(key).trim());
+                                    //}
                                 }
                                 webHeaderMap = headers;
                             } catch (Throwable th) {
@@ -1315,9 +1315,9 @@ public class PlayFragment extends BaseLazyFragment {
                         Iterator<String> keys = headerJson.keys();
                         while (keys.hasNext()) {
                             String key = keys.next();
-                            if (key.equalsIgnoreCase("cookie")) {
-                                CookieManager.getInstance().setCookie(webUrl, headerJson.getString(key).trim());
-                            }
+                            //if (key.equalsIgnoreCase("cookie")) {
+                                //CookieManager.getInstance().setCookie(webUrl, headerJson.getString(key).trim());
+                            //}
                             if (key.equalsIgnoreCase("user-agent")) {
                                 webUserAgent = headerJson.getString(key).trim();
                             }else {
@@ -1589,6 +1589,7 @@ public class PlayFragment extends BaseLazyFragment {
         requireActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                CookieManager.getInstance().removeAllCookies(null); 
                 if (mXwalkWebView != null) {
                     mXwalkWebView.stopLoading();
                     if(webUserAgent != null) {
@@ -1623,7 +1624,7 @@ public class PlayFragment extends BaseLazyFragment {
         requireActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-
+                CookieManager.getInstance().removeAllCookies(null); 
                 if (mXwalkWebView != null) {
                     mXwalkWebView.stopLoading();
                     mXwalkWebView.loadUrl("about:blank");
