@@ -917,7 +917,7 @@ public class PlayActivity extends BaseActivity {
                                         webUserAgent = hds.getString(key).trim();
                                     }else
                                     if (key.equalsIgnoreCase("cookie")) {
-                                        CookieManager cookieManager = CookieManager.getInstance().setCookie(url, hds.getString(key).trim());
+                                        CookieManager.getInstance().setCookie(url, hds.getString(key).trim());
                                     }
                                 }
                                 webHeaderMap = headers;
@@ -1282,7 +1282,7 @@ public class PlayActivity extends BaseActivity {
                         while (keys.hasNext()) {
                             String key = keys.next();
                             if (key.equalsIgnoreCase("cookie")) {
-                                CookieManager cookieManager = CookieManager.getInstance().setCookie(webUrl, headerJson.getString(key).trim());
+                                CookieManager.getInstance().setCookie(webUrl, headerJson.getString(key).trim());
                             }
                             if (key.equalsIgnoreCase("user-agent")) {
                                 webUserAgent = headerJson.getString(key).trim();
