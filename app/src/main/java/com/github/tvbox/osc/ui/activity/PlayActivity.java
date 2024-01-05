@@ -915,6 +915,9 @@ public class PlayActivity extends BaseActivity {
                                     headers.put(key, hds.getString(key));
                                     if (key.equalsIgnoreCase("user-agent")) {
                                         webUserAgent = hds.getString(key).trim();
+                                    }else
+                                    if (key.equalsIgnoreCase("cookie")) {
+                                        CookieManager cookieManager = CookieManager.getInstance().setCookie(url, hds.getString(key).trim());
                                     }
                                 }
                                 webHeaderMap = headers;
@@ -1278,6 +1281,9 @@ public class PlayActivity extends BaseActivity {
                         Iterator<String> keys = headerJson.keys();
                         while (keys.hasNext()) {
                             String key = keys.next();
+                            if (key.equalsIgnoreCase("cookie")) {
+                                CookieManager cookieManager = CookieManager.getInstance().setCookie(webUrl, headerJson.getString(key).trim());
+                            }
                             if (key.equalsIgnoreCase("user-agent")) {
                                 webUserAgent = headerJson.getString(key).trim();
                             }else {
@@ -1548,7 +1554,7 @@ public class PlayActivity extends BaseActivity {
                     }else {
                         mXwalkWebView.loadUrl(url);
                     }
-                }
+                }else
                 if (mSysWebView != null) {
                     mSysWebView.stopLoading();
                     if(webUserAgent != null) {
@@ -1579,7 +1585,7 @@ public class PlayActivity extends BaseActivity {
                         mXwalkWebView.onDestroy();
                         mXwalkWebView = null;
                     }
-                }
+                }else
                 if (mSysWebView != null) {
                     mSysWebView.stopLoading();
                     mSysWebView.loadUrl("about:blank");
