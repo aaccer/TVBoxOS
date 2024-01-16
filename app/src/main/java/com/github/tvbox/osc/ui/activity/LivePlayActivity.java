@@ -1966,7 +1966,7 @@ public class LivePlayActivity extends BaseActivity {
             LiveSettingItem liveSettingItem = new LiveSettingItem();
             liveSettingItem.setItemIndex(j);
             String sourceName=currentSourceNames.get(j).replace("[ijk硬解]", "").replace("[ijk软解]", "").replace("[exo]", "");
-            liveSettingItem.setItemName(sourceName);
+            liveSettingItem.setItemName(sourceName!="" ? sourceName : currentSourceNames.get(j));
             liveSettingItemList.add(liveSettingItem);
         }
         liveSettingGroupList.get(0).setLiveSettingItems(liveSettingItemList);
