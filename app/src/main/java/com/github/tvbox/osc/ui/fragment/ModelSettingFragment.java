@@ -164,6 +164,17 @@ public class ModelSettingFragment extends BaseLazyFragment {
                 dialog.show();
             }
         });
+        findViewById(R.id.llAbout).setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                if(findViewById(R.id.llDebug).getVisibility()==View.VISIBLE){
+                    findViewById(R.id.llDebug).setVisibility(View.GONE);
+                }else{
+                    findViewById(R.id.llDebug).setVisibility(View.VISIBLE);
+                }
+                return true;
+            }
+        });
         findViewById(R.id.llWp).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

@@ -501,6 +501,10 @@ public class LivePlayActivity extends BaseActivity {
             //showBottomEpg();
     }
 
+    public void getEpg(Date date) {
+    getEpg(date,true);
+    }
+
     //显示底部EPG
     private void showBottomEpg() {
         //if (isSHIYI)
@@ -666,12 +670,13 @@ public class LivePlayActivity extends BaseActivity {
             Toast.makeText(App.getInstance(), "退出时移模式", Toast.LENGTH_SHORT).show();
             //playPreSource();
             if (playUrl.indexOf("?playseek=") >= 0) {
-            mVideoView.release();
-            mVideoView.setUrl(currentLiveChannelItem.getUrl());
-            mVideoView.start();
+            //mVideoView.release();
+            //mVideoView.setUrl(currentLiveChannelItem.getUrl());
+            //mVideoView.start();
             epgListAdapter.setShiyiSelection(-1, false,timeFormat.format(liveEpgDateAdapter.getData().get(liveEpgDateAdapter.getSelectedIndex()).getDateParamVal()));
-            epgListAdapter.notifyDataSetChanged();
+            //epgListAdapter.notifyDataSetChanged();
             //getEpg(liveEpgDateAdapter.getData().get(liveEpgDateAdapter.getSelectedIndex()).getDateParamVal(),false);
+            playChannel(currentChannelGroupIndex, currentLiveChannelIndex, true);
             }
             //isSHIYI=false;
         }else {
@@ -722,7 +727,10 @@ public class LivePlayActivity extends BaseActivity {
                         if(isBack){
                             showProgressBars();
                         }else{
-                            playNextSource();
+                            if(currentLiveChannelItem.getSourceNum() != 1)
+                                playNextSource();
+                            else
+                                showBottomEpg();
                         }
                         break;
                     case KeyEvent.KEYCODE_DPAD_CENTER:
@@ -930,8 +938,8 @@ public class LivePlayActivity extends BaseActivity {
     };
 */
     private boolean playChannel(int channelGroupIndex, int liveChannelIndex, boolean changeSource) {
-        if ((channelGroupIndex == currentChannelGroupIndex && liveChannelIndex == currentLiveChannelIndex && !changeSource)
-                || (changeSource && currentLiveChannelItem.getSourceNum() == 1)) {
+        if ((channelGroupIndex == currentChannelGroupIndex && liveChannelIndex == currentLiveChannelIndex && !changeSource)){
+                //|| (changeSource && currentLiveChannelItem.getSourceNum() == 1)) {
            // showChannelInfo();
            showBottomEpg();
             return true;
@@ -975,7 +983,7 @@ public class LivePlayActivity extends BaseActivity {
             liveSettingGroupAdapter.setSelectedGroupIndex(-1);
         }
         backcontroller.setVisibility(View.GONE);
-        getEpg(new Date(),true);
+        getEpg(new Date());
         //ll_right_top_huikan.setVisibility(View.GONE);
         mVideoView.setUrl(currentLiveChannelItem.getUrl());
        // showChannelInfo();
@@ -1455,7 +1463,7 @@ public class LivePlayActivity extends BaseActivity {
                         break;
                     case VideoView.STATE_BUFFERING:
                         mHandler.removeCallbacks(mConnectTimeoutChangeSourceRun);
-                        mHandler.postDelayed(mConnectTimeoutChangeSourceRun, (Hawk.get(HawkConfig.LIVE_CONNECT_TIMEOUT, 1) + 1) * 3000);
+                        mHandler.postDelayed(mConnectTimeoutChangeSourceRun, (Hawk.get(HawkConfig.LIVE_CONNECT_TIMEOUT, 0) + 1) * 3000);
                         break;
                 }
             }
@@ -1466,13 +1474,15 @@ public class LivePlayActivity extends BaseActivity {
                     if(isBack){  //手机换源和显示时移控制栏
                         showProgressBars();
                     }else{
+                        if(currentLiveChannelItem.getSourceNum() != 1)
                         playNextSource();
                     }
                 else
                     if(isBack){
                         showProgressBars();
                     }else{
-                    playPreSource();
+                        if(currentLiveChannelItem.getSourceNum() != 1)
+                        playPreSource();
                     }
             }
         });
@@ -1488,12 +1498,21 @@ public class LivePlayActivity extends BaseActivity {
         @Override
         public void run() {
             currentLiveChangeSourceTimes++;
-            if (currentLiveChannelItem.getSourceNum() == currentLiveChangeSourceTimes) {
-                currentLiveChangeSourceTimes = 0;
-                Integer[] groupChannelIndex = getNextChannel(Hawk.get(HawkConfig.LIVE_CHANNEL_REVERSE, false) ? -1 : 1);
-                playChannel(groupChannelIndex[0], groupChannelIndex[1], false);
-            } else {
-                playNextSource();
+            if(currentLiveChannelItem.getSourceNum() == 1&&!isBack || playUrl.indexOf("?playseek=") >= 0){
+                if(currentLiveChangeSourceTimes == 1){
+                    //if (!isCurrentLiveChannelValid()) return;
+                    playChannel(currentChannelGroupIndex, currentLiveChannelIndex, true);
+                }else{
+                    currentLiveChangeSourceTimes = 0;
+                    playNext();
+                }
+            }else{
+                if (currentLiveChannelItem.getSourceNum() == currentLiveChangeSourceTimes) {
+                    currentLiveChangeSourceTimes = 0;
+                    playNext();
+                } else {
+                    playNextSource();
+                }
             }
         }
     };
@@ -1856,6 +1875,13 @@ public class LivePlayActivity extends BaseActivity {
                     }
                 });
             }
+
+            @Override
+            public void onError(Response<String> response) {
+                super.onError(response);
+                Toast.makeText(App.getInstance(), "直播地址网络请求失败", Toast.LENGTH_LONG).show();
+                finish();
+            }
         });
     }
 
@@ -1924,7 +1950,7 @@ public class LivePlayActivity extends BaseActivity {
             liveSettingGroup.setLiveSettingItems(liveSettingItemList);
             liveSettingGroupList.add(liveSettingGroup);
         }
-        liveSettingGroupList.get(3).getLiveSettingItems().get(Hawk.get(HawkConfig.LIVE_CONNECT_TIMEOUT, 1)).setItemSelected(true);
+        liveSettingGroupList.get(3).getLiveSettingItems().get(Hawk.get(HawkConfig.LIVE_CONNECT_TIMEOUT, 0)).setItemSelected(true);
         liveSettingGroupList.get(4).getLiveSettingItems().get(0).setItemSelected(Hawk.get(HawkConfig.LIVE_SHOW_TIME, false));
         liveSettingGroupList.get(4).getLiveSettingItems().get(1).setItemSelected(Hawk.get(HawkConfig.LIVE_SHOW_NET_SPEED, false));
         liveSettingGroupList.get(4).getLiveSettingItems().get(2).setItemSelected(Hawk.get(HawkConfig.LIVE_CHANNEL_REVERSE, false));
@@ -1940,7 +1966,7 @@ public class LivePlayActivity extends BaseActivity {
             LiveSettingItem liveSettingItem = new LiveSettingItem();
             liveSettingItem.setItemIndex(j);
             String sourceName=currentSourceNames.get(j).replace("[ijk硬解]", "").replace("[ijk软解]", "").replace("[exo]", "");
-            liveSettingItem.setItemName(sourceName);
+            liveSettingItem.setItemName(sourceName!="" ? sourceName : currentSourceNames.get(j));
             liveSettingItemList.add(liveSettingItem);
         }
         liveSettingGroupList.get(0).setLiveSettingItems(liveSettingItemList);

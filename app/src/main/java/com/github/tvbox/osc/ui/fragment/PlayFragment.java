@@ -548,8 +548,13 @@ public class PlayFragment extends BaseLazyFragment {
                     }
                 }
             });
-            Toast.makeText(mContext, "视频出错，播放下一集", Toast.LENGTH_SHORT).show();
-            playNext(false);
+            Toast.makeText(mContext, "视频出错，即将播放下一集", Toast.LENGTH_SHORT).show();
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    playNext(false);
+                }
+            }, 3000);
         }
     }
 
@@ -936,7 +941,10 @@ public class PlayFragment extends BaseLazyFragment {
                                     headers.put(key, hds.getString(key));
                                     if (key.equalsIgnoreCase("user-agent")) {
                                         webUserAgent = hds.getString(key).trim();
-                                    }
+                                    }//else
+                                    //if (key.equalsIgnoreCase("cookie")) {
+                                        //CookieManager.getInstance().setCookie(url, hds.getString(key).trim());
+                                    //}
                                 }
                                 webHeaderMap = headers;
                             } catch (Throwable th) {
@@ -1154,8 +1162,8 @@ public class PlayFragment extends BaseLazyFragment {
         stopParse();
         initParseLoadFound();
         if(mVideoView!=null) mVideoView.release();
-        String subtitleCacheKey = mVodInfo.sourceKey + "-" + mVodInfo.id + "-" + mVodInfo.playFlag + "-" + mVodInfo.playIndex+ "-" + vs.name + "-subt";
-        String progressKey = mVodInfo.sourceKey + mVodInfo.id + mVodInfo.playFlag + mVodInfo.playIndex + vs.name;
+        subtitleCacheKey = mVodInfo.sourceKey + "-" + mVodInfo.id + "-" + mVodInfo.playFlag + "-" + mVodInfo.playIndex+ "-" + vs.name + "-subt";
+        progressKey = mVodInfo.sourceKey + mVodInfo.id + mVodInfo.playFlag + mVodInfo.playIndex + vs.name;
         //重新播放清除现有进度
         if (reset) {
             CacheManager.delete(MD5.string2MD5(progressKey), 0);
@@ -1312,6 +1320,9 @@ public class PlayFragment extends BaseLazyFragment {
                         Iterator<String> keys = headerJson.keys();
                         while (keys.hasNext()) {
                             String key = keys.next();
+                            //if (key.equalsIgnoreCase("cookie")) {
+                                //CookieManager.getInstance().setCookie(webUrl, headerJson.getString(key).trim());
+                            //}
                             if (key.equalsIgnoreCase("user-agent")) {
                                 webUserAgent = headerJson.getString(key).trim();
                             }else {
@@ -1583,24 +1594,25 @@ public class PlayFragment extends BaseLazyFragment {
         requireActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                CookieManager.getInstance().removeAllCookies(null); 
                 if (mXwalkWebView != null) {
                     mXwalkWebView.stopLoading();
                     if(webUserAgent != null) {
                         mXwalkWebView.getSettings().setUserAgentString(webUserAgent);
                     }
-                    //mXwalkWebView.clearCache(true);
+                    mXwalkWebView.clearCache(true);
                     if(webHeaderMap != null){
                         mXwalkWebView.loadUrl(url,webHeaderMap);
                     }else {
                         mXwalkWebView.loadUrl(url);
                     }
-                }
+                }else
                 if (mSysWebView != null) {
                     mSysWebView.stopLoading();
                     if(webUserAgent != null) {
                         mSysWebView.getSettings().setUserAgentString(webUserAgent);
                     }
-                    //mSysWebView.clearCache(true);
+                    mSysWebView.clearCache(true);
                     if(webHeaderMap != null){
                         mSysWebView.loadUrl(url,webHeaderMap);
                     }else {
@@ -1617,22 +1629,22 @@ public class PlayFragment extends BaseLazyFragment {
         requireActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-
+                CookieManager.getInstance().removeAllCookies(null); 
                 if (mXwalkWebView != null) {
                     mXwalkWebView.stopLoading();
                     mXwalkWebView.loadUrl("about:blank");
                     if (destroy) {
-//                        mXwalkWebView.clearCache(true);
+                        mXwalkWebView.clearCache(true);
                         mXwalkWebView.removeAllViews();
                         mXwalkWebView.onDestroy();
                         mXwalkWebView = null;
                     }
-                }
+                }else
                 if (mSysWebView != null) {
                     mSysWebView.stopLoading();
                     mSysWebView.loadUrl("about:blank");
                     if (destroy) {
-//                        mSysWebView.clearCache(true);
+                        mSysWebView.clearCache(true);
                         mSysWebView.removeAllViews();
                         mSysWebView.destroy();
                         mSysWebView = null;
