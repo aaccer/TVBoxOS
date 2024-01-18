@@ -529,8 +529,13 @@ public class PlayActivity extends BaseActivity {
                     }
                 }
             });
-            Toast.makeText(mContext, "视频出错，播放下一集", Toast.LENGTH_SHORT).show();
-            playNext(false);
+            Toast.makeText(mContext, "视频出错，即将播放下一集", Toast.LENGTH_SHORT).show();
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    playNext(false);
+                }
+            }, 3000);
         }
     }
 
