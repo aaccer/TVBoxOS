@@ -1,20 +1,19 @@
 package com.github.tvbox.osc.player;
 
 import android.content.Context;
+import android.text.TextUtils;
 
 import androidx.annotation.Nullable;
 
-import com.github.tvbox.osc.util.StringUtils;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.Player;
+import com.google.android.exoplayer2.Tracks;
 import com.google.android.exoplayer2.source.TrackGroup;
 import com.google.android.exoplayer2.source.TrackGroupArray;
-import com.google.android.exoplayer2.trackselection.DefaultTrackSelector.ParametersBuilder;
+import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector.SelectionOverride;
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector.MappedTrackInfo;
-import com.google.android.exoplayer2.trackselection.TrackSelection;
-import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.util.MimeTypes;
 
 import xyz.doikki.videoplayer.exo.ExoMediaPlayer;
@@ -32,7 +31,7 @@ public class EXOmPlayer extends ExoMediaPlayer {
         TrackInfo data = new TrackInfo();
         MappedTrackInfo trackInfo = getTrackSelector().getCurrentMappedTrackInfo();
         if (trackInfo != null) {
-            getExoSelectedTrack(mTrackSelections);
+            getExoSelectedTrack();
             for (int groupArrayIndex = 0; groupArrayIndex < trackInfo.getRendererCount(); groupArrayIndex++) {
                 TrackGroupArray groupArray = trackInfo.getTrackGroups(groupArrayIndex);
                 for (int groupIndex = 0; groupIndex < groupArray.length; groupIndex++) {
@@ -44,8 +43,8 @@ public class EXOmPlayer extends ExoMediaPlayer {
                             TrackInfoBean t = new TrackInfoBean();
                             t.name = trackName;
                             t.language = "";
-                            t.index = formatIndex;
-                            t.selected = !StringUtils.isEmpty(audioId) && audioId.equals(format.id);
+                            t.trackId = formatIndex;
+                            t.selected = !TextUtils.isEmpty(audioId) && audioId.equals(format.id);
                             t.trackGroupId = groupIndex;
                             t.renderId = groupArrayIndex;
                             data.addAudio(t);
@@ -54,8 +53,8 @@ public class EXOmPlayer extends ExoMediaPlayer {
                             TrackInfoBean t = new TrackInfoBean();
                             t.name = trackName;
                             t.language = "";
-                            t.index = formatIndex;
-                            t.selected = !StringUtils.isEmpty(subtitleId) && subtitleId.equals(format.id);
+                            t.trackId = formatIndex;
+                            t.selected = !TextUtils.isEmpty(subtitleId) && subtitleId.equals(format.id);
                             t.trackGroupId = groupIndex;
                             t.renderId = groupArrayIndex;
                             data.addSubtitle(t);
@@ -67,13 +66,12 @@ public class EXOmPlayer extends ExoMediaPlayer {
         return data;
     }
 
-    private void getExoSelectedTrack(TrackSelectionArray trackSelections) {
+    private void getExoSelectedTrack() {
         audioId = "";
         subtitleId = "";
-        for (TrackSelection selection : trackSelections.getAll()) {
-            if (selection == null) continue;
-            for(int trackIndex = 0; trackIndex < selection.length(); trackIndex++) {
-                Format format = selection.getFormat(trackIndex);
+        for (Tracks.Group group : mMediaPlayer.getCurrentTracks().getGroups()) {
+            for (int trackIndex = 0; trackIndex < group.length; trackIndex++) {
+                Format format = group.getTrackFormat(trackIndex);
                 if (MimeTypes.isAudio(format.sampleMimeType)) {
                     audioId = format.id;
                 }
@@ -90,7 +88,7 @@ public class EXOmPlayer extends ExoMediaPlayer {
             if (videoTrackBean == null) {
                 for (int renderIndex = 0; renderIndex < trackInfo.getRendererCount(); renderIndex++) {
                     if (trackInfo.getRendererType(renderIndex) == C.TRACK_TYPE_TEXT) {
-                        ParametersBuilder parametersBuilder = getTrackSelector().getParameters().buildUpon();
+                        DefaultTrackSelector.Parameters.Builder parametersBuilder = getTrackSelector().getParameters().buildUpon();
                         parametersBuilder.setRendererDisabled(renderIndex, true);
                         getTrackSelector().setParameters(parametersBuilder);
                         break;
@@ -98,8 +96,8 @@ public class EXOmPlayer extends ExoMediaPlayer {
                 }
             } else {
                 TrackGroupArray trackGroupArray = trackInfo.getTrackGroups(videoTrackBean.renderId);
-                SelectionOverride override = new SelectionOverride(videoTrackBean.trackGroupId, videoTrackBean.index);
-                ParametersBuilder parametersBuilder = getTrackSelector().buildUponParameters();
+                SelectionOverride override = new SelectionOverride(videoTrackBean.trackGroupId, videoTrackBean.trackId);
+                DefaultTrackSelector.Parameters.Builder parametersBuilder = getTrackSelector().buildUponParameters();
                 parametersBuilder.setRendererDisabled(videoTrackBean.renderId, false);
                 parametersBuilder.setSelectionOverride(videoTrackBean.renderId, trackGroupArray, override);
                 getTrackSelector().setParameters(parametersBuilder);
@@ -109,7 +107,7 @@ public class EXOmPlayer extends ExoMediaPlayer {
     }
 
     public void setOnTimedTextListener(Player.Listener listener) {
-        mInternalPlayer.addListener(listener);
+        mMediaPlayer.addListener(listener);
     }
 
 }
