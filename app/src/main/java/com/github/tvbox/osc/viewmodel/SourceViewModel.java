@@ -314,7 +314,8 @@ public class SourceViewModel extends ViewModel {
                         json(listResult, sp.categoryContent(sortData.id, page + "", true, sortData.filterSelect), homeSourceBean.getKey());
                     } catch (Throwable th) {
                         th.printStackTrace();
-                        json(listResult, "", homeSourceBean.getKey());
+                        //json(listResult, "", homeSourceBean.getKey());
+                        listResult.postValue(null);
                     }
                 }
             });
@@ -524,7 +525,8 @@ public class SourceViewModel extends ViewModel {
                         json(detailResult, sp.detailContent(ids), sourceBean.getKey());
                     } catch (Throwable th) {
                         th.printStackTrace();
-                        json(detailResult, "", sourceBean.getKey());
+                        //json(detailResult, "", sourceBean.getKey());
+                        detailResult.postValue(null);
                     }
                 }
             });

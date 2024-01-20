@@ -70,7 +70,9 @@ public class EXOmPlayer extends ExoMediaPlayer {
         audioId = "";
         subtitleId = "";
         for (Tracks.Group group : mMediaPlayer.getCurrentTracks().getGroups()) {
+            if (!group.isSelected()) continue;
             for (int trackIndex = 0; trackIndex < group.length; trackIndex++) {
+                if (!group.isTrackSelected(trackIndex)) continue;
                 Format format = group.getTrackFormat(trackIndex);
                 if (MimeTypes.isAudio(format.sampleMimeType)) {
                     audioId = format.id;
