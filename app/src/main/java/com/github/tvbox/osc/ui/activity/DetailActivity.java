@@ -302,6 +302,26 @@ public class DetailActivity extends BaseActivity {
                 Toast.makeText(DetailActivity.this, "已复制", Toast.LENGTH_SHORT).show();
             }
         });
+        tvName.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ClipboardManager clipboard = (ClipboardManager)getSystemService(mContext.CLIPBOARD_SERVICE);
+                String cpContent = "视频ID：" + vodId + "，图片地址：" + (mVideo == null ? "" : mVideo.pic);
+                ClipData clipData = ClipData.newPlainText(null, cpContent);
+                clipboard.setPrimaryClip(clipData);
+                Toast.makeText(DetailActivity.this, "已复制", Toast.LENGTH_SHORT).show();
+            }
+        });
+        tvDes.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ClipboardManager clipboard = (ClipboardManager)getSystemService(mContext.CLIPBOARD_SERVICE);
+                String cpContent = removeHtmlTag(mVideo.des);
+                ClipData clipData = ClipData.newPlainText(null, cpContent);
+                clipboard.setPrimaryClip(clipData);
+                Toast.makeText(DetailActivity.this, "已复制", Toast.LENGTH_SHORT).show();
+            }
+        });
         mGridView.setOnItemListener(new TvRecyclerView.OnItemListener() {
             @Override
             public void onItemPreSelected(TvRecyclerView parent, View itemView, int position) {
