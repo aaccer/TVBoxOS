@@ -75,6 +75,7 @@ public class VodController extends BaseController {
                         backBtn.setVisibility(ScreenUtils.isTv(context) ? INVISIBLE : VISIBLE);
                         //showLockView();
                         mLockView.setVisibility(ScreenUtils.isTv(context) ? INVISIBLE : VISIBLE);
+                        mHandler.removeCallbacks(lockRunnable);
                         break;
                     }
                     case 1003: { // 隐藏底部菜单
