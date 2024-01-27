@@ -111,6 +111,7 @@ public class SimpleSubtitleView extends TextView
         text = text.replaceAll("\\\\N", "<br />");
         text = text.replaceAll("\\{[\\s\\S]*?\\}", "");
         text = text.replaceAll("^.*?,.*?,.*?,.*?,.*?,.*?,.*?,.*?,.*?,", "");
+        text = text.replaceAll("^.*?,,[0]+,[0]+,[0]+,,", "");
         setText(Html.fromHtml(text));
     }
 

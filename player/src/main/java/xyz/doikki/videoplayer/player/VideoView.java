@@ -557,6 +557,7 @@ public class VideoView<P extends AbstractPlayer> extends FrameLayout
      */
     @Override
     public void onError() {
+        saveProgress();
         mPlayerContainer.setKeepScreenOn(false);
         setPlayState(STATE_ERROR);
     }

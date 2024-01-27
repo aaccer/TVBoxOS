@@ -73,7 +73,9 @@ public class VodController extends BaseController {
                         mPlayTitle.setVisibility(GONE);
                         mNextBtn.requestFocus();
                         backBtn.setVisibility(ScreenUtils.isTv(context) ? INVISIBLE : VISIBLE);
-                        showLockView();
+                        //showLockView();
+                        mLockView.setVisibility(ScreenUtils.isTv(context) ? INVISIBLE : VISIBLE);
+                        mHandler.removeCallbacks(lockRunnable);
                         break;
                     }
                     case 1003: { // 隐藏底部菜单
@@ -81,6 +83,7 @@ public class VodController extends BaseController {
                         mTopRoot1.setVisibility(GONE);
                         mTopRoot2.setVisibility(GONE);
                         backBtn.setVisibility(INVISIBLE);
+                        if(!isLock)mLockView.setVisibility(INVISIBLE);
                         break;
                     }
                     case 1004: { // 设置速度
@@ -235,7 +238,12 @@ public class VodController extends BaseController {
             public boolean onTouch(View v, MotionEvent event) {
                 if (isLock) {
                     if (event.getAction() == MotionEvent.ACTION_UP) {
-                        showLockView();
+                        if(mLockView.getVisibility() == View.VISIBLE){
+                            mLockView.setVisibility(INVISIBLE);
+                            mHandler.removeCallbacks(lockRunnable);
+                        }else{
+                            showLockView();
+                        }
                     }
                 }
                 return isLock;
@@ -365,14 +373,14 @@ public class VodController extends BaseController {
                 myHandle.postDelayed(myRunnable, myHandleSeconds);
                 try {
                     float speed = (float) mPlayerConfig.getDouble("sp");
-                    if (speed < 1.5){
+                    if (speed < 1.5f){
                     speed += 0.25f;
-                    }else if(speed >= 1.5 &&speed < 2){
+                    }else if(speed >= 1.5f &&speed < 2f){
                     speed += 0.5f;
-                    }else if(speed >= 2&&speed < 3){
+                    }else if(speed >= 2f&&speed < 3f){
                     speed += 1f;
-                    }else if (speed >= 3){
-                        speed = 0.5f;
+                    }else if (speed >= 3f){
+                        speed = 0.25f;
                         }
                     mPlayerConfig.put("sp", speed);
                     updatePlayerCfgView();
@@ -389,11 +397,17 @@ public class VodController extends BaseController {
             @Override
             public boolean onLongClick(View view) {
                 try {
-                    mPlayerConfig.put("sp", 1.0f);
+                    float speed = (float) mPlayerConfig.getDouble("sp");
+                    if (speed == 1.0f) {
+                        speed=3.0f;
+                    } else {
+                        speed=1.0f;
+                    }
+                    mPlayerConfig.put("sp", speed);
                     updatePlayerCfgView();
                     listener.updatePlayerCfg();
-                    speed_old = 1.0f;
-                    mControlWrapper.setSpeed(1.0f);
+                    speed_old = speed;
+                    mControlWrapper.setSpeed(speed);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
