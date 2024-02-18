@@ -110,7 +110,11 @@ public final class ExoMediaSourceHelper {
             case C.TYPE_DASH:
                 return new DashMediaSource.Factory(factory).createMediaSource(MediaItem.fromUri(contentUri));
             case C.TYPE_HLS:
-                return new HlsMediaSource.Factory(factory).createMediaSource(MediaItem.fromUri(contentUri));
+                //return new HlsMediaSource.Factory(factory).createMediaSource(MediaItem.fromUri(contentUri));
+                return new HlsMediaSource.Factory(mHttpDataSourceFactory)
+                        .setAllowChunklessPreparation(true)
+                        .setExtractorFactory(new MyHlsExtractorFactory())
+                        .createMediaSource(MediaItem.fromUri(contentUri));
             default:
             case C.TYPE_OTHER:
                 return new ProgressiveMediaSource.Factory(factory).createMediaSource(MediaItem.fromUri(contentUri));
@@ -131,9 +135,9 @@ public final class ExoMediaSourceHelper {
 
     private int inferContentType(String fileName) {
         fileName = fileName.toLowerCase();
-        if (fileName.contains(".mpd")) {
+        if (fileName.contains("mpd")) {
             return C.TYPE_DASH;
-        } else if (fileName.contains(".m3u8")) {
+        } else if (fileName.contains("m3u8")) {
             return C.TYPE_HLS;
         } else {
             return C.TYPE_OTHER;
