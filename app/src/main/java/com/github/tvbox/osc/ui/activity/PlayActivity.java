@@ -547,7 +547,7 @@ public class PlayActivity extends BaseActivity {
         public void run() {
             playNext(false);
         }
-    }
+    };
 
     private String removeMinorityUrl(String tsUrlPre, String m3u8content) {
         if (!m3u8content.startsWith("#EXTM3U")) return null;
