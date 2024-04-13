@@ -66,7 +66,7 @@ final class AudioFocusHelper implements AudioManager.OnAudioFocusChangeListener 
             case AudioManager.AUDIOFOCUS_LOSS://焦点丢失
             case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT://焦点暂时丢失
                 if (videoView.isPlaying()) {
-                    mPausedForLoss = true;
+                    //mPausedForLoss = true;
                     //videoView.pause();
                 }
                 break;
