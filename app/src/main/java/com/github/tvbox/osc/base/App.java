@@ -43,6 +43,8 @@ public class App extends MultiDexApplication {
     private static P2PClass p;
     public static String burl;
 
+    public boolean isNormalStart;
+
     @Override
     public void onCreate() {
         super.onCreate();

@@ -165,7 +165,6 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
         seriesAdapter = new SeriesAdapter(false);
         mBinding.mGridView.setAdapter(seriesAdapter);
         mBinding.mGridViewFlag.setHasFixedSize(true);
-        mBinding.mGridViewFlag.setLayoutManager(new V7LinearLayoutManager(this.mContext, 0, false));
         seriesFlagAdapter = new SeriesFlagAdapter();
         mBinding.mGridViewFlag.setAdapter(seriesFlagAdapter);
         isReverse = false;

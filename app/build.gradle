@@ -8,8 +8,8 @@ android {
         applicationId 'com.github.tvbox.osc'
         minSdkVersion 24
         targetSdkVersion 30
-        versionCode 30
-        versionName '1.1.0'
+        versionCode 31
+        versionName '1.1.1'
         multiDexEnabled true
         //设置room的Schema的位置
         javaCompileOptions {
@@ -25,7 +25,6 @@ android {
 
     }
 
-
     // 执行配置
     applicationVariants.all { variant ->
 
@@ -39,22 +38,18 @@ android {
         }
     }
 
-
     packagingOptions {
         exclude 'META-INF/DEPENDENCIES'
     }
 
     signingConfigs {
         config {
-            keyAlias 'key0'
-            keyPassword '123456'
-            storeFile file('test.jks')
-            storePassword '123456'
-            v1SigningEnabled true
-            v2SigningEnabled true
+            keyAlias 'TVBoxOSC'
+            keyPassword 'TVBoxOSC'
+            storeFile file('..\\TVBoxOSC.jks')
+            storePassword 'TVBoxOSC'
         }
     }
-
 
     buildTypes {
         debug {
@@ -62,6 +57,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             minifyEnabled false
         }
+
         release {
             signingConfig signingConfigs.config
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
@@ -149,7 +145,7 @@ dependencies {
     //标题栏
     implementation 'com.github.getActivity:TitleBar:10.5'
     //弹窗
-    implementation 'com.github.li-xiaojun:XPopup:2.9.19'
+    implementation 'com.github.li-xiaojun:XPopup:2.10.0'
     //工具类
     implementation 'com.blankj:utilcodex:1.31.0'
     //阴影/shape/选择器/圆角/...
@@ -173,4 +169,6 @@ dependencies {
     implementation project(":crash")
     //dlna投屏
     implementation 'com.github.devin1014.DLNA-Cast:dlna-dmc:V1.0.0'
+    // Lifecycles only (without ViewModel or LiveData)
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.2.0"
 }
