@@ -25,6 +25,7 @@ import com.github.tvbox.osc.bean.MovieSort.SortData
 import com.github.tvbox.osc.bean.SourceBean
 import com.github.tvbox.osc.bean.VodInfo
 import com.github.tvbox.osc.cache.RoomDataManger
+import com.github.tvbox.osc.constant.IntentKey
 import com.github.tvbox.osc.databinding.FragmentHomeBinding
 import com.github.tvbox.osc.server.ControlManager
 import com.github.tvbox.osc.ui.activity.CollectActivity
@@ -47,13 +48,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class HomeFragment : BaseVbFragment<FragmentHomeBinding?>() {
+class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
 
     /**
      * 提供给主页返回操作
      */
     val tabIndex: Int
-        get() = mBinding!!.tabLayout.currentItemIndex
+        get() = mBinding.tabLayout.currentItemIndex
 
     /**
      * 提供给主页返回操作
@@ -82,34 +83,34 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding?>() {
 
     override fun init() {
         ControlManager.get().startServer()
-        mBinding!!.nameContainer.setOnClickListener {
+        mBinding.nameContainer.setOnClickListener {
             if (dataInitOk && jarInitOk) {
                 showSiteSwitch()
             } else {
                 ToastUtils.showShort("数据源未加载，长按刷新或切换订阅")
             }
         }
-        mBinding!!.nameContainer.setOnLongClickListener {
+        mBinding.nameContainer.setOnLongClickListener {
             refreshHomeSources()
             true
         }
-        mBinding!!.search.setOnClickListener {
+        mBinding.search.setOnClickListener {
             jumpActivity(FastSearchActivity::class.java)
         }
-        mBinding!!.ivHistory.setOnClickListener {
+        mBinding.ivHistory.setOnClickListener {
             jumpActivity(HistoryActivity::class.java)
         }
-        mBinding!!.ivCollect.setOnClickListener {
+        mBinding.ivCollect.setOnClickListener {
             jumpActivity(CollectActivity::class.java)
         }
-        setLoadSir(mBinding!!.contentLayout)
+        setLoadSir(mBinding.contentLayout)
         initViewModel()
         initData()
     }
 
     private fun initViewModel() {
         sourceViewModel = ViewModelProvider(this).get(SourceViewModel::class.java)
-        sourceViewModel!!.sortResult.observe(this) { absXml: AbsSortXml? ->
+        sourceViewModel?.sortResult?.observe(this) { absXml: AbsSortXml? ->
             showSuccess()
             mSortDataList =
                 if (absXml?.classes != null && absXml.classes.sortList != null) {
@@ -131,8 +132,8 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding?>() {
 
         val home = ApiConfig.get().homeSourceBean
         if (home != null && !home.name.isNullOrEmpty()) {
-            mBinding!!.tvName.text = home.name
-            mBinding!!.tvName.postDelayed({ mBinding!!.tvName.isSelected = true }, 2000)
+            mBinding.tvName.text = home.name
+            mBinding.tvName.postDelayed({ mBinding.tvName.isSelected = true }, 2000)
         }
 
         showLoading()
@@ -140,7 +141,7 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding?>() {
             dataInitOk && jarInitOk -> {
                 //正常初始化会先加载,最终到这,此时数据有以下几种情况
                 // 1. api/jar/spider等均加载完,正常显示数据。2. 缺失spider(存疑?)/api配置有问题同样加载(最后空布局 或 只有豆瓣首页)
-                sourceViewModel!!.getSort(ApiConfig.get().homeSourceBean.key)
+                sourceViewModel?.getSort(ApiConfig.get().homeSourceBean.key)
             }
             dataInitOk && !jarInitOk -> {
                 loadJar()
@@ -215,7 +216,7 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding?>() {
                     override fun left() {
                         mHandler.post {
                             initData()
-                            errorTipDialog!!.hide()
+                            errorTipDialog?.hide()
                         }
                     }
 
@@ -224,7 +225,7 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding?>() {
                         jarInitOk = true
                         mHandler.post {
                             initData()
-                            errorTipDialog!!.hide()
+                            errorTipDialog?.hide()
                         }
                     }
 
@@ -233,12 +234,12 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding?>() {
                         jarInitOk = true
                         mHandler.post {
                             initData()
-                            errorTipDialog!!.hide()
+                            errorTipDialog?.hide()
                         }
                     }
 
                     override fun onTitleClick() {
-                        errorTipDialog!!.hide()
+                        errorTipDialog?.hide()
                         jumpActivity(SubscriptionActivity::class.java)
                     }
                 })
@@ -261,10 +262,10 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding?>() {
 
     private fun initViewPager(absXml: AbsSortXml?) {
         if (mSortDataList.isNotEmpty()) {
-            mBinding!!.tabLayout.removeAllViews()
+            mBinding.tabLayout.removeAllViews()
             fragments.clear()
             for (data in mSortDataList) {
-                mBinding!!.tabLayout.addView(getTabTextView(data.name))
+                mBinding.tabLayout.addView(getTabTextView(data.name))
                 if (data.id == "my0") { //tab是主页,添加主页fragment 根据设置项显示豆瓣热门/站点推荐(每个源不一样)/历史记录
                     if (Hawk.get(
                             HawkConfig.HOME_REC,
@@ -280,12 +281,12 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding?>() {
                 }
             }
             if (Hawk.get(HawkConfig.HOME_REC, 0) == 2) { //关闭主页
-                mBinding!!.tabLayout.removeViewAt(0)
+                mBinding.tabLayout.removeViewAt(0)
                 fragments.removeAt(0)
             }
 
             //重新渲染vp
-            mBinding!!.mViewPager.adapter =
+            mBinding.mViewPager.adapter =
                 object : FragmentStatePagerAdapter(getChildFragmentManager()) {
                     override fun getItem(position: Int): Fragment {
                         return fragments[position]
@@ -296,7 +297,7 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding?>() {
                     }
                 }
             //tab和vp绑定
-            install(mBinding!!.mViewPager, mBinding!!.tabLayout, true)
+            install(mBinding.mViewPager, mBinding.tabLayout, true)
         }
     }
 
@@ -304,8 +305,8 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding?>() {
      * 提供给主页返回操作
      */
     fun scrollToFirstTab(): Boolean {
-        return if (mBinding!!.tabLayout.currentItemIndex != 0) {
-            mBinding!!.mViewPager.setCurrentItem(0, false)
+        return if (mBinding.tabLayout.currentItemIndex != 0) {
+            mBinding.mViewPager.setCurrentItem(0, false)
             true
         } else {
             false
@@ -352,7 +353,7 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding?>() {
         val intent = Intent(App.getInstance(), MainActivity::class.java)
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
         val bundle = Bundle()
-        bundle.putBoolean("useCache", true)
+        bundle.putBoolean(IntentKey.CACHE_CONFIG_CHANGED, true)
         intent.putExtras(bundle)
         startActivity(intent)
     }

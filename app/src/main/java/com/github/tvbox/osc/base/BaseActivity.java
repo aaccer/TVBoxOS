@@ -44,11 +44,6 @@ import java.io.InputStreamReader;
 
 import me.jessyan.autosize.internal.CustomAdapt;
 
-/**
- * @author pj567
- * @date :2020/12/17
- * @description:
- */
 public abstract class BaseActivity extends AppCompatActivity implements CustomAdapt, OnTitleBarListener {
     protected Context mContext;
     private LoadService mLoadService;
