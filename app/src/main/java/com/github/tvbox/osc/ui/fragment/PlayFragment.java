@@ -548,15 +548,25 @@ public class PlayFragment extends BaseLazyFragment {
                     }
                 }
             });
-            Toast.makeText(mContext, "视频出错，即将播放下一集", Toast.LENGTH_SHORT).show();
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    playNext(false);
-                }
-            }, 3000);
+            boolean hasNext = true;
+            if (mVodInfo == null || mVodInfo.seriesMap.get(mVodInfo.playFlag) == null) {
+                hasNext = false;
+            } else {
+                hasNext = mVodInfo.playIndex + 1 < mVodInfo.seriesMap.get(mVodInfo.playFlag).size();
+            }
+            if (hasNext) {
+                Toast.makeText(mContext, "视频出错，即将播放下一集", Toast.LENGTH_SHORT).show();
+                new Handler().postDelayed(mPlayNext, 3000);
+            }
         }
     }
+
+    private Runnable mPlayNext = new Runnable() {
+        @Override
+        public void run() {
+            playNext(false);
+        }
+    };
 
     private String removeMinorityUrl(String tsUrlPre, String m3u8content) {
         if (!m3u8content.startsWith("#EXTM3U")) return null;
@@ -1073,6 +1083,7 @@ public class PlayFragment extends BaseLazyFragment {
 
     @Override
     public void onDestroyView() {
+        new Handler().removeCallbacks(mPlayNext);
         super.onDestroyView();
         EventBus.getDefault().unregister(this);
         if (mVideoView != null) {
@@ -1092,6 +1103,7 @@ public class PlayFragment extends BaseLazyFragment {
     private SourceBean sourceBean;
 
     private void playNext(boolean isProgress) {
+        new Handler().removeCallbacks(mPlayNext);
         boolean hasNext;
         if (mVodInfo == null || mVodInfo.seriesMap.get(mVodInfo.playFlag) == null) {
             hasNext = false;
@@ -1108,6 +1120,7 @@ public class PlayFragment extends BaseLazyFragment {
     }
 
     private void playPrevious() {
+        new Handler().removeCallbacks(mPlayNext);
         boolean hasPre = true;
         if (mVodInfo == null || mVodInfo.seriesMap.get(mVodInfo.playFlag) == null) {
             hasPre = false;
