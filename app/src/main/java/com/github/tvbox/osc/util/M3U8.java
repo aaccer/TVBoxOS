@@ -1,8 +1,7 @@
 package com.github.tvbox.osc.util;
 
-import androidx.media3.common.util.UriUtil;
-
 import com.github.tvbox.osc.base.App;
+import com.whl.quickjs.wrapper.UriUtil;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
