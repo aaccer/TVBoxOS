@@ -127,7 +127,7 @@ public class FileUtils {
         }
     }
 
-    private static final Pattern URLJOIN = Pattern.compile("^http.*\\.(js|txt|json|m3u)$", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
+    private static final Pattern URLJOIN = Pattern.compile("^http.*\\.(js|txt|json|m3u)", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
 
     public static String loadModule(String name) {
         try {
