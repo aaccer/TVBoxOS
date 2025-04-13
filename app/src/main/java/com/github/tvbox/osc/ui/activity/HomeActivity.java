@@ -470,8 +470,8 @@ public class HomeActivity extends BaseActivity {
                 } else {
                     exit();
                 }
-            } else if (baseLazyFragment instanceof UserFragment && UserFragment.tvHotList1.canScrollVertically(-1)) {
-                UserFragment.tvHotList1.scrollToPosition(0);
+            } else if (baseLazyFragment instanceof UserFragment && UserFragment.tvHotList.canScrollVertically(-1)) {
+                UserFragment.tvHotList.scrollToPosition(0);
                 this.mGridView.setSelection(0);
             } else {
                 exit();
