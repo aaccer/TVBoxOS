@@ -298,7 +298,11 @@ public class FileUtils {
         return getCacheDir()
             .getAbsolutePath();
     }
-    public static void recursiveDelete(File file) {
+    public static String getFilePath() {
+        return App.getInstance().getFilesDir().getAbsolutePath();
+    }
+
+        public static void recursiveDelete(File file) {
         if (!file.exists()) return;
         if (file.isDirectory()) {
             for (File f: file.listFiles()) {
