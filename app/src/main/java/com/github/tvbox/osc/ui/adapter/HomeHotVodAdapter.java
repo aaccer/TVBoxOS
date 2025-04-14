@@ -98,7 +98,8 @@ public class HomeHotVodAdapter extends BaseQuickAdapter<Movie.Video, BaseViewHol
                         .into(ivThumb);
             }
         } else {
-            ivThumb.setImageDrawable(R.drawable.img_loading_placeholder);
+            //ivThumb.setImageDrawable(ImgUtil.createTextDrawable(item.name));
+            ivThumb.setImageResource(R.drawable.img_loading_placeholder);
         }
         applyStyleToImage(ivThumb);//动态设置宽高
     }
