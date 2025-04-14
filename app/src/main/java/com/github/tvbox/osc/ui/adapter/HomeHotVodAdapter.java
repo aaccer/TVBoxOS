@@ -94,11 +94,11 @@ public class HomeHotVodAdapter extends BaseQuickAdapter<Movie.Video, BaseViewHol
                                 .roundRadius(AutoSizeUtils.mm2px(mContext, 10), RoundTransformation.RoundType.ALL))
                         .placeholder(R.drawable.img_loading_placeholder)
                         .noFade()
-                        .error(ImgUtil.createTextDrawable(item.name))
+                        .error(R.drawable.img_loading_placeholder)
                         .into(ivThumb);
             }
         } else {
-            ivThumb.setImageDrawable(ImgUtil.createTextDrawable(item.name));
+            ivThumb.setImageDrawable(R.drawable.img_loading_placeholder);
         }
         applyStyleToImage(ivThumb);//动态设置宽高
     }
