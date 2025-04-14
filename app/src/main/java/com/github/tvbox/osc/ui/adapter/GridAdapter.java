@@ -134,7 +134,7 @@ public class GridAdapter extends BaseQuickAdapter<Movie.Video, BaseViewHolder> {
                         .into(ivThumb);
             }
         } else {
-            ivThumb.setImageDrawable(R.drawable.img_loading_placeholder);
+            ivThumb.setImageResource(R.drawable.img_loading_placeholder);
         }
         applyStyleToImage(ivThumb);//动态设置宽高
     }
