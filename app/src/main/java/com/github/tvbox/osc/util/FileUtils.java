@@ -127,7 +127,7 @@ public class FileUtils {
         }
     }
 
-    private static final Pattern URLJOIN = Pattern.compile("^http.*\\.(js|txt|json|m3u)$", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
+    private static final Pattern URLJOIN = Pattern.compile("^http.*\\.(js|txt|json|m3u)", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
 
     public static String loadModule(String name) {
         try {
@@ -298,7 +298,11 @@ public class FileUtils {
         return getCacheDir()
             .getAbsolutePath();
     }
-    public static void recursiveDelete(File file) {
+    public static String getFilePath() {
+        return App.getInstance().getFilesDir().getAbsolutePath();
+    }
+
+        public static void recursiveDelete(File file) {
         if (!file.exists()) return;
         if (file.isDirectory()) {
             for (File f: file.listFiles()) {

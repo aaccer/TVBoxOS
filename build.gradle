@@ -6,12 +6,13 @@ buildscript {
         google()
         mavenCentral()
         maven { url "https://jitpack.io" }
-        //maven { url 'https://download.01.org/crosswalk/releases/crosswalk/android/maven2' }
-//        maven { url 'http://home.jundie.top:81/xwalk/maven2' }
-//        maven { url 'http://9xi4o.tk/maven2' }
+        maven { url "https://maven.aliyun.com/repository/releases" }
+        maven { url "https://maven.aliyun.com/repository/public" }
+        maven { url "https://storage.googleapis.com/r8-releases/raw" }
+        maven { url "https://chaquo.com/maven" }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.2.2'
+        classpath 'com.android.tools.build:gradle:7.2.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
 
         // NOTE: Do not place your application dependencies here; they belong
@@ -25,9 +26,8 @@ allprojects {
         google()
         mavenCentral()
         maven { url "https://jitpack.io" }
-        //maven { url 'https://download.01.org/crosswalk/releases/crosswalk/android/maven2' }
-//        maven { url 'http://9xi4o.tk/maven2' }
-//        maven { url 'http://home.jundie.top:81/xwalk/maven2' }
+        maven { url "https://maven.aliyun.com/repository/releases" }
+        maven { url "https://maven.aliyun.com/repository/public" }
     }
 }
 
