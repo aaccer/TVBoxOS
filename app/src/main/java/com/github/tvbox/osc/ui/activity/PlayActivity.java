@@ -551,7 +551,8 @@ public class PlayActivity extends BaseActivity {
     };
 
     void playUrl(String url, HashMap<String, String> headers) {
-        if (!url.contains("://127.0.0.1/") && !url.contains(".m3u8")) {
+         if(!url.startsWith("data:application"))EventBus.getDefault().post(new RefreshEvent(RefreshEvent.TYPE_REFRESH, url));//更新播放地址
+         if (!url.contains("://127.0.0.1/") && !url.contains(".m3u8")) {
             startPlayUrl(url, headers);
             return;
         }
