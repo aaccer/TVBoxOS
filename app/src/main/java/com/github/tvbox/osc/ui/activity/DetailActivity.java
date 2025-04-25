@@ -780,7 +780,11 @@ public class DetailActivity extends BaseActivity {
                     //保存历史
                     insertVod(firstsourceKey, vodInfo);
             //        insertVod(sourceKey, vodInfo);
-                }
+                } else if (event.obj instanceof String) {
+                     String url = event.obj.toString();
+                     //设置更新播放地址
+                     setTvPlayUrl(url);
+                 }
 
             }
         } else if (event.type == RefreshEvent.TYPE_QUICK_SEARCH_SELECT) {
@@ -1004,4 +1008,9 @@ public class DetailActivity extends BaseActivity {
         }
         EventBus.getDefault().post(new RefreshEvent(RefreshEvent.TYPE_SUBTITLE_SIZE_CHANGE, subtitleTextSize));
     }
-}
+
+    private void setTvPlayUrl(String url) {
+         setTextShow(tvPlayUrl, "播放地址：", url);
+     }
+ 
+ }
