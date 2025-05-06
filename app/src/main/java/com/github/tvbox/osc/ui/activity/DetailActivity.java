@@ -316,7 +316,8 @@ public class DetailActivity extends BaseActivity {
             @Override
             public void onClick(View v) {
                 ClipboardManager clipboard = (ClipboardManager)getSystemService(mContext.CLIPBOARD_SERVICE);
-                String cpContent = removeHtmlTag(mVideo.des);
+                //String cpContent = removeHtmlTag(mVideo.des);
+                String cpContent = mVideo.des;
                 ClipData clipData = ClipData.newPlainText(null, cpContent);
                 clipboard.setPrimaryClip(clipData);
                 Toast.makeText(DetailActivity.this, "已复制", Toast.LENGTH_SHORT).show();
@@ -646,7 +647,8 @@ public class DetailActivity extends BaseActivity {
                     }
                     setTextShow(tvActor, "演员：", mVideo.actor);
                     setTextShow(tvDirector, "导演：", mVideo.director);
-                    setTextShow(tvDes, "内容简介：", removeHtmlTag(mVideo.des));
+                    //setTextShow(tvDes, "内容简介：", removeHtmlTag(mVideo.des));
+                    setTextShow(tvDes, "内容简介：", mVideo.des);
                     if (!TextUtils.isEmpty(mVideo.pic)) {
                         Picasso.get()
                                 .load(DefaultConfig.checkReplaceProxy(mVideo.pic))
