@@ -129,6 +129,74 @@ public class ApiConfig {
 
     public void loadConfig(boolean useCache, LoadConfigCallback callback, Activity activity) {
         String apiUrl = Hawk.get(HawkConfig.API_URL, "");
+        //独立加载直播配置
+        String liveApiUrl = Hawk.get(HawkConfig.LIVE_API_URL, "");
+        String liveApiConfigUrl=configUrl(liveApiUrl);
+        if(!liveApiUrl.isEmpty() && !liveApiUrl.equals(apiUrl)){
+            if(liveApiUrl.contains(".txt") || liveApiUrl.contains(".m3u") || liveApiUrl.contains("=txt") || liveApiUrl.contains("=m3u")){
+                initLiveSettings();
+                defaultLiveObjString = defaultLiveObjString.replace("txt_m3u_url",liveApiConfigUrl);
+                parseLiveJson(liveApiUrl,defaultLiveObjString);
+            }else {
+                File live_cache = new File(App.getInstance().getFilesDir().getAbsolutePath() + "/" + MD5.encode(liveApiUrl));
+                LOG.i("echo-加载独立直播");
+                if (useCache && live_cache.exists()) {
+                    try {
+                        parseLiveJson(liveApiUrl, live_cache);
+                    } catch (Throwable th) {
+                        th.printStackTrace();
+                    }
+                }else {
+                    OkGo.<String>get(liveApiConfigUrl)
+                            .headers("User-Agent", userAgent)
+                            .headers("Accept", requestAccept)
+                            .execute(new AbsCallback<String>() {
+                                @Override
+                                public void onSuccess(Response<String> response) {
+                                    try {
+                                        String json = response.body();
+                                        parseLiveJson(liveApiUrl, json);
+                                        FileUtils.saveCache(live_cache,json);
+                                    } catch (Throwable th) {
+                                        th.printStackTrace();
+                                        callback.notice("解析直播配置失败");
+                                    }
+                                }
+
+                                @Override
+                                public void onError(Response<String> response) {
+                                    super.onError(response);
+                                    if (live_cache.exists()) {
+                                        try {
+                                            parseLiveJson(liveApiUrl, live_cache);
+                                            callback.success();
+                                            return;
+                                        } catch (Throwable th) {
+                                            th.printStackTrace();
+                                        }
+                                    }
+                                    callback.notice("直播配置拉取失败");
+                                }
+
+                                public String convertResponse(okhttp3.Response response) throws Throwable {
+                                    String result = "";
+                                    if (response.body() == null) {
+                                        result = "";
+                                    }else {
+                                        result = FindResult(response.body().string(), TempKey);
+                                        if (liveApiUrl.startsWith("clan")) {
+                                            result = clanContentFix(clanToAddress(liveApiUrl), result);
+                                        }
+                                        //假相對路徑
+                                        result = fixContentPath(liveApiUrl,result);
+                                    }
+                                    return result;
+                                }
+                            });
+                }
+            }
+        }
+
         if (apiUrl.isEmpty()) {
             callback.error("-1");
             return;
@@ -373,69 +441,35 @@ public class ApiConfig {
                 setDefaultParse(parseBeanList.get(0));
         }
         // 直播源
-        liveChannelGroupList.clear();           //修复从后台切换重复加载频道列表
-        try {
-            JsonObject livesOBJ = infoJson.get("lives").getAsJsonArray().get(0).getAsJsonObject();
-            String lives = livesOBJ.toString();
-            int index = lives.indexOf("proxy://");
-            if (index != -1) {
-                int endIndex = lives.lastIndexOf("\"");
-                String url = lives.substring(index, endIndex);
-                url = DefaultConfig.checkReplaceProxy(url);
-
-                //clan
-                String extUrl = Uri.parse(url).getQueryParameter("ext");
-                if (extUrl != null && !extUrl.isEmpty()) {
-                    String extUrlFix;
-                    if(extUrl.startsWith("http") || extUrl.startsWith("clan://")){
-                        extUrlFix = extUrl;
-                    }else {
-                        extUrlFix = new String(Base64.decode(extUrl, Base64.DEFAULT | Base64.URL_SAFE | Base64.NO_WRAP), "UTF-8");
+        String live_api_url=Hawk.get(HawkConfig.LIVE_API_URL,"");
+        if(live_api_url.isEmpty() || apiUrl.equals(live_api_url)){
+            LOG.i("echo-load-config_live");
+            initLiveSettings();
+            if(infoJson.has("lives")){
+                JsonArray lives_groups=infoJson.get("lives").getAsJsonArray();
+                int live_group_index=Hawk.get(HawkConfig.LIVE_GROUP_INDEX,0);
+                if(live_group_index>lives_groups.size()-1)Hawk.put(HawkConfig.LIVE_GROUP_INDEX,0);
+                Hawk.put(HawkConfig.LIVE_GROUP_LIST,lives_groups);
+                //加载多源配置
+                try {
+                    ArrayList<LiveSettingItem> liveSettingItemList = new ArrayList<>();
+                    for (int i=0; i< lives_groups.size();i++) {
+                        JsonObject jsonObject = lives_groups.get(i).getAsJsonObject();
+                        String name = jsonObject.has("name")?jsonObject.get("name").getAsString():"线路"+(i+1);
+                        LiveSettingItem liveSettingItem = new LiveSettingItem();
+                        liveSettingItem.setItemIndex(i);
+                        liveSettingItem.setItemName(name);
+                        liveSettingItemList.add(liveSettingItem);
                     }
-//                    System.out.println("extUrlFix :"+extUrlFix);
-                    if (extUrlFix.startsWith("clan://")) {
-                        extUrlFix = clanContentFix(clanToAddress(apiUrl), extUrlFix);
-                    }
-                    extUrlFix = Base64.encodeToString(extUrlFix.getBytes("UTF-8"), Base64.DEFAULT | Base64.URL_SAFE | Base64.NO_WRAP);
-                    url = url.replace(extUrl, extUrlFix);
-                }
-//                System.out.println("urlLive :"+url);
-
-                //设置epg
-                if(livesOBJ.has("epg")){
-                    String epg =livesOBJ.get("epg").getAsString();
-                    Hawk.put(HawkConfig.EPG_URL,epg);
+                    liveSettingGroupList.get(5).setLiveSettingItems(liveSettingItemList);
+                } catch (Exception e) {
+                    // 捕获任何可能发生的异常
+                    e.printStackTrace();
                 }
 
-                LiveChannelGroup liveChannelGroup = new LiveChannelGroup();
-                liveChannelGroup.setGroupName(url);
-                liveChannelGroupList.add(liveChannelGroup);
-            } else {
-                if(!lives.contains("type")){
-                    loadLives(infoJson.get("lives").getAsJsonArray());
-                }else {
-                    JsonObject fengMiLives = infoJson.get("lives").getAsJsonArray().get(0).getAsJsonObject();
-                    String type=fengMiLives.get("type").getAsString();
-                    if(type.equals("0")){
-                        String url =fengMiLives.get("url").getAsString();
-                        //设置epg
-                        if(fengMiLives.has("epg")){
-                            String epg =fengMiLives.get("epg").getAsString();
-                            Hawk.put(HawkConfig.EPG_URL,epg);
-                        }
-
-                        if(url.startsWith("http")){
-                            url = Base64.encodeToString(url.getBytes("UTF-8"), Base64.DEFAULT | Base64.URL_SAFE | Base64.NO_WRAP);
-                        }
-                        url ="http://127.0.0.1:9978/proxy?do=live&type=txt&ext="+url;
-                        LiveChannelGroup liveChannelGroup = new LiveChannelGroup();
-                        liveChannelGroup.setGroupName(url);
-                        liveChannelGroupList.add(liveChannelGroup);
-                    }
-                }
+                JsonObject livesOBJ = lives_groups.get(live_group_index).getAsJsonObject();
+                loadLiveApi(livesOBJ);
             }
-        } catch (Throwable th) {
-            th.printStackTrace();
         }
         //video parse rule for host
         if (infoJson.has("rules")) {
@@ -536,6 +570,88 @@ public class ApiConfig {
         }
     }
 
+    private void parseLiveJson(String apiUrl, File f) throws Throwable {
+        BufferedReader bReader = new BufferedReader(new InputStreamReader(new FileInputStream(f), "UTF-8"));
+        StringBuilder sb = new StringBuilder();
+        String s = "";
+        while ((s = bReader.readLine()) != null) {
+            sb.append(s + "\n");
+        }
+        bReader.close();
+        parseLiveJson(apiUrl, sb.toString());
+    }
+
+    private String liveSpider="";
+    private void parseLiveJson(String apiUrl, String jsonStr) {
+        JsonObject infoJson = gson.fromJson(jsonStr, JsonObject.class);
+        // spider
+        liveSpider = DefaultConfig.safeJsonString(infoJson, "spider", "");
+        // 直播源
+        initLiveSettings();
+        if(infoJson.has("lives")){
+            JsonArray lives_groups=infoJson.get("lives").getAsJsonArray();
+
+            int live_group_index=Hawk.get(HawkConfig.LIVE_GROUP_INDEX,0);
+            if(live_group_index>lives_groups.size()-1)Hawk.put(HawkConfig.LIVE_GROUP_INDEX,0);
+            Hawk.put(HawkConfig.LIVE_GROUP_LIST,lives_groups);
+            //加载多源配置
+            try {
+                ArrayList<LiveSettingItem> liveSettingItemList = new ArrayList<>();
+                for (int i=0; i< lives_groups.size();i++) {
+                    JsonObject jsonObject = lives_groups.get(i).getAsJsonObject();
+                    String name = jsonObject.has("name")?jsonObject.get("name").getAsString():"线路"+(i+1);
+                    LiveSettingItem liveSettingItem = new LiveSettingItem();
+                    liveSettingItem.setItemIndex(i);
+                    liveSettingItem.setItemName(name);
+                    liveSettingItemList.add(liveSettingItem);
+                }
+                liveSettingGroupList.get(5).setLiveSettingItems(liveSettingItemList);
+            } catch (Exception e) {
+                // 捕获任何可能发生的异常
+                e.printStackTrace();
+            }
+
+            JsonObject livesOBJ = lives_groups.get(live_group_index).getAsJsonObject();
+            loadLiveApi(livesOBJ);
+        }
+
+    }
+
+    private final List<LiveSettingGroup> liveSettingGroupList = new ArrayList<>();
+    private void initLiveSettings() {
+        ArrayList<String> groupNames = new ArrayList<>(Arrays.asList("线路选择", "画面比例", "播放解码", "超时换源", "偏好设置", "多源切换"));
+        ArrayList<ArrayList<String>> itemsArrayList = new ArrayList<>();
+        ArrayList<String> sourceItems = new ArrayList<>();
+        ArrayList<String> scaleItems = new ArrayList<>(Arrays.asList("默认", "16:9", "4:3", "填充", "原始", "裁剪"));
+        ArrayList<String> playerDecoderItems = new ArrayList<>(Arrays.asList("系统", "ijk硬解", "ijk软解", "exo"));
+        ArrayList<String> timeoutItems = new ArrayList<>(Arrays.asList("3s", "6s", "9s", "12s", "15s", "18s"));
+        ArrayList<String> personalSettingItems = new ArrayList<>(Arrays.asList("显示时间", "显示网速", "换台反转", "跨选分类", "默认首页"));
+        ArrayList<String> yumItems = new ArrayList<>();
+
+        itemsArrayList.add(sourceItems);
+        itemsArrayList.add(scaleItems);
+        itemsArrayList.add(playerDecoderItems);
+        itemsArrayList.add(timeoutItems);
+        itemsArrayList.add(personalSettingItems);
+        itemsArrayList.add(yumItems);
+
+        liveSettingGroupList.clear();
+        for (int i = 0; i < groupNames.size(); i++) {
+            LiveSettingGroup liveSettingGroup = new LiveSettingGroup();
+            ArrayList<LiveSettingItem> liveSettingItemList = new ArrayList<>();
+            liveSettingGroup.setGroupIndex(i);
+            liveSettingGroup.setGroupName(groupNames.get(i));
+            for (int j = 0; j < itemsArrayList.get(i).size(); j++) {
+                LiveSettingItem liveSettingItem = new LiveSettingItem();
+                liveSettingItem.setItemIndex(j);
+                liveSettingItem.setItemName(itemsArrayList.get(i).get(j));
+                liveSettingItemList.add(liveSettingItem);
+            }
+            liveSettingGroup.setLiveSettingItems(liveSettingItemList);
+            liveSettingGroupList.add(liveSettingGroup);
+        }
+    }
+
     public void loadLives(JsonArray livesArray) {
         liveChannelGroupList.clear();
         int groupIndex = 0;
@@ -577,6 +693,104 @@ public class ApiConfig {
                 liveChannelGroup.getLiveChannels().add(liveChannelItem);
             }
             liveChannelGroupList.add(liveChannelGroup);
+        }
+    }
+
+    public List<LiveSettingGroup> getLiveSettingGroupList() {
+        return liveSettingGroupList;
+    }
+
+    public void loadLiveApi(JsonObject livesOBJ) {
+        try {
+            LOG.i("echo-loadLiveApi");
+            String lives = livesOBJ.toString();
+            int index = lives.indexOf("proxy://");
+            String url;
+            if (index != -1) {
+                int endIndex = lives.lastIndexOf("\"");
+                url = lives.substring(index, endIndex);
+                url = DefaultConfig.checkReplaceProxy(url);
+                String extUrl = Uri.parse(url).getQueryParameter("ext");
+                if (extUrl != null && !extUrl.isEmpty()) {
+                    String extUrlFix;
+                    if(extUrl.startsWith("http") || extUrl.startsWith("clan://")){
+                        extUrlFix = extUrl;
+                    }else {
+                        extUrlFix = new String(Base64.decode(extUrl, Base64.DEFAULT | Base64.URL_SAFE | Base64.NO_WRAP), "UTF-8");
+                    }
+                    extUrlFix = Base64.encodeToString(extUrlFix.getBytes("UTF-8"), Base64.DEFAULT | Base64.URL_SAFE | Base64.NO_WRAP);
+                    url = url.replace(extUrl, extUrlFix);
+                }
+            } else {
+                String type= livesOBJ.get("type").getAsString();
+                if(type.equals("0") || type.equals("3")){
+                    url = livesOBJ.has("url")?livesOBJ.get("url").getAsString():"";
+                    if(url.isEmpty())url=livesOBJ.has("api")?livesOBJ.get("api").getAsString():"";
+                    LOG.i("echo-liveurl"+url);
+                    if(!url.startsWith("http://127.0.0.1")){
+                        if(url.startsWith("http")){
+                            url = Base64.encodeToString(url.getBytes("UTF-8"), Base64.DEFAULT | Base64.URL_SAFE | Base64.NO_WRAP);
+                        }
+                        url ="http://127.0.0.1:9978/proxy?do=live&type=txt&ext="+url;
+                    }
+                    if(type.equals("3")){
+                        String jarUrl = livesOBJ.has("jar")?livesOBJ.get("jar").getAsString().trim():"";
+                        String pyApi = livesOBJ.has("api")?livesOBJ.get("api").getAsString().trim():"";
+                        LOG.i("echo-pyApi1"+pyApi);
+                        if(pyApi.contains(".py")){
+                            LOG.i("echo-pyLoader.getSpider");
+                            String ext="";
+                            if(livesOBJ.has("ext") && (livesOBJ.get("ext").isJsonObject() || livesOBJ.get("ext").isJsonArray())){
+                                ext=livesOBJ.get("ext").toString();
+                            }else {
+                                ext=DefaultConfig.safeJsonString(livesOBJ, "ext", "");
+                            }
+
+                            pyLoader.getSpider(MD5.string2MD5(pyApi),pyApi,ext);
+                        }
+                        if(!jarUrl.isEmpty()){
+                            jarLoader.loadLiveJar(jarUrl);
+                        }else if(!liveSpider.isEmpty()){
+                            jarLoader.loadLiveJar(liveSpider);
+                        }
+                    }
+                }else {
+                    liveChannelGroupList.clear();
+                    return;
+                }
+            }
+            //设置epg
+            if(livesOBJ.has("epg")){
+                String epg =livesOBJ.get("epg").getAsString();
+                Hawk.put(HawkConfig.EPG_URL,epg);
+            }
+            //直播播放器类型
+            if(livesOBJ.has("playerType")){
+                String livePlayType =livesOBJ.get("playerType").getAsString();
+                Hawk.put(HawkConfig.LIVE_PLAY_TYPE,livePlayType);
+            }
+            //设置UA
+            if(livesOBJ.has("header")) {
+                JsonObject headerObj = livesOBJ.getAsJsonObject("header");
+                HashMap<String, String> liveHeader = new HashMap<>();
+                for (Map.Entry<String, JsonElement> entry : headerObj.entrySet()) {
+                    liveHeader.put(entry.getKey(), entry.getValue().getAsString());
+                }
+                Hawk.put(HawkConfig.LIVE_WEB_HEADER, liveHeader);
+            } else if(livesOBJ.has("ua")) {
+                String ua = livesOBJ.get("ua").getAsString();
+                HashMap<String,String> liveHeader = new HashMap<>();
+                liveHeader.put("User-Agent", ua);
+                Hawk.put(HawkConfig.LIVE_WEB_HEADER, liveHeader);
+            }else {
+                Hawk.put(HawkConfig.LIVE_WEB_HEADER,null);
+            }
+            LiveChannelGroup liveChannelGroup = new LiveChannelGroup();
+            liveChannelGroup.setGroupName(url);
+            liveChannelGroupList.clear();
+            liveChannelGroupList.add(liveChannelGroup);
+        } catch (Throwable th) {
+            th.printStackTrace();
         }
     }
 
