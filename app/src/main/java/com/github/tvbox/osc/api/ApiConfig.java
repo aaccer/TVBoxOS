@@ -770,6 +770,13 @@ public class ApiConfig {
         void error(String msg);
     }
 
+    public interface LoadConfigCallback {
+        void success();
+
+        void error(String msg);
+        void notice(String msg);
+    }
+
     public interface FastParseCallback {
         void success(boolean parse, String url, Map<String, String> header);
 
