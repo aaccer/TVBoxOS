@@ -20,7 +20,9 @@ import com.github.tvbox.osc.server.ControlManager;
 import com.github.tvbox.osc.util.AES;
 import com.github.tvbox.osc.util.AdBlocker;
 import com.github.tvbox.osc.util.DefaultConfig;
+import com.github.tvbox.osc.util.FileUtils;
 import com.github.tvbox.osc.util.HawkConfig;
+import com.github.tvbox.osc.util.LOG;
 import com.github.tvbox.osc.util.M3U8;
 import com.github.tvbox.osc.util.MD5;
 import com.github.tvbox.osc.util.VideoParseRuler;
@@ -41,6 +43,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -73,6 +76,7 @@ public class ApiConfig {
     private String userAgent = "okhttp/3.15";
 
     private String requestAccept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9";
+    private String defaultLiveObjString="{\"lives\":[{\"name\":\"txt_m3u\",\"type\":0,\"url\":\"txt_m3u_url\"}]}";
 
     private ApiConfig() {
         sourceBeanList = new LinkedHashMap<>();
@@ -129,76 +133,32 @@ public class ApiConfig {
         return "".getBytes();
     }
 
+    private String TempKey = null;
+    private String configUrl(String apiUrl){
+        String configUrl = "", pk = ";pk;";
+        apiUrl=apiUrl.replace("file://", "clan://localhost/");
+        if (apiUrl.contains(pk)) {
+            String[] a = apiUrl.split(pk);
+            TempKey = a[1];
+            if (apiUrl.startsWith("clan")){
+                configUrl = clanToAddress(a[0]);
+            }else if (apiUrl.startsWith("http")){
+                configUrl = a[0];
+            }else {
+                configUrl = "http://" + a[0];
+            }
+        } else if (apiUrl.startsWith("clan")) {
+            configUrl = clanToAddress(apiUrl);
+        } else if (!apiUrl.startsWith("http")) {
+            configUrl = "http://" + apiUrl;
+        } else {
+            configUrl = apiUrl;
+        }
+        return configUrl;
+    }
+
     public void loadConfig(boolean useCache, LoadConfigCallback callback, Activity activity) {
         String apiUrl = Hawk.get(HawkConfig.API_URL, "");
-        //独立加载直播配置
-        String liveApiUrl = Hawk.get(HawkConfig.LIVE_API_URL, "");
-        String liveApiConfigUrl=configUrl(liveApiUrl);
-        if(!liveApiUrl.isEmpty() && !liveApiUrl.equals(apiUrl)){
-            if(liveApiUrl.contains(".txt") || liveApiUrl.contains(".m3u") || liveApiUrl.contains("=txt") || liveApiUrl.contains("=m3u")){
-                initLiveSettings();
-                defaultLiveObjString = defaultLiveObjString.replace("txt_m3u_url",liveApiConfigUrl);
-                parseLiveJson(liveApiUrl,defaultLiveObjString);
-            }else {
-                File live_cache = new File(App.getInstance().getFilesDir().getAbsolutePath() + "/" + MD5.encode(liveApiUrl));
-                LOG.i("echo-加载独立直播");
-                if (useCache && live_cache.exists()) {
-                    try {
-                        parseLiveJson(liveApiUrl, live_cache);
-                    } catch (Throwable th) {
-                        th.printStackTrace();
-                    }
-                }else {
-                    OkGo.<String>get(liveApiConfigUrl)
-                            .headers("User-Agent", userAgent)
-                            .headers("Accept", requestAccept)
-                            .execute(new AbsCallback<String>() {
-                                @Override
-                                public void onSuccess(Response<String> response) {
-                                    try {
-                                        String json = response.body();
-                                        parseLiveJson(liveApiUrl, json);
-                                        FileUtils.saveCache(live_cache,json);
-                                    } catch (Throwable th) {
-                                        th.printStackTrace();
-                                        callback.notice("解析直播配置失败");
-                                    }
-                                }
-
-                                @Override
-                                public void onError(Response<String> response) {
-                                    super.onError(response);
-                                    if (live_cache.exists()) {
-                                        try {
-                                            parseLiveJson(liveApiUrl, live_cache);
-                                            callback.success();
-                                            return;
-                                        } catch (Throwable th) {
-                                            th.printStackTrace();
-                                        }
-                                    }
-                                    callback.notice("直播配置拉取失败");
-                                }
-
-                                public String convertResponse(okhttp3.Response response) throws Throwable {
-                                    String result = "";
-                                    if (response.body() == null) {
-                                        result = "";
-                                    }else {
-                                        result = FindResult(response.body().string(), TempKey);
-                                        if (liveApiUrl.startsWith("clan")) {
-                                            result = clanContentFix(clanToAddress(liveApiUrl), result);
-                                        }
-                                        //假相對路徑
-                                        result = fixContentPath(liveApiUrl,result);
-                                    }
-                                    return result;
-                                }
-                            });
-                }
-            }
-        }
-
         if (apiUrl.isEmpty()) {
             callback.error("-1");
             return;
@@ -213,24 +173,11 @@ public class ApiConfig {
                 th.printStackTrace();
             }
         }
-        String TempKey = null, configUrl = "", pk = ";pk;";
-        if (apiUrl.contains(pk)) {
-            String[] a = apiUrl.split(pk);
-            TempKey = a[1];
-            if (apiUrl.startsWith("clan")){
-                configUrl = clanToAddress(a[0]);
-            }else if (apiUrl.startsWith("http")){
-                configUrl = a[0];
-            }else {
-                configUrl = "http://" + a[0];
-            }
-        } else if (apiUrl.startsWith("clan")) {
-            configUrl = clanToAddress(apiUrl);
-        } else if (!apiUrl.startsWith("http")) {
-            configUrl = "http://" + configUrl;
-        } else {
-            configUrl = apiUrl;
-        }
+        String configUrl=configUrl(apiUrl);
+        // 使用内部存储，将当前配置地址写入到应用的私有目录中
+        File configUrlFile = new File(App.getInstance().getFilesDir().getAbsolutePath() + "/config_url");
+        FileUtils.saveCache(configUrlFile,configUrl);
+
         String configKey = TempKey;
         OkGo.<String>get(configUrl)
                 .headers("User-Agent", userAgent)
@@ -585,7 +532,7 @@ public class ApiConfig {
 
     private String liveSpider="";
     private void parseLiveJson(String apiUrl, String jsonStr) {
-        JsonObject infoJson = gson.fromJson(jsonStr, JsonObject.class);
+        JsonObject infoJson = new Gson().fromJson(jsonStr, JsonObject.class);
         // spider
         liveSpider = DefaultConfig.safeJsonString(infoJson, "spider", "");
         // 直播源
@@ -735,7 +682,7 @@ public class ApiConfig {
                         }
                         url ="http://127.0.0.1:9978/proxy?do=live&type=txt&ext="+url;
                     }
-                    if(type.equals("3")){
+                    /*if(type.equals("3")){
                         String jarUrl = livesOBJ.has("jar")?livesOBJ.get("jar").getAsString().trim():"";
                         String pyApi = livesOBJ.has("api")?livesOBJ.get("api").getAsString().trim():"";
                         LOG.i("echo-pyApi1"+pyApi);
@@ -755,7 +702,7 @@ public class ApiConfig {
                         }else if(!liveSpider.isEmpty()){
                             jarLoader.loadLiveJar(liveSpider);
                         }
-                    }
+                    }*/
                 }else {
                     liveChannelGroupList.clear();
                     return;
@@ -818,12 +765,19 @@ public class ApiConfig {
         return jarLoader.jsonExtMix(flag, key, name, jxs, url);
     }
 
-    public interface LoadConfigCallback {
+    public interface LoadConfig {
         void success();
 
         void retry();
 
         void error(String msg);
+    }
+
+    public interface LoadConfigCallback {
+        void success();
+
+        void error(String msg);
+        void notice(String msg);
     }
 
     public interface FastParseCallback {
