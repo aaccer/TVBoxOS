@@ -49,6 +49,7 @@ public class HawkConfig {
     public static final String M3U8_PURIFY = "m3u8_purify";
     public static final String SCREEN_DISPLAY = "screen_display";
     public static final String LIVE_WEB_HEADER = "live_web_header";
+    public static final String LIVE_WEB_UA = "live_web_ua";
     public static final String DEFAULT_LOAD_LIVE = "DEFAULT_LOAD_LIVE";
     public static final String SEARCH_HISTORY = "search_history";
     public static boolean hotVodDelete;
