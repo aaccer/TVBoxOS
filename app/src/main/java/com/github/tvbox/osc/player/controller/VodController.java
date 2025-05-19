@@ -826,6 +826,7 @@ public class VodController extends BaseController {
     private boolean simSlideStart = false;
     private int simSeekPosition = 0;
     private long simSlideOffset = 0;
+    private long lastSlideTime = 0;
 
     public void tvSlideStop() {
         if (!simSlideStart)
@@ -842,13 +843,25 @@ public class VodController extends BaseController {
         int duration = (int) mControlWrapper.getDuration();
         if (duration <= 0)
             return;
+
+        long currentTime = System.currentTimeMillis();
+        final int baseSkip = 10000; // 基础跳转10秒
+        final float accelerationFactor = 2.0f; // 连续操作时的加速因子
+        final long threshold = 800; // 操作间隔阈值500ms
+
         if (!simSlideStart) {
             simSlideStart = true;
+            simSlideOffset = (long) baseSkip * dir;
+        } else {
+            if (currentTime - lastSlideTime <= threshold) {
+                simSlideOffset += (baseSkip * accelerationFactor * dir);
+            } else {
+                simSlideOffset = (long) baseSkip * dir;
+            }
         }
-        // 每次10秒
-        simSlideOffset += (10000.0f * dir);
+        lastSlideTime = currentTime;
         int currentPosition = (int) mControlWrapper.getCurrentPosition();
-        int position = (int) (simSlideOffset + currentPosition);
+        int position = (int) (currentPosition + simSlideOffset);
         if (position > duration) position = duration;
         if (position < 0) position = 0;
         updateSeekUI(currentPosition, position, duration);
