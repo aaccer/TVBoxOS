@@ -516,53 +516,6 @@ public class ApiConfig {
         }
     }
 
-    private void parseLiveJson(String apiUrl, File f) throws Throwable {
-        BufferedReader bReader = new BufferedReader(new InputStreamReader(new FileInputStream(f), "UTF-8"));
-        StringBuilder sb = new StringBuilder();
-        String s = "";
-        while ((s = bReader.readLine()) != null) {
-            sb.append(s + "\n");
-        }
-        bReader.close();
-        parseLiveJson(apiUrl, sb.toString());
-    }
-
-    private String liveSpider="";
-    private void parseLiveJson(String apiUrl, String jsonStr) {
-        JsonObject infoJson = new Gson().fromJson(jsonStr, JsonObject.class);
-        // spider
-        liveSpider = DefaultConfig.safeJsonString(infoJson, "spider", "");
-        // 直播源
-        initLiveSettings();
-        if(infoJson.has("lives")){
-            JsonArray lives_groups=infoJson.get("lives").getAsJsonArray();
-
-            int live_group_index=Hawk.get(HawkConfig.LIVE_GROUP_INDEX,0);
-            if(live_group_index>lives_groups.size()-1)Hawk.put(HawkConfig.LIVE_GROUP_INDEX,0);
-            Hawk.put(HawkConfig.LIVE_GROUP_LIST,lives_groups);
-            //加载多源配置
-            try {
-                ArrayList<LiveSettingItem> liveSettingItemList = new ArrayList<>();
-                for (int i=0; i< lives_groups.size();i++) {
-                    JsonObject jsonObject = lives_groups.get(i).getAsJsonObject();
-                    String name = jsonObject.has("name")?jsonObject.get("name").getAsString():"线路"+(i+1);
-                    LiveSettingItem liveSettingItem = new LiveSettingItem();
-                    liveSettingItem.setItemIndex(i);
-                    liveSettingItem.setItemName(name);
-                    liveSettingItemList.add(liveSettingItem);
-                }
-                liveSettingGroupList.get(5).setLiveSettingItems(liveSettingItemList);
-            } catch (Exception e) {
-                // 捕获任何可能发生的异常
-                e.printStackTrace();
-            }
-
-            JsonObject livesOBJ = lives_groups.get(live_group_index).getAsJsonObject();
-            loadLiveApi(livesOBJ);
-        }
-
-    }
-
     private final List<LiveSettingGroup> liveSettingGroupList = new ArrayList<>();
     private void initLiveSettings() {
         ArrayList<String> groupNames = new ArrayList<>(Arrays.asList("线路选择", "画面比例", "播放解码", "超时换源", "偏好设置", "多源切换"));
@@ -664,6 +617,9 @@ public class ApiConfig {
                     }else {
                         extUrlFix = new String(Base64.decode(extUrl, Base64.DEFAULT | Base64.URL_SAFE | Base64.NO_WRAP), "UTF-8");
                     }
+                    if (extUrlFix.startsWith("clan://")) {
+                        extUrlFix = clanContentFix(clanToAddress(apiUrl), extUrlFix);
+                    }
                     extUrlFix = Base64.encodeToString(extUrlFix.getBytes("UTF-8"), Base64.DEFAULT | Base64.URL_SAFE | Base64.NO_WRAP);
                     url = url.replace(extUrl, extUrlFix);
                 }
@@ -679,27 +635,6 @@ public class ApiConfig {
                         }
                         url ="http://127.0.0.1:9978/proxy?do=live&type=txt&ext="+url;
                     }
-                    /*if(type.equals("3")){
-                        String jarUrl = livesOBJ.has("jar")?livesOBJ.get("jar").getAsString().trim():"";
-                        String pyApi = livesOBJ.has("api")?livesOBJ.get("api").getAsString().trim():"";
-                        LOG.i("echo-pyApi1"+pyApi);
-                        if(pyApi.contains(".py")){
-                            LOG.i("echo-pyLoader.getSpider");
-                            String ext="";
-                            if(livesOBJ.has("ext") && (livesOBJ.get("ext").isJsonObject() || livesOBJ.get("ext").isJsonArray())){
-                                ext=livesOBJ.get("ext").toString();
-                            }else {
-                                ext=DefaultConfig.safeJsonString(livesOBJ, "ext", "");
-                            }
-
-                            pyLoader.getSpider(MD5.string2MD5(pyApi),pyApi,ext);
-                        }
-                        if(!jarUrl.isEmpty()){
-                            jarLoader.loadLiveJar(jarUrl);
-                        }else if(!liveSpider.isEmpty()){
-                            jarLoader.loadLiveJar(liveSpider);
-                        }
-                    }*/
                 }else {
                     liveChannelGroupList.clear();
                     return;
@@ -709,11 +644,15 @@ public class ApiConfig {
             if(livesOBJ.has("epg")){
                 String epg =livesOBJ.get("epg").getAsString();
                 Hawk.put(HawkConfig.EPG_URL,epg);
+            }else {
+                Hawk.put(HawkConfig.EPG_URL,"");
             }
             //直播播放器类型
             if(livesOBJ.has("playerType")){
                 String livePlayType =livesOBJ.get("playerType").getAsString();
                 Hawk.put(HawkConfig.LIVE_PLAY_TYPE,livePlayType);
+            }else {
+                Hawk.put(HawkConfig.LIVE_PLAY_TYPE,Hawk.get(HawkConfig.PLAY_TYPE, 0));
             }
             //设置UA
             if(livesOBJ.has("header")) {
@@ -725,10 +664,12 @@ public class ApiConfig {
                 Hawk.put(HawkConfig.LIVE_WEB_HEADER, liveHeader);
             } else if(livesOBJ.has("ua")) {
                 String ua = livesOBJ.get("ua").getAsString();
+                Hawk.put(HawkConfig.LIVE_WEB_UA, ua);
                 HashMap<String,String> liveHeader = new HashMap<>();
                 liveHeader.put("User-Agent", ua);
                 Hawk.put(HawkConfig.LIVE_WEB_HEADER, liveHeader);
             }else {
+                Hawk.put(HawkConfig.LIVE_WEB_UA, "");
                 Hawk.put(HawkConfig.LIVE_WEB_HEADER,null);
             }
             LiveChannelGroup liveChannelGroup = new LiveChannelGroup();
