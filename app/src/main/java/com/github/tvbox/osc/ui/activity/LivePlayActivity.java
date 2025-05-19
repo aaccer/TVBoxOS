@@ -1837,6 +1837,7 @@ public class LivePlayActivity extends BaseActivity {
     private void initLiveChannelList() {
         List<LiveChannelGroup> list = ApiConfig.get().getChannelGroupList();
         if (list.isEmpty()) {
+            Hawk.put(HawkConfig.LIVE_GROUP_INDEX, 0);
             Toast.makeText(App.getInstance(), "频道列表为空", Toast.LENGTH_SHORT).show();
             finish();
             return;
@@ -1863,7 +1864,7 @@ public class LivePlayActivity extends BaseActivity {
             return;
         }
         showLoading();
-        OkGo.<String>get(url).execute(new AbsCallback<String>() {
+        OkGo.<String>get(url).headers("User-Agent", Hawk.get(HawkConfig.LIVE_WEB_UA, "okhttp/3.8.1")).execute(new AbsCallback<String>() {
 
             @Override
             public String convertResponse(okhttp3.Response response) throws Throwable {
@@ -1899,6 +1900,7 @@ public class LivePlayActivity extends BaseActivity {
             @Override
             public void onError(Response<String> response) {
                 super.onError(response);
+                Hawk.put(HawkConfig.LIVE_GROUP_INDEX, 0);
                 Toast.makeText(App.getInstance(), "直播地址网络请求失败", Toast.LENGTH_LONG).show();
                 finish();
             }
