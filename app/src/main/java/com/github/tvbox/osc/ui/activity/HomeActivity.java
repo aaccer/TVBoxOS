@@ -294,10 +294,6 @@ public class HomeActivity extends BaseActivity {
                             public void run() {
                                 if (!useCacheConfig){
                                     if (Hawk.get(HawkConfig.HOME_DEFAULT_SHOW, false)) {
-                                        //打断加载
-                                        if(isLoading()){
-                                            refreshEmpty();
-                                        }
                                         jumpActivity(LivePlayActivity.class);
                                     }
                                     Toast.makeText(HomeActivity.this, "自定义jar加载成功", Toast.LENGTH_SHORT).show();
@@ -324,10 +320,6 @@ public class HomeActivity extends BaseActivity {
                             @Override
                             public void run() {
                                 if (Hawk.get(HawkConfig.HOME_DEFAULT_SHOW, false)) {
-                                    //打断加载
-                                    if(isLoading()){
-                                        refreshEmpty();
-                                    }
                                     jumpActivity(LivePlayActivity.class);
                                 }
                                 Toast.makeText(HomeActivity.this, "jar加载失败", Toast.LENGTH_SHORT).show();
@@ -362,10 +354,6 @@ public class HomeActivity extends BaseActivity {
                             jarInitOk = true;
                             if (!useCacheConfig){
                                 if (Hawk.get(HawkConfig.HOME_DEFAULT_SHOW, false)) {
-                                    //打断加载
-                                    if(isLoading()){
-                                        refreshEmpty();
-                                    }
                                     jumpActivity(LivePlayActivity.class);
                                 }
                             }
