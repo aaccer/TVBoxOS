@@ -618,7 +618,7 @@ public class ApiConfig {
                         extUrlFix = new String(Base64.decode(extUrl, Base64.DEFAULT | Base64.URL_SAFE | Base64.NO_WRAP), "UTF-8");
                     }
                     if (extUrlFix.startsWith("clan://")) {
-                        extUrlFix = clanContentFix(clanToAddress(apiUrl), extUrlFix);
+                        extUrlFix = clanContentFix(clanToAddress(Hawk.get(HawkConfig.API_URL, "")), extUrlFix);
                     }
                     extUrlFix = Base64.encodeToString(extUrlFix.getBytes("UTF-8"), Base64.DEFAULT | Base64.URL_SAFE | Base64.NO_WRAP);
                     url = url.replace(extUrl, extUrlFix);
