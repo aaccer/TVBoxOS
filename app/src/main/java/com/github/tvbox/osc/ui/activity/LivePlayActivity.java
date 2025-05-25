@@ -1859,6 +1859,7 @@ public class LivePlayActivity extends BaseActivity {
             Uri parsedUrl = Uri.parse(url);
             url = new String(Base64.decode(parsedUrl.getQueryParameter("ext"), Base64.DEFAULT | Base64.URL_SAFE | Base64.NO_WRAP), "UTF-8");
         } catch (Throwable th) {
+            Hawk.put(HawkConfig.LIVE_GROUP_INDEX, Hawk.get(HawkConfig.LIVE_GROUP_INDEX,0)+1);
             Toast.makeText(App.getInstance(), "频道列表为空", Toast.LENGTH_SHORT).show();
             finish();
             return;
@@ -1900,7 +1901,6 @@ public class LivePlayActivity extends BaseActivity {
             @Override
             public void onError(Response<String> response) {
                 super.onError(response);
-                Hawk.put(HawkConfig.LIVE_GROUP_INDEX, 0);
                 Toast.makeText(App.getInstance(), "直播地址网络请求失败", Toast.LENGTH_LONG).show();
                 finish();
             }
