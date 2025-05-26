@@ -669,12 +669,12 @@ public class ApiConfig {
                 Hawk.put(HawkConfig.LIVE_WEB_HEADER, liveHeader);
             } else if(livesOBJ.has("ua")) {
                 String ua = livesOBJ.get("ua").getAsString();
-                Hawk.put(HawkConfig.LIVE_WEB_UA, ua);
+                //Hawk.put(HawkConfig.LIVE_WEB_UA, ua);
                 HashMap<String,String> liveHeader = new HashMap<>();
                 liveHeader.put("User-Agent", ua);
                 Hawk.put(HawkConfig.LIVE_WEB_HEADER, liveHeader);
             }else {
-                Hawk.put(HawkConfig.LIVE_WEB_UA, "");
+                //Hawk.put(HawkConfig.LIVE_WEB_UA, "");
                 Hawk.put(HawkConfig.LIVE_WEB_HEADER,null);
             }
             LiveChannelGroup liveChannelGroup = new LiveChannelGroup();
