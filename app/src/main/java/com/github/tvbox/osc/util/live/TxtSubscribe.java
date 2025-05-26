@@ -39,7 +39,7 @@ public class TxtSubscribe {
                     String group = getStrByRegex(GROUP_PATTERN, line);
                     // 此时再读取一行，就是对应的 url 链接了
                     String url = bufferedReader.readLine().trim();
-                    while (url.startsWith("#")){
+                    while (url.startsWith("#") || url==""){
                         url = bufferedReader.readLine().trim();
                     }
                     if (linkedHashMap.containsKey(group)) {
