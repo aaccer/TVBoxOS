@@ -943,6 +943,13 @@ public class LivePlayActivity extends BaseActivity {
         return Hawk.get(HawkConfig.LIVE_WEB_HEADER);
     }
 
+    private String userAgent(){
+        String userAgent=userAgent=liveWebHeader().get("User-Agent");
+        if(userAgent==null)userAgent=liveWebHeader().get("user-agent");
+        if(userAgent==null)userAgent="okhttp/3.8.1";
+        return userAgent;
+    }
+
     private boolean playChannel(int channelGroupIndex, int liveChannelIndex, boolean changeSource) {
         if ((channelGroupIndex == currentChannelGroupIndex && liveChannelIndex == currentLiveChannelIndex && !changeSource)){
                 //|| (changeSource && currentLiveChannelItem.getSourceNum() == 1)) {
@@ -1837,10 +1844,9 @@ public class LivePlayActivity extends BaseActivity {
     private void initLiveChannelList() {
         List<LiveChannelGroup> list = ApiConfig.get().getChannelGroupList();
         if (list.isEmpty()) {
-            Hawk.put(HawkConfig.LIVE_GROUP_INDEX, 0);
-            Toast.makeText(App.getInstance(), "频道列表为空", Toast.LENGTH_SHORT).show();
-            finish();
-            return;
+            Toast.makeText(App.getInstance(), "直播配置为空", Toast.LENGTH_SHORT).show();
+            //finish();
+            //return;
         }
 
         if (list.size() == 1 && list.get(0).getGroupName().startsWith("http://127.0.0.1")) {
@@ -1859,13 +1865,12 @@ public class LivePlayActivity extends BaseActivity {
             Uri parsedUrl = Uri.parse(url);
             url = new String(Base64.decode(parsedUrl.getQueryParameter("ext"), Base64.DEFAULT | Base64.URL_SAFE | Base64.NO_WRAP), "UTF-8");
         } catch (Throwable th) {
-            Hawk.put(HawkConfig.LIVE_GROUP_INDEX, Hawk.get(HawkConfig.LIVE_GROUP_INDEX,0)+1);
-            Toast.makeText(App.getInstance(), "频道列表为空", Toast.LENGTH_SHORT).show();
+            Toast.makeText(App.getInstance(), "直播地址解析失败", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
         showLoading();
-        OkGo.<String>get(url).headers("User-Agent", Hawk.get(HawkConfig.LIVE_WEB_UA, "okhttp/3.8.1")).execute(new AbsCallback<String>() {
+        OkGo.<String>get(url).headers("User-Agent", userAgent()).execute(new AbsCallback<String>() {
 
             @Override
             public String convertResponse(okhttp3.Response response) throws Throwable {
@@ -1882,9 +1887,10 @@ public class LivePlayActivity extends BaseActivity {
                 ApiConfig.get().loadLives(livesArray);
                 List<LiveChannelGroup> list = ApiConfig.get().getChannelGroupList();
                 if (list.isEmpty()) {
+                    //Hawk.put(HawkConfig.LIVE_GROUP_INDEX, Hawk.get(HawkConfig.LIVE_GROUP_INDEX,0)+1);
                     Toast.makeText(App.getInstance(), "频道列表为空", Toast.LENGTH_SHORT).show();
-                    finish();
-                    return;
+                    //finish();
+                    //return;
                 }
                 liveChannelGroupList.clear();
                 liveChannelGroupList.addAll(list);
@@ -1901,8 +1907,9 @@ public class LivePlayActivity extends BaseActivity {
             @Override
             public void onError(Response<String> response) {
                 super.onError(response);
+                //Hawk.put(HawkConfig.LIVE_GROUP_INDEX, Hawk.get(HawkConfig.LIVE_GROUP_INDEX,0)+1);
                 Toast.makeText(App.getInstance(), "直播地址网络请求失败", Toast.LENGTH_LONG).show();
-                finish();
+                //finish();
             }
         });
     }
