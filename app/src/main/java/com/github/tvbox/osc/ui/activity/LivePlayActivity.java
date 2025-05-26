@@ -944,7 +944,7 @@ public class LivePlayActivity extends BaseActivity {
     }
 
     private String userAgent(){
-        String userAgent=userAgent=liveWebHeader().get("User-Agent");
+        String userAgent=liveWebHeader().get("User-Agent");
         if(userAgent==null)userAgent=liveWebHeader().get("user-agent");
         if(userAgent==null)userAgent="okhttp/3.8.1";
         return userAgent;
