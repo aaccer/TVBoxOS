@@ -1906,7 +1906,7 @@ public class LivePlayActivity extends BaseActivity {
                     //liveSettingItemAdapter.selectItem(group_index, true, true);
                     Hawk.put(HawkConfig.LIVE_GROUP_INDEX, group_index);
                     liveSettingGroupList.get(5).getLiveSettingItems().get(Hawk.get(HawkConfig.LIVE_GROUP_INDEX, 0)).setItemSelected(true);
-                    ApiConfig.get().loadLiveApi(liveGroups.get(group_index).getAsJsonObject(););
+                    ApiConfig.get().loadLiveApi(liveGroups.get(group_index).getAsJsonObject());
                     recreate();
                     return;
                 }
@@ -1937,7 +1937,7 @@ public class LivePlayActivity extends BaseActivity {
                 //liveSettingItemAdapter.selectItem(group_index, true, true);
                 Hawk.put(HawkConfig.LIVE_GROUP_INDEX, group_index);
                 liveSettingGroupList.get(5).getLiveSettingItems().get(Hawk.get(HawkConfig.LIVE_GROUP_INDEX, 0)).setItemSelected(true);
-                ApiConfig.get().loadLiveApi(liveGroups.get(group_index).getAsJsonObject(););
+                ApiConfig.get().loadLiveApi(liveGroups.get(group_index).getAsJsonObject());
                 recreate();
                 //return;
             }
