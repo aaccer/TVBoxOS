@@ -304,13 +304,8 @@ public class HomeActivity extends BaseActivity {
                     }
 
                     @Override
-                    public void notice(String msg) {
-                        mHandler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                Toast.makeText(HomeActivity.this, msg, Toast.LENGTH_SHORT).show();
-                            }
-                        });
+                    public void retry() {
+
                     }
 
                     @Override
@@ -335,11 +330,11 @@ public class HomeActivity extends BaseActivity {
             TipDialog dialog = null;
 
             @Override
-            public void notice(String msg) {
+            public void retry() {
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(HomeActivity.this, msg, Toast.LENGTH_SHORT).show();
+                        initData();
                     }
                 });
             }
