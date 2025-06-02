@@ -287,8 +287,10 @@ public class LivePlayActivity extends BaseActivity {
         initLiveChannelView();
         initSettingGroupView();
         initSettingItemView();
-        initLiveChannelList();
         initLiveSettingGroupList();
+        showSuccess();
+        initLiveState();
+        initLiveChannelList();
 
         divLoadEpg.setOnFocusChangeListener(new View.OnFocusChangeListener(){
             @Override
@@ -1911,6 +1913,13 @@ public class LivePlayActivity extends BaseActivity {
                 //Hawk.put(HawkConfig.LIVE_GROUP_INDEX, Hawk.get(HawkConfig.LIVE_GROUP_INDEX,0)+1);
                 Toast.makeText(App.getInstance(), "直播地址网络请求失败", Toast.LENGTH_LONG).show();
                 //finish();
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        LivePlayActivity.this.showSuccess();
+                        initLiveState();
+                    }
+                });
             }
         });
     }
@@ -2201,6 +2210,7 @@ public class LivePlayActivity extends BaseActivity {
     }
     
     public void showProgressBars(){
+        Toast.makeText(App.getInstance(), "按返回键退出时移模式", Toast.LENGTH_SHORT).show();
         sBar.requestFocus();
         backcontroller.setVisibility(View.VISIBLE);
         if (ll_epg.getVisibility() == View.VISIBLE || ll_right_top_loading.getVisibility() == View.VISIBLE) {
