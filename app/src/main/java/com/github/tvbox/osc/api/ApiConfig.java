@@ -708,19 +708,12 @@ public class ApiConfig {
         return jarLoader.jsonExtMix(flag, key, name, jxs, url);
     }
 
-    public interface LoadConfig {
+    public interface LoadConfigCallback {
         void success();
 
         void retry();
 
         void error(String msg);
-    }
-
-    public interface LoadConfigCallback {
-        void success();
-
-        void error(String msg);
-        void notice(String msg);
     }
 
     public interface FastParseCallback {
