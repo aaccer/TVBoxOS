@@ -288,8 +288,8 @@ public class LivePlayActivity extends BaseActivity {
         initSettingGroupView();
         initSettingItemView();
         initLiveSettingGroupList();
-        showSuccess();
-        initLiveState();
+        //showSuccess();
+        //initLiveState();
         initLiveChannelList();
 
         divLoadEpg.setOnFocusChangeListener(new View.OnFocusChangeListener(){
@@ -940,9 +940,10 @@ public class LivePlayActivity extends BaseActivity {
         }
     };
 */
-    private HashMap<String,String> liveWebHeader()
-    {
-        return Hawk.get(HawkConfig.LIVE_WEB_HEADER);
+    private HashMap<String,String> liveWebHeader(){
+        HashMap<String,String> liveHeader = new HashMap<>();
+        liveHeader.put("User-Agent", "okhttp/3.8.1");
+        return Hawk.get(HawkConfig.LIVE_WEB_HEADER,liveHeader);
     }
 
     private String userAgent(){
@@ -1469,10 +1470,13 @@ public class LivePlayActivity extends BaseActivity {
                         mHandler.removeCallbacks(mConnectTimeoutChangeSourceRun);
                         break;
                     case VideoView.STATE_ERROR:
+                        mHandler.removeCallbacks(mConnectTimeoutChangeSourceRun);
+                        mHandler.postDelayed(mConnectTimeoutChangeSourceRun, (Hawk.get(HawkConfig.LIVE_CONNECT_TIMEOUT, 0) + 1) * 3000);
+                        break;
                     case VideoView.STATE_PLAYBACK_COMPLETED:
                         mHandler.removeCallbacks(mConnectTimeoutChangeSourceRun);
                         //mHandler.post(mConnectTimeoutChangeSourceRun);
-                        mHandler.postDelayed(mConnectTimeoutChangeSourceRun, 1500);
+                        mHandler.postDelayed(mConnectTimeoutChangeSourceRun, (Hawk.get(HawkConfig.LIVE_CONNECT_TIMEOUT, 0) + 1) * 3000);
                         break;
                     case VideoView.STATE_PREPARING:
                         tv_right_top_tipnetspeed.setText("");
@@ -1848,8 +1852,8 @@ public class LivePlayActivity extends BaseActivity {
         List<LiveChannelGroup> list = ApiConfig.get().getChannelGroupList();
         if (list.isEmpty()) {
             Toast.makeText(App.getInstance(), "直播配置为空", Toast.LENGTH_SHORT).show();
-            //finish();
-            //return;
+            finish();
+            return;
         }
 
         if (list.size() == 1 && list.get(0).getGroupName().startsWith("http://127.0.0.1")) {
@@ -1890,10 +1894,21 @@ public class LivePlayActivity extends BaseActivity {
                 ApiConfig.get().loadLives(livesArray);
                 List<LiveChannelGroup> list = ApiConfig.get().getChannelGroupList();
                 if (list.isEmpty()) {
-                    //Hawk.put(HawkConfig.LIVE_GROUP_INDEX, Hawk.get(HawkConfig.LIVE_GROUP_INDEX,0)+1);
-                    Toast.makeText(App.getInstance(), "频道列表为空", Toast.LENGTH_SHORT).show();
-                    //finish();
-                    //return;
+                    JsonArray liveGroups=Hawk.get(HawkConfig.LIVE_GROUP_LIST,new JsonArray());
+                    if(liveGroups.size()==1){
+                        Toast.makeText(App.getInstance(), "频道列表为空", Toast.LENGTH_SHORT).show();
+                        finish();
+                        return;
+                    }
+                    Toast.makeText(App.getInstance(), "频道为空，加载下一个列表", Toast.LENGTH_SHORT).show();
+                    int group_index=Hawk.get(HawkConfig.LIVE_GROUP_INDEX,0)+1;
+                    if(group_index>=liveGroups.size())group_index=0;
+                    //liveSettingItemAdapter.selectItem(group_index, true, true);
+                    Hawk.put(HawkConfig.LIVE_GROUP_INDEX, group_index);
+                    liveSettingGroupList.get(5).getLiveSettingItems().get(Hawk.get(HawkConfig.LIVE_GROUP_INDEX, 0)).setItemSelected(true);
+                    ApiConfig.get().loadLiveApi(liveGroups.get(group_index).getAsJsonObject(););
+                    recreate();
+                    return;
                 }
                 liveChannelGroupList.clear();
                 liveChannelGroupList.addAll(list);
@@ -1910,16 +1925,21 @@ public class LivePlayActivity extends BaseActivity {
             @Override
             public void onError(Response<String> response) {
                 super.onError(response);
-                //Hawk.put(HawkConfig.LIVE_GROUP_INDEX, Hawk.get(HawkConfig.LIVE_GROUP_INDEX,0)+1);
-                Toast.makeText(App.getInstance(), "直播地址网络请求失败", Toast.LENGTH_LONG).show();
-                //finish();
-                mHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        LivePlayActivity.this.showSuccess();
-                        initLiveState();
-                    }
-                });
+                JsonArray liveGroups=Hawk.get(HawkConfig.LIVE_GROUP_LIST,new JsonArray());
+                if(liveGroups.size()==1){
+                    Toast.makeText(App.getInstance(), "直播地址网络请求失败", Toast.LENGTH_SHORT).show();
+                    finish();
+                    return;
+                }
+                Toast.makeText(App.getInstance(), "网络请求失败，加载下一个列表", Toast.LENGTH_SHORT).show();
+                int group_index=Hawk.get(HawkConfig.LIVE_GROUP_INDEX,0)+1;
+                if(group_index>=liveGroups.size())group_index=0;
+                //liveSettingItemAdapter.selectItem(group_index, true, true);
+                Hawk.put(HawkConfig.LIVE_GROUP_INDEX, group_index);
+                liveSettingGroupList.get(5).getLiveSettingItems().get(Hawk.get(HawkConfig.LIVE_GROUP_INDEX, 0)).setItemSelected(true);
+                ApiConfig.get().loadLiveApi(liveGroups.get(group_index).getAsJsonObject(););
+                recreate();
+                //return;
             }
         });
     }
