@@ -396,14 +396,20 @@ public class ApiConfig {
                 String lives = lives_groups.get(0).getAsJsonObject().toString();
                     try {
                         ArrayList<LiveSettingItem> liveSettingItemList = new ArrayList<>();
-                        for (int i=0; i< lives_groups.size();i++) {
-                            JsonObject jsonObject = lives_groups.get(i).getAsJsonObject();
-                            String name = jsonObject.has("name")?jsonObject.get("name").getAsString():"线路"+(i+1);
-                            LiveSettingItem liveSettingItem = new LiveSettingItem();
-                            liveSettingItem.setItemIndex(i);
-                            liveSettingItem.setItemName(name);
+                        LiveSettingItem liveSettingItem = new LiveSettingItem();
+                        if(lives_groups.size()>0){
+                            for (int i=0; i< lives_groups.size();i++) {
+                                JsonObject jsonObject = lives_groups.get(i).getAsJsonObject();
+                                String name = jsonObject.has("name")?jsonObject.get("name").getAsString():"线路"+(i+1);
+                                liveSettingItem.setItemIndex(i);
+                                liveSettingItem.setItemName(name);
+                                liveSettingItemList.add(liveSettingItem);
+                                if(!lives.contains("type"))break;
+                            }
+                        }else{
+                            liveSettingItem.setItemIndex(0);
+                            liveSettingItem.setItemName("线路1");
                             liveSettingItemList.add(liveSettingItem);
-                            if(!lives.contains("type"))break;
                         }
                         liveSettingGroupList.get(5).setLiveSettingItems(liveSettingItemList);
                     } catch (Exception e) {
@@ -411,7 +417,7 @@ public class ApiConfig {
                         e.printStackTrace();
                     }
                 if(!lives.contains("type")){
-                    loadLives(infoJson.get("lives").getAsJsonArray());
+                    loadLives(lives_groups);
                 }else {
                     Hawk.put(HawkConfig.LIVE_GROUP_LIST,lives_groups);
                     int live_group_index=Hawk.get(HawkConfig.LIVE_GROUP_INDEX,0);
