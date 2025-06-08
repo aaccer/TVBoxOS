@@ -413,8 +413,8 @@ public class ApiConfig {
 
             JsonObject livesOBJ = infoJson.get("lives").getAsJsonArray().get(0).getAsJsonObject();
             //String lives = livesOBJ.toString();
-            //int index = lives.indexOf("proxy://");
-            if (lives.indexOf("proxy://") != -1) {
+            int index = lives.indexOf("proxy://");
+            if (index != -1) {
                 int endIndex = lives.lastIndexOf("\"");
                 String url = lives.substring(index, endIndex);
                 url = DefaultConfig.checkReplaceProxy(url);
