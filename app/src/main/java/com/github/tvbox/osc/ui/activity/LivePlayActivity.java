@@ -287,10 +287,8 @@ public class LivePlayActivity extends BaseActivity {
         initLiveChannelView();
         initSettingGroupView();
         initSettingItemView();
-        initLiveSettingGroupList();
-        //showSuccess();
-        //initLiveState();
         initLiveChannelList();
+        initLiveSettingGroupList();
 
         divLoadEpg.setOnFocusChangeListener(new View.OnFocusChangeListener(){
             @Override
