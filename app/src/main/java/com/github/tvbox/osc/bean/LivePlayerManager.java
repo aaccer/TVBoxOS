@@ -170,6 +170,7 @@ public class LivePlayerManager {
 
     private String currentCfgKey(String channelName)
     {
+        if(currentApi=="")return channelName;
         return currentApi+"_"+channelName;
     }
 
