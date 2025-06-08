@@ -399,10 +399,10 @@ public class ApiConfig {
             String lives = lives_groups.get(0).getAsJsonObject().toString();
             if(lives_groups.size()>0){
                 ArrayList<LiveSettingItem> liveSettingItemList = new ArrayList<>();
-                LiveSettingItem liveSettingItem = new LiveSettingItem();
                 for (int i=0; i< lives_groups.size();i++) {
                     JsonObject jsonObject = lives_groups.get(i).getAsJsonObject();
                     String name = jsonObject.has("name")?jsonObject.get("name").getAsString():"线路"+(i+1);
+                    LiveSettingItem liveSettingItem = new LiveSettingItem();
                     liveSettingItem.setItemIndex(i);
                     liveSettingItem.setItemName(name);
                     liveSettingItemList.add(liveSettingItem);
