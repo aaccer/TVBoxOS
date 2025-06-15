@@ -1829,7 +1829,7 @@ public class LivePlayActivity extends BaseActivity {
                 break;
             case 5://多源切换
                 //TODO
-                if(position==Hawk.get(HawkConfig.LIVE_GROUP_INDEX, 0))break;
+                //if(position==Hawk.get(HawkConfig.LIVE_GROUP_INDEX, 0))break;
                 if (mVideoView != null) {
                     mVideoView.release();
                     mVideoView=null;
@@ -1899,11 +1899,11 @@ public class LivePlayActivity extends BaseActivity {
                         return;
                     }
                     Toast.makeText(App.getInstance(), "频道为空，切换下一条线路", Toast.LENGTH_SHORT).show();
+                    liveSettingGroupList.get(5).getLiveSettingItems().get(Hawk.get(HawkConfig.LIVE_GROUP_INDEX, 0)).setItemSelected(false);
                     int group_index=Hawk.get(HawkConfig.LIVE_GROUP_INDEX,0)+1;
                     if(group_index>=liveGroups.size())group_index=0;
                     //liveSettingItemAdapter.selectItem(group_index, true, true);
                     Hawk.put(HawkConfig.LIVE_GROUP_INDEX, group_index);
-                    //liveSettingGroupList.get(5).getLiveSettingItems().get(Hawk.get(HawkConfig.LIVE_GROUP_INDEX, 0)).setItemSelected(true);
                     ApiConfig.get().loadLiveApi(liveGroups.get(group_index).getAsJsonObject());
                     //recreate();
                     finish();
@@ -1931,11 +1931,11 @@ public class LivePlayActivity extends BaseActivity {
                     return;
                 }
                 Toast.makeText(App.getInstance(), "网络请求失败，切换下一条线路", Toast.LENGTH_SHORT).show();
+                liveSettingGroupList.get(5).getLiveSettingItems().get(Hawk.get(HawkConfig.LIVE_GROUP_INDEX, 0)).setItemSelected(false);
                 int group_index=Hawk.get(HawkConfig.LIVE_GROUP_INDEX,0)+1;
                 if(group_index>=liveGroups.size())group_index=0;
                 //liveSettingItemAdapter.selectItem(group_index, true, true);
                 Hawk.put(HawkConfig.LIVE_GROUP_INDEX, group_index);
-                //liveSettingGroupList.get(5).getLiveSettingItems().get(Hawk.get(HawkConfig.LIVE_GROUP_INDEX, 0)).setItemSelected(true);
                 ApiConfig.get().loadLiveApi(liveGroups.get(group_index).getAsJsonObject());
                 //recreate();
                 finish();
