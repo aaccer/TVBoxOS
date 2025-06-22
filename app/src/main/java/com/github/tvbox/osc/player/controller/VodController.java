@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.view.KeyEvent;
