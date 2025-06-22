@@ -467,6 +467,7 @@ public class ApiConfig {
             VideoParseRuler.clearRule();
             for(JsonElement oneHostRule : infoJson.getAsJsonArray("rules")) {
                 JsonObject obj = (JsonObject) oneHostRule;
+                //嗅探过滤规则
                 if (obj.has("host")) {
                     String host = obj.get("host").getAsString();
                     if (obj.has("rule")) {
@@ -492,6 +493,7 @@ public class ApiConfig {
                         }
                     }
                 }
+                //广告过滤规则
                 if (obj.has("hosts") && obj.has("regex")) {
                      ArrayList<String> rule = new ArrayList<>();
                      ArrayList<String> ads = new ArrayList<>();
@@ -505,6 +507,20 @@ public class ApiConfig {
                     for (JsonElement one : array) {
                         String host = one.getAsString();
                         VideoParseRuler.addHostRule(host, rule);
+                    }
+                }
+                //嗅探脚本规则 如 click
+                if (obj.has("hosts") && obj.has("script")) {
+                    ArrayList<String> scripts = new ArrayList<>();
+                    JsonArray scriptArray = obj.getAsJsonArray("script");
+                    for (JsonElement one : scriptArray) {
+                        String script = one.getAsString();
+                        scripts.add(script);
+                    }
+                    JsonArray array = obj.getAsJsonArray("hosts");
+                    for (JsonElement one : array) {
+                        String host = one.getAsString();
+                        VideoParseRuler.addHostScript(host, scripts);
                     }
                 }
             }
