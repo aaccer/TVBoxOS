@@ -1695,19 +1695,11 @@ public class PlayActivity extends BaseActivity {
         @Override
         public void onPageFinished(WebView view, String url) {
             super.onPageFinished(view,url);
-            String click=sourceBean.getClickSelector();
             LOG.i("onPageFinished url:" + url);
-            if(!click.isEmpty()){
-                String selector;
-                if(click.contains(";")){
-                    if(!url.contains(click.split(";")[0]))return;
-                    selector=click.split(";")[1];
-                }else {
-                    selector=click.trim();
-                }
-                String js="$(\""+ selector+"\").click();";
-                mSysWebView.loadUrl("javascript:"+js);
+            if(!url.equals("about:blank")){
+                mController.evaluateScript(sourceBean,url,view,null);
             }
+            mHandler.sendEmptyMessage(200);
         }
 
         WebResourceResponse checkIsVideo(String url, HashMap<String, String> headers) {
@@ -1872,6 +1864,10 @@ public class PlayActivity extends BaseActivity {
         @Override
         public void onLoadFinished(XWalkView view, String url) {
             super.onLoadFinished(view, url);
+            LOG.i("echo-onPageFinished url:" + url);
+            if(!url.equals("about:blank")){
+                mController.evaluateScript(sourceBean,url,null,view);
+            }
         }
 
         @Override
