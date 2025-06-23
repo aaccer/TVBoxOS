@@ -648,7 +648,7 @@ public class DetailActivity extends BaseActivity {
                     setTextShow(tvActor, "演员：", mVideo.actor);
                     setTextShow(tvDirector, "导演：", mVideo.director);
                     //setTextShow(tvDes, "内容简介：", removeHtmlTag(mVideo.des));
-                    setTextShow(tvDes, "内容简介：", mVideo.des.trim());
+                    setTextShow(tvDes, "内容简介：", mVideo.des == null ? "" : mVideo.des.trim());
                     if (!TextUtils.isEmpty(mVideo.pic)) {
                         Picasso.get()
                                 .load(DefaultConfig.checkReplaceProxy(mVideo.pic))
