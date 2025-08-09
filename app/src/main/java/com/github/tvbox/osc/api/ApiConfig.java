@@ -579,7 +579,7 @@ public class ApiConfig {
 
     private final List<LiveSettingGroup> liveSettingGroupList = new ArrayList<>();
     private void initLiveSettings() {
-        ArrayList<String> groupNames = new ArrayList<>(Arrays.asList("线路选择", "画面比例", "播放解码", "超时换源", "偏好设置", "多源切换"));
+        ArrayList<String> groupNames = new ArrayList<>(Arrays.asList("多源切换", "画面比例", "播放解码", "超时换源", "偏好设置", "线路选择"));
         ArrayList<ArrayList<String>> itemsArrayList = new ArrayList<>();
         ArrayList<String> sourceItems = new ArrayList<>();
         ArrayList<String> scaleItems = new ArrayList<>(Arrays.asList("默认", "16:9", "4:3", "填充", "原始", "裁剪"));
