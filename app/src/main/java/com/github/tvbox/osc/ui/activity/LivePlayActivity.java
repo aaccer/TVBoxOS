@@ -87,6 +87,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -937,6 +938,20 @@ public class LivePlayActivity extends BaseActivity {
         }
     };
 */
+    private HashMap<String,String> liveWebHeader(){
+        HashMap<String,String> liveHeader = new HashMap<>();
+        liveHeader.put("User-Agent", "okhttp/3.8.1");
+        return Hawk.get(HawkConfig.LIVE_WEB_HEADER,liveHeader);
+    }
+
+    private String userAgent(){
+        if(liveWebHeader()==null) return "okhttp/3.8.1";
+        String userAgent=liveWebHeader().get("User-Agent");
+        if(userAgent==null)userAgent=liveWebHeader().get("user-agent");
+        if(userAgent==null)userAgent="okhttp/3.8.1";
+        return userAgent;
+    }
+
     private boolean playChannel(int channelGroupIndex, int liveChannelIndex, boolean changeSource) {
         if ((channelGroupIndex == currentChannelGroupIndex && liveChannelIndex == currentLiveChannelIndex && !changeSource)){
                 //|| (changeSource && currentLiveChannelItem.getSourceNum() == 1)) {
@@ -985,7 +1000,7 @@ public class LivePlayActivity extends BaseActivity {
         backcontroller.setVisibility(View.GONE);
         getEpg(new Date());
         //ll_right_top_huikan.setVisibility(View.GONE);
-        mVideoView.setUrl(currentLiveChannelItem.getUrl());
+        mVideoView.setUrl(currentLiveChannelItem.getUrl(),liveWebHeader());
        // showChannelInfo();
         mVideoView.start();
         return true;
@@ -1148,7 +1163,7 @@ public class LivePlayActivity extends BaseActivity {
                 if (now.compareTo(selectedData.startdateTime) >= 0 && now.compareTo(selectedData.enddateTime) <= 0) {
                     mVideoView.release();
                     isBack= false;
-                    mVideoView.setUrl(currentLiveChannelItem.getUrl());
+                    mVideoView.setUrl(currentLiveChannelItem.getUrl(),liveWebHeader());
                     mVideoView.start();
                     epgListAdapter.setShiyiSelection(-1, false,timeFormat.format(date));
                     epgListAdapter.notifyDataSetChanged();
@@ -1171,7 +1186,7 @@ public class LivePlayActivity extends BaseActivity {
                     //}
                     playUrl = shiyiUrl;
 
-                    mVideoView.setUrl(playUrl);
+                    mVideoView.setUrl(playUrl,liveWebHeader());
                     mVideoView.start();
                     epgListAdapter.setShiyiSelection(position, true, timeFormat.format(date));
                     epgListAdapter.notifyDataSetChanged();
@@ -1223,7 +1238,7 @@ public class LivePlayActivity extends BaseActivity {
                 if (now.compareTo(selectedData.startdateTime) >= 0 && now.compareTo(selectedData.enddateTime) <= 0) {
                     mVideoView.release();
                     isBack= false;
-                    mVideoView.setUrl(currentLiveChannelItem.getUrl());
+                    mVideoView.setUrl(currentLiveChannelItem.getUrl(),liveWebHeader());
                     mVideoView.start();
                     epgListAdapter.setShiyiSelection(-1, false,timeFormat.format(date));
                     epgListAdapter.notifyDataSetChanged();
@@ -1246,7 +1261,7 @@ public class LivePlayActivity extends BaseActivity {
                     //}
                     playUrl = shiyiUrl;
 
-                    mVideoView.setUrl(playUrl);
+                    mVideoView.setUrl(playUrl,liveWebHeader());
                     mVideoView.start();
                     epgListAdapter.setShiyiSelection(position, true,timeFormat.format(date));
                     epgListAdapter.notifyDataSetChanged();
@@ -1453,10 +1468,13 @@ public class LivePlayActivity extends BaseActivity {
                         mHandler.removeCallbacks(mConnectTimeoutChangeSourceRun);
                         break;
                     case VideoView.STATE_ERROR:
+                        mHandler.removeCallbacks(mConnectTimeoutChangeSourceRun);
+                        mHandler.postDelayed(mConnectTimeoutChangeSourceRun, (Hawk.get(HawkConfig.LIVE_CONNECT_TIMEOUT, 0) + 1) * 3000);
+                        break;
                     case VideoView.STATE_PLAYBACK_COMPLETED:
                         mHandler.removeCallbacks(mConnectTimeoutChangeSourceRun);
                         //mHandler.post(mConnectTimeoutChangeSourceRun);
-                        mHandler.postDelayed(mConnectTimeoutChangeSourceRun, 1500);
+                        mHandler.postDelayed(mConnectTimeoutChangeSourceRun, (Hawk.get(HawkConfig.LIVE_CONNECT_TIMEOUT, 0) + 1) * 3000);
                         break;
                     case VideoView.STATE_PREPARING:
                         tv_right_top_tipnetspeed.setText("");
@@ -1775,7 +1793,7 @@ public class LivePlayActivity extends BaseActivity {
             case 2://播放解码
                 mVideoView.release();
                 livePlayerManager.changeLivePlayerType(mVideoView, position, currentLiveChannelItem.getChannelName());
-                mVideoView.setUrl(currentLiveChannelItem.getUrl());
+                mVideoView.setUrl(currentLiveChannelItem.getUrl(),liveWebHeader());
                 mVideoView.start();
                 break;
             case 3://超时换源
@@ -1809,6 +1827,20 @@ public class LivePlayActivity extends BaseActivity {
                 }
                 liveSettingItemAdapter.selectItem(position, select, false);
                 break;
+            case 5://多源切换
+                //TODO
+                //if(position==Hawk.get(HawkConfig.LIVE_GROUP_INDEX, 0))break;
+                if (mVideoView != null) {
+                    mVideoView.release();
+                    mVideoView=null;
+                }
+                JsonArray live_groups=Hawk.get(HawkConfig.LIVE_GROUP_LIST,new JsonArray());
+                JsonObject livesOBJ = live_groups.get(position).getAsJsonObject();
+                liveSettingItemAdapter.selectItem(position, true, true);
+                Hawk.put(HawkConfig.LIVE_GROUP_INDEX, position);
+                ApiConfig.get().loadLiveApi(livesOBJ);
+                recreate();
+                return;
         }
         mHandler.removeCallbacks(mHideSettingLayoutRun);
         mHandler.postDelayed(mHideSettingLayoutRun, 5000);
@@ -1817,7 +1849,7 @@ public class LivePlayActivity extends BaseActivity {
     private void initLiveChannelList() {
         List<LiveChannelGroup> list = ApiConfig.get().getChannelGroupList();
         if (list.isEmpty()) {
-            Toast.makeText(App.getInstance(), "频道列表为空", Toast.LENGTH_SHORT).show();
+            Toast.makeText(App.getInstance(), "直播配置为空", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
@@ -1838,12 +1870,12 @@ public class LivePlayActivity extends BaseActivity {
             Uri parsedUrl = Uri.parse(url);
             url = new String(Base64.decode(parsedUrl.getQueryParameter("ext"), Base64.DEFAULT | Base64.URL_SAFE | Base64.NO_WRAP), "UTF-8");
         } catch (Throwable th) {
-            Toast.makeText(App.getInstance(), "频道列表为空", Toast.LENGTH_SHORT).show();
+            Toast.makeText(App.getInstance(), "直播地址解析失败", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
         showLoading();
-        OkGo.<String>get(url).execute(new AbsCallback<String>() {
+        OkGo.<String>get(url).headers("User-Agent", userAgent()).execute(new AbsCallback<String>() {
 
             @Override
             public String convertResponse(okhttp3.Response response) throws Throwable {
@@ -1860,7 +1892,20 @@ public class LivePlayActivity extends BaseActivity {
                 ApiConfig.get().loadLives(livesArray);
                 List<LiveChannelGroup> list = ApiConfig.get().getChannelGroupList();
                 if (list.isEmpty()) {
-                    Toast.makeText(App.getInstance(), "频道列表为空", Toast.LENGTH_SHORT).show();
+                    JsonArray liveGroups=Hawk.get(HawkConfig.LIVE_GROUP_LIST,new JsonArray());
+                    if(liveGroups.size()==1){
+                        Toast.makeText(App.getInstance(), "频道列表为空", Toast.LENGTH_SHORT).show();
+                        finish();
+                        return;
+                    }
+                    Toast.makeText(App.getInstance(), "频道为空，切换下一条线路", Toast.LENGTH_SHORT).show();
+                    liveSettingGroupList.get(5).getLiveSettingItems().get(Hawk.get(HawkConfig.LIVE_GROUP_INDEX, 0)).setItemSelected(false);
+                    int group_index=Hawk.get(HawkConfig.LIVE_GROUP_INDEX,0)+1;
+                    if(group_index>=liveGroups.size())group_index=0;
+                    //liveSettingItemAdapter.selectItem(group_index, true, true);
+                    Hawk.put(HawkConfig.LIVE_GROUP_INDEX, group_index);
+                    ApiConfig.get().loadLiveApi(liveGroups.get(group_index).getAsJsonObject());
+                    //recreate();
                     finish();
                     return;
                 }
@@ -1879,8 +1924,22 @@ public class LivePlayActivity extends BaseActivity {
             @Override
             public void onError(Response<String> response) {
                 super.onError(response);
-                Toast.makeText(App.getInstance(), "直播地址网络请求失败", Toast.LENGTH_LONG).show();
+                JsonArray liveGroups=Hawk.get(HawkConfig.LIVE_GROUP_LIST,new JsonArray());
+                if(liveGroups.size()==1){
+                    Toast.makeText(App.getInstance(), "直播地址网络请求失败", Toast.LENGTH_SHORT).show();
+                    finish();
+                    return;
+                }
+                Toast.makeText(App.getInstance(), "网络请求失败，切换下一条线路", Toast.LENGTH_SHORT).show();
+                liveSettingGroupList.get(5).getLiveSettingItems().get(Hawk.get(HawkConfig.LIVE_GROUP_INDEX, 0)).setItemSelected(false);
+                int group_index=Hawk.get(HawkConfig.LIVE_GROUP_INDEX,0)+1;
+                if(group_index>=liveGroups.size())group_index=0;
+                //liveSettingItemAdapter.selectItem(group_index, true, true);
+                Hawk.put(HawkConfig.LIVE_GROUP_INDEX, group_index);
+                ApiConfig.get().loadLiveApi(liveGroups.get(group_index).getAsJsonObject());
+                //recreate();
                 finish();
+                //return;
             }
         });
     }
@@ -1922,41 +1981,14 @@ public class LivePlayActivity extends BaseActivity {
     }
 
     private void initLiveSettingGroupList() {
-        ArrayList<String> groupNames = new ArrayList<>(Arrays.asList("线路选择", "画面比例", "播放解码", "超时换源", "偏好设置"));
-        ArrayList<ArrayList<String>> itemsArrayList = new ArrayList<>();
-        ArrayList<String> sourceItems = new ArrayList<>();
-        ArrayList<String> scaleItems = new ArrayList<>(Arrays.asList("默认", "16:9", "4:3", "填充", "原始", "裁剪"));
-        ArrayList<String> playerDecoderItems = new ArrayList<>(Arrays.asList("系统", "ijk硬解", "ijk软解", "exo"));
-        ArrayList<String> timeoutItems = new ArrayList<>(Arrays.asList("3s", "6s", "9s", "12s", "15s", "18s"));
-        ArrayList<String> personalSettingItems = new ArrayList<>(Arrays.asList("显示时间", "显示网速", "换台反转", "跨选分类", "默认首页"));
-        itemsArrayList.add(sourceItems);
-        itemsArrayList.add(scaleItems);
-        itemsArrayList.add(playerDecoderItems);
-        itemsArrayList.add(timeoutItems);
-        itemsArrayList.add(personalSettingItems);
-
-        liveSettingGroupList.clear();
-        for (int i = 0; i < groupNames.size(); i++) {
-            LiveSettingGroup liveSettingGroup = new LiveSettingGroup();
-            ArrayList<LiveSettingItem> liveSettingItemList = new ArrayList<>();
-            liveSettingGroup.setGroupIndex(i);
-            liveSettingGroup.setGroupName(groupNames.get(i));
-            for (int j = 0; j < itemsArrayList.get(i).size(); j++) {
-                LiveSettingItem liveSettingItem = new LiveSettingItem();
-                liveSettingItem.setItemIndex(j);
-                liveSettingItem.setItemName(itemsArrayList.get(i).get(j));
-                liveSettingItemList.add(liveSettingItem);
-            }
-            liveSettingGroup.setLiveSettingItems(liveSettingItemList);
-            liveSettingGroupList.add(liveSettingGroup);
-        }
+        liveSettingGroupList=ApiConfig.get().getLiveSettingGroupList();
         liveSettingGroupList.get(3).getLiveSettingItems().get(Hawk.get(HawkConfig.LIVE_CONNECT_TIMEOUT, 0)).setItemSelected(true);
         liveSettingGroupList.get(4).getLiveSettingItems().get(0).setItemSelected(Hawk.get(HawkConfig.LIVE_SHOW_TIME, false));
         liveSettingGroupList.get(4).getLiveSettingItems().get(1).setItemSelected(Hawk.get(HawkConfig.LIVE_SHOW_NET_SPEED, false));
         liveSettingGroupList.get(4).getLiveSettingItems().get(2).setItemSelected(Hawk.get(HawkConfig.LIVE_CHANNEL_REVERSE, false));
         liveSettingGroupList.get(4).getLiveSettingItems().get(3).setItemSelected(Hawk.get(HawkConfig.LIVE_CROSS_GROUP, false));
         liveSettingGroupList.get(4).getLiveSettingItems().get(4).setItemSelected(Hawk.get(HawkConfig.HOME_DEFAULT_SHOW, false));
-        
+        liveSettingGroupList.get(5).getLiveSettingItems().get(Hawk.get(HawkConfig.LIVE_GROUP_INDEX, 0)).setItemSelected(true);
     }
 
     private void loadCurrentSourceList() {
@@ -2198,6 +2230,7 @@ public class LivePlayActivity extends BaseActivity {
     }
     
     public void showProgressBars(){
+        Toast.makeText(App.getInstance(), "按返回键退出时移模式", Toast.LENGTH_SHORT).show();
         sBar.requestFocus();
         backcontroller.setVisibility(View.VISIBLE);
         if (ll_epg.getVisibility() == View.VISIBLE || ll_right_top_loading.getVisibility() == View.VISIBLE) {

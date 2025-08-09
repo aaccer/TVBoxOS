@@ -316,7 +316,8 @@ public class DetailActivity extends BaseActivity {
             @Override
             public void onClick(View v) {
                 ClipboardManager clipboard = (ClipboardManager)getSystemService(mContext.CLIPBOARD_SERVICE);
-                String cpContent = removeHtmlTag(mVideo.des);
+                //String cpContent = removeHtmlTag(mVideo.des);
+                String cpContent = mVideo.des;
                 ClipData clipData = ClipData.newPlainText(null, cpContent);
                 clipboard.setPrimaryClip(clipData);
                 Toast.makeText(DetailActivity.this, "已复制", Toast.LENGTH_SHORT).show();
@@ -646,7 +647,8 @@ public class DetailActivity extends BaseActivity {
                     }
                     setTextShow(tvActor, "演员：", mVideo.actor);
                     setTextShow(tvDirector, "导演：", mVideo.director);
-                    setTextShow(tvDes, "内容简介：", removeHtmlTag(mVideo.des));
+                    //setTextShow(tvDes, "内容简介：", removeHtmlTag(mVideo.des));
+                    setTextShow(tvDes, "内容简介：", mVideo.des == null ? "" : mVideo.des.trim());
                     if (!TextUtils.isEmpty(mVideo.pic)) {
                         Picasso.get()
                                 .load(DefaultConfig.checkReplaceProxy(mVideo.pic))
@@ -780,7 +782,11 @@ public class DetailActivity extends BaseActivity {
                     //保存历史
                     insertVod(firstsourceKey, vodInfo);
             //        insertVod(sourceKey, vodInfo);
-                }
+                } else if (event.obj instanceof String) {
+                     String url = event.obj.toString();
+                     //设置更新播放地址
+                     setTvPlayUrl(url);
+                 }
 
             }
         } else if (event.type == RefreshEvent.TYPE_QUICK_SEARCH_SELECT) {
@@ -1004,4 +1010,9 @@ public class DetailActivity extends BaseActivity {
         }
         EventBus.getDefault().post(new RefreshEvent(RefreshEvent.TYPE_SUBTITLE_SIZE_CHANGE, subtitleTextSize));
     }
-}
+
+    private void setTvPlayUrl(String url) {
+         setTextShow(tvPlayUrl, "播放地址：", url);
+     }
+ 
+ }

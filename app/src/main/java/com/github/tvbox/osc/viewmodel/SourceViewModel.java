@@ -93,11 +93,11 @@ public class SourceViewModel extends ViewModel {
 
     public static final ExecutorService spThreadPool = Executors.newSingleThreadExecutor();
 
-    //homeContent缓存，最多存储10个sourceKey的AbsSortXml对象
-    private static final Map<String, AbsSortXml> sortCache = new LinkedHashMap<String, AbsSortXml>(10, 0.75f, true) {
+    //homeContent缓存，最多存储5个sourceKey的AbsSortXml对象
+    private static final Map<String, AbsSortXml> sortCache = new LinkedHashMap<String, AbsSortXml>(5, 0.75f, true) {
         @Override
         protected boolean removeEldestEntry(Entry<String, AbsSortXml> eldest) {
-            return size() > 10;
+            return size() > 5;
         }
     };
 
@@ -668,6 +668,11 @@ public class SourceViewModel extends ViewModel {
         }else if (type == 4) {
             String extend=sourceBean.getExt();
             extend=getFixUrl(extend);
+            try {
+                wd=URLEncoder.encode(wd, "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
             OkGo.<String>get(sourceBean.getApi())
                 .params("wd", wd)
                 .params("ac" ,"detail")
@@ -680,6 +685,7 @@ public class SourceViewModel extends ViewModel {
                         if (response.body() != null) {
                             return response.body().string();
                         } else {
+                            LOG.i("echo-t4 search-网络请求错误");
                             throw new IllegalStateException("网络请求错误");
                         }
                     }
@@ -687,12 +693,13 @@ public class SourceViewModel extends ViewModel {
                     @Override
                     public void onSuccess(Response<String> response) {
                             String json = response.body();
-                        LOG.i(json);
+                            LOG.i("echo-t4 search onSuccess"+json);
                             json(searchResult, json, sourceBean.getKey());
                     }
 
                     @Override
                     public void onError(Response<String> response) {
+                        LOG.i("echo-t4 search-onError");
                         super.onError(response);
                         // searchResult.postValue(null);
                         EventBus.getDefault().post(new RefreshEvent(RefreshEvent.TYPE_SEARCH_RESULT, null));
@@ -906,13 +913,13 @@ public class SourceViewModel extends ViewModel {
     private static final ConcurrentHashMap<String, String> extendCache = new ConcurrentHashMap<>();
 
     private String getFixUrl(final String extend) {
+        if(extend.isEmpty())return "";
         if(!extend.startsWith("http"))return extend;
         final String key = MD5.string2MD5(extend);
         if (extendCache.containsKey(key)) {
             LOG.i("echo-getFixUrl Cache");
             return extendCache.get(key);
         }
-        LOG.i("echo-getFixUrl load");
         Future<String> future = spThreadPool.submit(new Callable<String>() {
             @Override
             public String call() {
@@ -927,6 +934,7 @@ public class SourceViewModel extends ViewModel {
                     result = OkHttpUtil.string(extend, null);
                     if (!result.isEmpty()) {
                         result = tryMinifyJson(result);
+                        if(result.length()>2500)result = extend;
                         extendCache.putIfAbsent(key, result);
                     }
                 }
