@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class SearchHelper {
 
@@ -55,14 +56,33 @@ public class SearchHelper {
         return mCheckSources;
     }
 
+    // public static List<String> splitWords(String text) {
+        // List<String> result = new ArrayList<>();
+        // result.add(text);
+        // String[] parts = text.split("\\W+");
+        // if (parts.length > 1) {
+            // result.addAll(Arrays.asList(parts));
+        // }
+        // return result;
+    // }
+
     public static List<String> splitWords(String text) {
-        List<String> result = new ArrayList<>();
+        List<String> result = new ArrayList<String>();
+        if (text == null || text.trim().isEmpty()) return result;
         result.add(text);
-        String[] parts = text.split("\\W+");
-        if (parts.length > 1) {
-            result.addAll(Arrays.asList(parts));
+        String endFilterRegex = "(第[一二三四五六七八九十0-9]+[部季集])$|(\\d+)$";
+        String filteredText = text.trim().replaceAll(endFilterRegex, "").trim();
+        if (filteredText.isEmpty()) return result;
+        result.add(filteredText);
+        Pattern nonWordPattern = Pattern.compile("\\W+");
+        String[] rawParts = nonWordPattern.split(filteredText);
+        for (String part : rawParts) {
+            if (part == null  || part.trim().isEmpty()) continue;
+            String finalPart = part.trim().replaceAll(endFilterRegex, "").trim();
+            if (!finalPart.isEmpty() && !result.contains(finalPart)) {
+                result.add(finalPart);
+            }
         }
         return result;
     }
-
 }
