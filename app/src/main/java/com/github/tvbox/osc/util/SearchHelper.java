@@ -70,7 +70,7 @@ public class SearchHelper {
         List<String> result = new ArrayList<String>();
         if (text == null || text.trim().isEmpty()) return result;
         result.add(text);
-        String endFilterRegex = "(第[一二三四五六七八九十0-9]+[部季集话])$|(国语|英语|粤语|剪辑|导演剪辑|加长|剧场|配音)版*$|(\\d+)$";
+        String endFilterRegex = "(第[一二三四五六七八九十0-9]+[部季集话])$|(国语|英语|粤语|日语|剪辑|导演剪辑|加长|剧场|配音)版*$|(\\d+)$";
         String filteredText = text.trim().replaceAll(endFilterRegex, "").trim();
         if (filteredText.isEmpty()) return result;
         if (!result.contains(filteredText))result.add(filteredText);
