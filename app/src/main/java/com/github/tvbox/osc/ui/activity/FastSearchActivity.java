@@ -278,40 +278,43 @@ public class FastSearchActivity extends BaseActivity {
 
     private void fenci() {
         if (!quickSearchWord.isEmpty()) return; // 如果经有分词了，不再进行二次分词
+        quickSearchWord.addAll(SearchHelper.splitWords(searchTitle));
+        List<String> words = new ArrayList<>(new HashSet<>(quickSearchWord));
+        EventBus.getDefault().post(new RefreshEvent(RefreshEvent.TYPE_QUICK_SEARCH_WORD, words));
         // 分词
-        OkGo.<String>get("http://api.pullword.com/get.php?source=" + URLEncoder.encode(searchTitle) + "&param1=0&param2=0&json=1")
-                .tag("fenci")
-                .execute(new AbsCallback<String>() {
-                    @Override
-                    public String convertResponse(okhttp3.Response response) throws Throwable {
-                        if (response.body() != null) {
-                            return response.body().string();
-                        } else {
-                            throw new IllegalStateException("网络请求错误");
-                        }
-                    }
+        // OkGo.<String>get("http://api.pullword.com/get.php?source=" + URLEncoder.encode(searchTitle) + "&param1=0&param2=0&json=1")
+                // .tag("fenci")
+                // .execute(new AbsCallback<String>() {
+                    // @Override
+                    // public String convertResponse(okhttp3.Response response) throws Throwable {
+                        // if (response.body() != null) {
+                            // return response.body().string();
+                        // } else {
+                            // throw new IllegalStateException("网络请求错误");
+                        // }
+                    // }
 
-                    @Override
-                    public void onSuccess(Response<String> response) {
-                        String json = response.body();
-                        quickSearchWord.clear();
-                        try {
-                            for (JsonElement je : new Gson().fromJson(json, JsonArray.class)) {
-                                quickSearchWord.add(je.getAsJsonObject().get("t").getAsString());
-                            }
-                        } catch (Throwable th) {
-                            th.printStackTrace();
-                        }
-                        quickSearchWord.addAll(SearchHelper.splitWords(searchTitle));
-                        List<String> words = new ArrayList<>(new HashSet<>(quickSearchWord));
-                        EventBus.getDefault().post(new RefreshEvent(RefreshEvent.TYPE_QUICK_SEARCH_WORD, words));
-                    }
+                    // @Override
+                    // public void onSuccess(Response<String> response) {
+                        // String json = response.body();
+                        // quickSearchWord.clear();
+                        // try {
+                            // for (JsonElement je : new Gson().fromJson(json, JsonArray.class)) {
+                                // quickSearchWord.add(je.getAsJsonObject().get("t").getAsString());
+                            // }
+                        // } catch (Throwable th) {
+                            // th.printStackTrace();
+                        // }
+                        // quickSearchWord.addAll(SearchHelper.splitWords(searchTitle));
+                        // List<String> words = new ArrayList<>(new HashSet<>(quickSearchWord));
+                        // EventBus.getDefault().post(new RefreshEvent(RefreshEvent.TYPE_QUICK_SEARCH_WORD, words));
+                    // }
 
-                    @Override
-                    public void onError(Response<String> response) {
-                        super.onError(response);
-                    }
-                });
+                    // @Override
+                    // public void onError(Response<String> response) {
+                        // super.onError(response);
+                    // }
+                // });
     }
 
     private void initData() {
