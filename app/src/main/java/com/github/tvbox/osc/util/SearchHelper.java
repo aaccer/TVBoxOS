@@ -73,7 +73,7 @@ public class SearchHelper {
         String endFilterRegex = "(第[一二三四五六七八九十0-9]+[部季集话])$|(国语|英语|粤语|剪辑|导演剪辑|加长|剧场|配音)版*$|(\\d+)$";
         String filteredText = text.trim().replaceAll(endFilterRegex, "").trim();
         if (filteredText.isEmpty()) return result;
-        result.add(filteredText);
+        if (!result.contains(filteredText))result.add(filteredText);
         Pattern nonWordPattern = Pattern.compile("之|\\W+");
         String[] rawParts = nonWordPattern.split(filteredText);
         for (String part : rawParts) {
