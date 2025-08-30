@@ -614,7 +614,7 @@ public class DetailActivity extends BaseActivity {
         if (info == null)
             return "";
         //return info.replaceAll("\\<.*?\\>", "").replaceAll("\\s", "");
-        Pattern unicodeWhitespacePattern = Pattern.compile("^\\<p\\>[\\p{IsWhitespace}]+|^[\\p{IsWhitespace}]+|[\\p{IsWhitespace}]+$");
+        Pattern unicodeWhitespacePattern = Pattern.compile("^(<[^>]+>)?([\\p{IsWhitespace}]+)?|<[^>]+>|([\\p{IsWhitespace}]+)?(<[^>]+>)?$");
         return unicodeWhitespacePattern.matcher(info).replaceAll("");
     }
 
