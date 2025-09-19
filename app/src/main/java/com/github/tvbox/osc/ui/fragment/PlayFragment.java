@@ -128,6 +128,7 @@ public class PlayFragment extends BaseLazyFragment {
     private Handler mHandler;
 
     private final long videoDuration = -1;
+    private File settingCfg = new File(FileUtils.getFilePath() + "/setting.cfg");
 
     @Override
     protected int getLayoutResID() {
@@ -1018,6 +1019,7 @@ public class PlayFragment extends BaseLazyFragment {
         Thunder.stop(true);//停止磁力下载
         Jianpian.finish();//停止p2p下载
         App.getInstance().setDashData(null);
+        FileUtils.deleteFile(settingCfg);
     }
 
     private VodInfo mVodInfo;
