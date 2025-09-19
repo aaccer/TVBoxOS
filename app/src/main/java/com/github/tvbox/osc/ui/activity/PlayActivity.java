@@ -126,7 +126,6 @@ public class PlayActivity extends BaseActivity {
     private Handler mHandler;
 
     private long videoDuration = -1;
-    private File settingCfg = new File(FileUtils.getFilePath() + "/setting.cfg");
 
     @Override
     protected int getLayoutResID() {
@@ -975,7 +974,6 @@ public class PlayActivity extends BaseActivity {
         Thunder.stop(false);//停止磁力下载
         Jianpian.finish();//停止p2p下载
         App.getInstance().setDashData(null);
-        FileUtils.deleteFile(settingCfg);
     }
 
     private VodInfo mVodInfo;
