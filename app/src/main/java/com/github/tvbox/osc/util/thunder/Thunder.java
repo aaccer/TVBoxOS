@@ -38,8 +38,12 @@ public class Thunder {
 
     private static void init(Context context) {
         // fake deviceId and Mac
+        File settingCfg = new File(FileUtils.getFilePath() + "/setting.cfg");
+        File seq_id = new File(FileUtils.getFilePath() + "/seq_id");
+        FileUtils.deleteFile(settingCfg);
+        FileUtils.deleteFile(seq_id);
         SharedPreferences sharedPreferences = context.getSharedPreferences("rand_thunder_id", Context.MODE_PRIVATE);
-        String imei = sharedPreferences.getString("imei", null);
+      /*String imei = sharedPreferences.getString("imei", null);
         String mac = sharedPreferences.getString("mac", null);
         if (imei == null) {
             imei = randomImei();
@@ -48,7 +52,13 @@ public class Thunder {
         if (mac == null) {
             mac = randomMac();
             sharedPreferences.edit().putString("mac", mac).commit();
-        }
+        }*/
+        String imei = null;
+        String mac = null;
+        imei = randomImei();
+        sharedPreferences.edit().putString("imei", imei).commit();
+        mac = randomMac();
+        sharedPreferences.edit().putString("mac", mac).commit();    
 
         XLUtil.mIMEI = imei;
         XLUtil.isGetIMEI = true;
