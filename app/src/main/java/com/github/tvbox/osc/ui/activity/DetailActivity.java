@@ -78,6 +78,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.regex.Pattern;
 
 import me.jessyan.autosize.utils.AutoSizeUtils;
 
@@ -612,7 +613,9 @@ public class DetailActivity extends BaseActivity {
     private String removeHtmlTag(String info) {
         if (info == null)
             return "";
-        return info.replaceAll("\\<.*?\\>", "").replaceAll("\\s", "");
+        //return info.replaceAll("\\<.*?\\>", "").replaceAll("\\s", "");
+        Pattern unicodeWhitespacePattern = Pattern.compile("^(<[^>]+>)?([\\p{IsWhitespace}]+)?|<[^>]+>|([\\p{IsWhitespace}]+)?(<[^>]+>)?$");
+        return unicodeWhitespacePattern.matcher(info).replaceAll("");
     }
 
     private void initViewModel() {
@@ -631,6 +634,9 @@ public class DetailActivity extends BaseActivity {
                     mVideo.id = vodId;
                     if (TextUtils.isEmpty(mVideo.name))mVideo.name = "TVBox";
                     vodInfo = new VodInfo();
+                    if((mVideo.pic==null || mVideo.pic.isEmpty()) && !vod_picture.isEmpty()){
+                        mVideo.pic=vod_picture;
+                    }
                     vodInfo.setVideo(mVideo);
                     vodInfo.sourceKey = mVideo.sourceKey;
                     sourceKey = mVideo.sourceKey;
@@ -647,8 +653,8 @@ public class DetailActivity extends BaseActivity {
                     }
                     setTextShow(tvActor, "演员：", mVideo.actor);
                     setTextShow(tvDirector, "导演：", mVideo.director);
-                    //setTextShow(tvDes, "内容简介：", removeHtmlTag(mVideo.des));
-                    setTextShow(tvDes, "内容简介：", mVideo.des == null ? "" : mVideo.des.trim());
+                    setTextShow(tvDes, "内容简介：", removeHtmlTag(mVideo.des));
+                    //setTextShow(tvDes, "内容简介：", mVideo.des == null ? "" : mVideo.des.trim());
                     if (!TextUtils.isEmpty(mVideo.pic)) {
                         Picasso.get()
                                 .load(DefaultConfig.checkReplaceProxy(mVideo.pic))
@@ -736,10 +742,12 @@ public class DetailActivity extends BaseActivity {
         return label + "<font color=\"#FFFFFF\">" + content + "</font>";
     }
 
+    private String  vod_picture="";
     private void initData() {
         Intent intent = getIntent();
         if (intent != null && intent.getExtras() != null) {
             Bundle bundle = intent.getExtras();
+            vod_picture=bundle.getString("picture", "");
             loadDetail(bundle.getString("id", null), bundle.getString("sourceKey", ""));
         }
     }
@@ -832,37 +840,37 @@ public class DetailActivity extends BaseActivity {
         quickSearchData.clear();
         quickSearchWord.addAll(SearchHelper.splitWords(searchTitle));
         // 分词
-        OkGo.<String>get("http://api.pullword.com/get.php?source=" + URLEncoder.encode(searchTitle) + "&param1=0&param2=0&json=1")
-                .tag("fenci")
-                .execute(new AbsCallback<String>() {
-                    @Override
-                    public String convertResponse(okhttp3.Response response) throws Throwable {
-                        if (response.body() != null) {
-                            return response.body().string();
-                        } else {
-                            throw new IllegalStateException("网络请求错误");
-                        }
-                    }
+        // OkGo.<String>get("http://api.pullword.com/get.php?source=" + URLEncoder.encode(searchTitle) + "&param1=0&param2=0&json=1")
+                // .tag("fenci")
+                // .execute(new AbsCallback<String>() {
+                    // @Override
+                    // public String convertResponse(okhttp3.Response response) throws Throwable {
+                        // if (response.body() != null) {
+                            // return response.body().string();
+                        // } else {
+                            // throw new IllegalStateException("网络请求错误");
+                        // }
+                    // }
 
-                    @Override
-                    public void onSuccess(Response<String> response) {
-                        String json = response.body();
-                        try {
-                            for (JsonElement je : new Gson().fromJson(json, JsonArray.class)) {
-                                quickSearchWord.add(je.getAsJsonObject().get("t").getAsString());
-                            }
-                        } catch (Throwable th) {
-                            th.printStackTrace();
-                        }
-                        List<String> words = new ArrayList<>(new HashSet<>(quickSearchWord));
-                        EventBus.getDefault().post(new RefreshEvent(RefreshEvent.TYPE_QUICK_SEARCH_WORD, words));
-                    }
+                    // @Override
+                    // public void onSuccess(Response<String> response) {
+                        // String json = response.body();
+                        // try {
+                            // for (JsonElement je : new Gson().fromJson(json, JsonArray.class)) {
+                                // quickSearchWord.add(je.getAsJsonObject().get("t").getAsString());
+                            // }
+                        // } catch (Throwable th) {
+                            // th.printStackTrace();
+                        // }
+                        // List<String> words = new ArrayList<>(new HashSet<>(quickSearchWord));
+                        // EventBus.getDefault().post(new RefreshEvent(RefreshEvent.TYPE_QUICK_SEARCH_WORD, words));
+                    // }
 
-                    @Override
-                    public void onError(Response<String> response) {
-                        super.onError(response);
-                    }
-                });
+                    // @Override
+                    // public void onError(Response<String> response) {
+                        // super.onError(response);
+                    // }
+                // });
 
         searchResult();
     }
