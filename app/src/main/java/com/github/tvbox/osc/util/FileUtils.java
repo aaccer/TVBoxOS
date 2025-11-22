@@ -432,8 +432,8 @@ public class FileUtils {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        File settingCfg = new File(getFilePath() + "/setting.cfg");
-        deleteFile(settingCfg);
+        //File settingCfg = new File(getFilePath() + "/setting.cfg");
+        //deleteFile(settingCfg);
     }
 
     //0805同步q版
