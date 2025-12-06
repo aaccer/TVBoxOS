@@ -842,7 +842,6 @@ public class LivePlayActivity extends BaseActivity {
         super.onDestroy();
         if (countdownHandler != null && countdownRunnable != null) {
             countdownHandler.removeCallbacks(countdownRunnable);
-弱）
             countdownHandler = null;
             countdownRunnable = null;
         }
