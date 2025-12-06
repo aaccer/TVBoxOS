@@ -306,8 +306,8 @@ public class LivePlayActivity extends BaseActivity {
                          Toast.makeText(App.getInstance(), "一分钟后自动退出直播!!!", Toast.LENGTH_SHORT).show();
                      }
                      if (remainingMinutes <= 0) {
-                         super.onBackPressed();
                          countdownHandler.removeCallbacks(countdownRunnable);
+                         finish();
                          return;
                      }
                  }
