@@ -8,6 +8,7 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.CountDownTimer;
 import android.os.Handler;
+import android.os.Looper;
 import android.util.Base64;
 import android.util.Log;
 import android.view.Gravity;
@@ -131,6 +132,8 @@ public class LivePlayActivity extends BaseActivity {
     private LivePlayerManager livePlayerManager = new LivePlayerManager();
     private ArrayList<Integer> channelGroupPasswordConfirmed = new ArrayList<>();
 
+    private Handler countdownHandler;
+    private Runnable countdownRunnable;
 //EPG   by 龍
     private static LiveChannelItem  channel_Name = null;
     private static Hashtable hsEpg = new Hashtable();
@@ -289,6 +292,32 @@ public class LivePlayActivity extends BaseActivity {
         initSettingItemView();
         initLiveChannelList();
         initLiveSettingGroupList();
+
+         final int TOTAL_MINUTES = 12 * 60;
+         // 倒计时间隔
+         final long INTERVAL = 60 * 1000L;
+         countdownHandler = new Handler(Looper.getMainLooper());
+         countdownRunnable = new Runnable() {
+             int remainingMinutes = TOTAL_MINUTES;
+             @Override
+             public void run() {
+                 if(Hawk.get(HawkConfig.LIVE_SLEEP_COUNT, false)){
+                     if (remainingMinutes == 1) {
+                         Toast.makeText(App.getInstance(), "一分钟后自动退出直播!!!", Toast.LENGTH_SHORT).show();
+                     }
+                     if (remainingMinutes <= 0) {
+                         super.onBackPressed();
+                         countdownHandler.removeCallbacks(countdownRunnable);
+                         return;
+                     }
+                 }
+                 remainingMinutes--;
+                 countdownHandler.postDelayed(this, INTERVAL);
+             }
+         };
+         // 启动倒计时
+         countdownHandler.post(countdownRunnable);
+
 
         divLoadEpg.setOnFocusChangeListener(new View.OnFocusChangeListener(){
             @Override
@@ -811,6 +840,12 @@ public class LivePlayActivity extends BaseActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        if (countdownHandler != null && countdownRunnable != null) {
+            countdownHandler.removeCallbacks(countdownRunnable);
+弱）
+            countdownHandler = null;
+            countdownRunnable = null;
+        }
         if (mVideoView != null) {
             mVideoView.release();
             mVideoView = null;
@@ -1823,6 +1858,12 @@ public class LivePlayActivity extends BaseActivity {
                     case 4:
                         select = !Hawk.get(HawkConfig.HOME_DEFAULT_SHOW, false);
                         Hawk.put(HawkConfig.HOME_DEFAULT_SHOW, select);
+                        if(select)Toast.makeText(App.getInstance(), "启动APP默认进入直播", Toast.LENGTH_SHORT).show();
+                        break;
+                    case 5:
+                        select = !Hawk.get(HawkConfig.LIVE_SLEEP_COUNT, false);
+                        Hawk.put(HawkConfig.LIVE_SLEEP_COUNT, select);
+                        if(select)Toast.makeText(App.getInstance(), "累计观看12小时自动退出直播", Toast.LENGTH_SHORT).show();
                         break;
                 }
                 liveSettingItemAdapter.selectItem(position, select, false);
@@ -1988,6 +2029,7 @@ public class LivePlayActivity extends BaseActivity {
         liveSettingGroupList.get(4).getLiveSettingItems().get(2).setItemSelected(Hawk.get(HawkConfig.LIVE_CHANNEL_REVERSE, false));
         liveSettingGroupList.get(4).getLiveSettingItems().get(3).setItemSelected(Hawk.get(HawkConfig.LIVE_CROSS_GROUP, false));
         liveSettingGroupList.get(4).getLiveSettingItems().get(4).setItemSelected(Hawk.get(HawkConfig.HOME_DEFAULT_SHOW, false));
+        liveSettingGroupList.get(4).getLiveSettingItems().get(5).setItemSelected(Hawk.get(HawkConfig.LIVE_SLEEP_COUNT, false));
         liveSettingGroupList.get(5).getLiveSettingItems().get(Hawk.get(HawkConfig.LIVE_GROUP_INDEX, 0)).setItemSelected(true);
     }
 
