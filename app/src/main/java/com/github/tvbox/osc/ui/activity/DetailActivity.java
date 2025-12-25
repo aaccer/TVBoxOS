@@ -155,6 +155,15 @@ public class DetailActivity extends BaseActivity {
         initView();
         initViewModel();
         initData();
+        
+        tvPlay.post(new Runnable() {
+            @Override
+            public void run() {
+                tvPlay.requestFocus();
+                tvPlay.requestFocusFromTouch();
+            }
+        });
+        
     }
 
     private void initView() {
@@ -255,15 +264,6 @@ public class DetailActivity extends BaseActivity {
                 }
             }
         });
-        /*
-        tvPlay.post(new Runnable() {
-            @Override
-            public void run() {
-                tvPlay.requestFocus();
-                tvPlay.requestFocusFromTouch();
-            }
-        });
-        */
         tvPlay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -495,14 +495,14 @@ public class DetailActivity extends BaseActivity {
                 currentSeriesGroupView.isSelected();
             }
         });
-        mGridView.setOnFocusChangeListener((view, b) -> onGridViewFocusChange(view, b));
-
+        //mGridView.setOnFocusChangeListener((view, b) -> onGridViewFocusChange(view, b));
+/*
         if(showPreview){
             llPlayerFragmentContainerBlock.requestFocus();
         }else {
             tvPlay.requestFocus();
         }
-
+*/
         setLoadSir(llLayout);
     }
 
@@ -516,12 +516,12 @@ public class DetailActivity extends BaseActivity {
             mGridView.smoothScrollToPosition(targetPos);
         }, 50);
     }
-
+/*
     private void onGridViewFocusChange(View view, boolean hasFocus) {
         if (llPlayerFragmentContainerBlock.getVisibility() != View.VISIBLE) return;
         llPlayerFragmentContainerBlock.setFocusable(!hasFocus);
     }
-
+*/
     private void initCheckedSourcesForSearch() {
         mCheckSources = SearchHelper.getSourcesForSearch();
     }
