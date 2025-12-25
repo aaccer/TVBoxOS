@@ -198,7 +198,7 @@ public class DetailActivity extends BaseActivity {
             }
         };
 
-        seriesAdapter = new SeriesAdapter(this.mGridViewLayoutMgr);
+        seriesAdapter = new SeriesAdapter();
         mGridView.setAdapter(seriesAdapter);
         mGridViewFlag = findViewById(R.id.mGridViewFlag);
         mGridViewFlag.setHasFixedSize(true);
