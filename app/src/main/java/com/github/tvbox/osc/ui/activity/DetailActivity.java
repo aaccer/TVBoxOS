@@ -23,6 +23,7 @@ import android.content.ClipData;
 import androidx.fragment.app.FragmentContainerView;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearSmoothScroller;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.BaseViewHolder;
@@ -139,6 +140,8 @@ public class DetailActivity extends BaseActivity {
     private View currentSeriesGroupView;
     private int GroupCount;
 
+    private LinearSmoothScroller smoothScroller;
+
     @Override
     protected int getLayoutResID() {
         return R.layout.activity_detail;
@@ -181,7 +184,19 @@ public class DetailActivity extends BaseActivity {
         this.mGridViewLayoutMgr = new V7GridLayoutManager(this.mContext, 6);
         mGridView.setLayoutManager(this.mGridViewLayoutMgr);
 //        mGridView.setLayoutManager(new V7LinearLayoutManager(this.mContext, 0, false));
-        seriesAdapter = new SeriesAdapter();
+
+        smoothScroller = new LinearSmoothScroller(mContext) {
+            @Override
+            protected float calculateSpeedPerPixel(DisplayMetrics displayMetrics) {
+                return 100f / displayMetrics.densityDpi;
+            }
+            @Override
+            public PointF computeScrollVectorForPosition(int targetPosition) {
+                return mGridViewLayoutMgr.computeScrollVectorForPosition(targetPosition);
+            }
+        };
+
+        seriesAdapter = new SeriesAdapter(this.mGridViewLayoutMgr);
         mGridView.setAdapter(seriesAdapter);
         mGridViewFlag = findViewById(R.id.mGridViewFlag);
         mGridViewFlag.setHasFixedSize(true);
@@ -197,7 +212,8 @@ public class DetailActivity extends BaseActivity {
             getSupportFragmentManager().beginTransaction().show(playFragment).commitAllowingStateLoss();
             tvPlay.setText("全屏");
         }
-
+        llPlayerFragmentContainerBlock.setFocusable(showPreview);
+        
         mSeriesGroupView = findViewById(R.id.mSeriesGroupView);
         mSeriesGroupView.setHasFixedSize(true);
         mSeriesGroupView.setLayoutManager(new V7LinearLayoutManager(this.mContext, 0, false));
@@ -209,11 +225,17 @@ public class DetailActivity extends BaseActivity {
             }
         };
         mSeriesGroupView.setAdapter(seriesGroupAdapter);
-
         //禁用播放地址焦点
-        tvPlayUrl.setFocusable(false);
+        //tvPlayUrl.setFocusable(false);
 
-        llPlayerFragmentContainerBlock.setOnClickListener((view -> toggleFullPreview()));
+        //llPlayerFragmentContainerBlock.setOnClickListener((view -> toggleFullPreview()));
+        llPlayerFragmentContainerBlock.setOnClickListener(v -> {
+            toggleFullPreview();
+            if (firstReverse) {
+                jumpToPlay();
+                firstReverse=false;
+            }
+        });
 
         tvSort.setOnClickListener(new View.OnClickListener() {
             @SuppressLint("NotifyDataSetChanged")
@@ -231,6 +253,7 @@ public class DetailActivity extends BaseActivity {
                 }
             }
         });
+        /*
         tvPlay.post(new Runnable() {
             @Override
             public void run() {
@@ -238,6 +261,7 @@ public class DetailActivity extends BaseActivity {
                 tvPlay.requestFocusFromTouch();
             }
         });
+        */
         tvPlay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -367,6 +391,7 @@ public class DetailActivity extends BaseActivity {
                     vodInfo.playFlag = newFlag;
                     seriesFlagAdapter.notifyItemChanged(position);
                     refreshList();
+                    mGridView.clearFocus();
                 }
                 seriesFlagFocus = itemView;
             }
@@ -438,7 +463,8 @@ public class DetailActivity extends BaseActivity {
 	        if (vodInfo != null && vodInfo.seriesMap.get(vodInfo.playFlag).size() > 0 && position != 0) {
 	            int targetPos = (position - 1) * GroupCount;
                     //mGridView.scrollToPosition(targetPos);
-                    mGridView.smoothScrollToPosition(targetPos);
+                    //mGridView.smoothScrollToPosition(targetPos);
+                    customSeriesScrollPos(targetPos);
                 }
                 currentSeriesGroupView = itemView;
                 currentSeriesGroupView.isSelected();
@@ -456,7 +482,8 @@ public class DetailActivity extends BaseActivity {
 	        if (vodInfo != null && vodInfo.seriesMap.get(vodInfo.playFlag).size() > 0 && position != 0) {
 	            int targetPos =  (position - 1) * GroupCount;
                     //mGridView.scrollToPosition(targetPos);
-                    mGridView.smoothScrollToPosition(targetPos);
+                    //mGridView.smoothScrollToPosition(targetPos);
+                    customSeriesScrollPos(targetPos);
                 }
                 if(currentSeriesGroupView != null) {
                     TextView txtView = currentSeriesGroupView.findViewById(R.id.tvSeriesGroup);
@@ -468,8 +495,24 @@ public class DetailActivity extends BaseActivity {
         });
         mGridView.setOnFocusChangeListener((view, b) -> onGridViewFocusChange(view, b));
 
+        if(showPreview){
+            llPlayerFragmentContainerBlock.requestFocus();
+        }else {
+            tvPlay.requestFocus();
+        }
 
         setLoadSir(llLayout);
+    }
+
+    //解决类似海贼王的超长动漫 焦点滚动失败的问题
+    void customSeriesScrollPos(int targetPos)
+    {
+        mGridViewLayoutMgr.scrollToPositionWithOffset(targetPos>10?targetPos - 10:0, 0);
+        mGridView.postDelayed(() -> {
+            this.smoothScroller.setTargetPosition(targetPos);
+            mGridViewLayoutMgr.startSmoothScroll(smoothScroller);
+            mGridView.smoothScrollToPosition(targetPos);
+        }, 50);
     }
 
     private void onGridViewFocusChange(View view, boolean hasFocus) {
@@ -568,7 +611,8 @@ public class DetailActivity extends BaseActivity {
         mGridView.postDelayed(new Runnable() {
             @Override
             public void run() {
-                mGridView.smoothScrollToPosition(vodInfo.playIndex);
+                //mGridView.smoothScrollToPosition(vodInfo.playIndex);
+                customSeriesScrollPos(vodInfo.playIndex);
             }
         }, 100);
     }
@@ -723,6 +767,7 @@ public class DetailActivity extends BaseActivity {
                             jumpToPlay();
                             llPlayerFragmentContainer.setVisibility(View.VISIBLE);
                             llPlayerFragmentContainerBlock.setVisibility(View.VISIBLE);
+                            //llPlayerFragmentContainerBlock.requestFocus();
                             toggleSubtitleTextSize();
                         }
                         // startQuickSearch();
