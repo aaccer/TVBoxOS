@@ -212,6 +212,7 @@ public class DetailActivity extends BaseActivity {
 
         //禁用播放地址焦点
         tvPlayUrl.setFocusable(false);
+        tvPlay.requestFocus();
 
         llPlayerFragmentContainerBlock.setOnClickListener((view -> toggleFullPreview()));
 
@@ -430,8 +431,8 @@ public class DetailActivity extends BaseActivity {
                 txtView.setTextColor(mContext.getResources().getColor(R.color.color_02F8E1));
 	        if (vodInfo != null && vodInfo.seriesMap.get(vodInfo.playFlag).size() > 0 && position != 0) {
 	            int targetPos = (position - 1) * GroupCount;
-                    //mGridView.scrollToPosition(targetPos);
-                    mGridView.smoothScrollToPosition(targetPos);
+                    mGridView.scrollToPosition(targetPos);
+                    //mGridView.smoothScrollToPosition(targetPos);
                 }
                 currentSeriesGroupView = itemView;
                 currentSeriesGroupView.isSelected();
@@ -448,8 +449,8 @@ public class DetailActivity extends BaseActivity {
                 newTxtView.setTextColor(mContext.getResources().getColor(R.color.color_02F8E1));
 	        if (vodInfo != null && vodInfo.seriesMap.get(vodInfo.playFlag).size() > 0 && position != 0) {
 	            int targetPos =  (position - 1) * GroupCount;
-                    //mGridView.scrollToPosition(targetPos);
-                    mGridView.smoothScrollToPosition(targetPos);
+                    mGridView.scrollToPosition(targetPos);
+                    //mGridView.smoothScrollToPosition(targetPos);
                 }
                 if(currentSeriesGroupView != null) {
                     TextView txtView = currentSeriesGroupView.findViewById(R.id.tvSeriesGroup);
@@ -561,7 +562,9 @@ public class DetailActivity extends BaseActivity {
         mGridView.postDelayed(new Runnable() {
             @Override
             public void run() {
-                mGridView.smoothScrollToPosition(vodInfo.playIndex);
+                //mGridView.smoothScrollToPosition(vodInfo.playIndex);
+                mGridView.scrollToPosition(vodInfo.playIndex);
+                mSeriesGroupView.scrollToPosition(vodInfo.playIndex);
             }
         }, 100);
     }
