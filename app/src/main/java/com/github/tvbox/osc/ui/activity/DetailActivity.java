@@ -79,6 +79,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.regex.Pattern;
@@ -155,7 +156,7 @@ public class DetailActivity extends BaseActivity {
         initView();
         initViewModel();
         initData();
-        
+        /*
         tvPlay.post(new Runnable() {
             @Override
             public void run() {
@@ -163,7 +164,7 @@ public class DetailActivity extends BaseActivity {
                 tvPlay.requestFocusFromTouch();
             }
         });
-        
+        */
     }
 
     private void initView() {
@@ -222,9 +223,8 @@ public class DetailActivity extends BaseActivity {
             getSupportFragmentManager().beginTransaction().add(R.id.previewPlayer, playFragment).commit();
             getSupportFragmentManager().beginTransaction().show(playFragment).commitAllowingStateLoss();
             tvPlay.setText("全屏");
-            seriesSelect = true;
         }
-        llPlayerFragmentContainerBlock.setFocusable(showPreview);
+        //llPlayerFragmentContainerBlock.setFocusable(showPreview);
         
         mSeriesGroupView = findViewById(R.id.mSeriesGroupView);
         mSeriesGroupView.setHasFixedSize(true);
@@ -497,13 +497,13 @@ public class DetailActivity extends BaseActivity {
             }
         });
         //mGridView.setOnFocusChangeListener((view, b) -> onGridViewFocusChange(view, b));
-/*
+
+        llPlayerFragmentContainerBlock.setFocusable(showPreview);
         if(showPreview){
             llPlayerFragmentContainerBlock.requestFocus();
         }else {
             tvPlay.requestFocus();
         }
-*/
         setLoadSir(llLayout);
     }
 
@@ -822,26 +822,29 @@ public class DetailActivity extends BaseActivity {
             }
         }
     }
-
+    private boolean isFirstLoad = true;
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void refresh(RefreshEvent event) {
         if (event.type == RefreshEvent.TYPE_REFRESH) {
             if (event.obj != null) {
                 if (event.obj instanceof Integer) {
                     int index = (int) event.obj;
-                    for (int j = 0; j < vodInfo.seriesMap.get(vodInfo.playFlag).size(); j++) {
+                    //for (int j = 0; j < vodInfo.seriesMap.get(vodInfo.playFlag).size(); j++) {
+                    for (int j = 0; j < Objects.requireNonNull(vodInfo.seriesMap.get(vodInfo.playFlag)).size(); j++) {
                         seriesAdapter.getData().get(j).selected = false;
                         seriesAdapter.notifyItemChanged(j);
                     }
                     seriesAdapter.getData().get(index).selected = true;
                     seriesAdapter.notifyItemChanged(index);
-                    mGridView.setSelection(index);
+                    if(!isFirstLoad)mGridView.setSelection(index);
                     vodInfo.playIndex = index;
                     //保存历史
                     insertVod(firstsourceKey, vodInfo);
                      //   insertVod(sourceKey, vodInfo);
+                    isFirstLoad = false;
                 } else if (event.obj instanceof JSONObject) {
-                    vodInfo.playerCfg = ((JSONObject) event.obj).toString();
+                    //vodInfo.playerCfg = ((JSONObject) event.obj).toString();
+                    vodInfo.playerCfg = event.obj.toString();
                     //保存历史
                     insertVod(firstsourceKey, vodInfo);
             //        insertVod(sourceKey, vodInfo);
@@ -1063,6 +1066,7 @@ public class DetailActivity extends BaseActivity {
         tvSort.setFocusable(!fullWindows);
         tvCollect.setFocusable(!fullWindows);
         tvQuickSearch.setFocusable(!fullWindows);
+        llPlayerFragmentContainerBlock.setFocusable(!fullWindows);
         toggleSubtitleTextSize();
     }
 
