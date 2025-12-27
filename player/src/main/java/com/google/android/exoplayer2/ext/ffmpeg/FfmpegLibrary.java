@@ -123,6 +123,7 @@ public final class FfmpegLibrary {
       case MimeTypes.AUDIO_MPEG:
       case MimeTypes.AUDIO_MPEG_L1:
       case MimeTypes.AUDIO_MPEG_L2:
+      case MimeTypes.AUDIO_MP3:
         return "mp3";
       case MimeTypes.AUDIO_AC3:
         return "ac3";
@@ -150,10 +151,20 @@ public final class FfmpegLibrary {
         return "pcm_mulaw";
       case MimeTypes.AUDIO_ALAW:
         return "pcm_alaw";
-      case MimeTypes.VIDEO_H264:
+     case MimeTypes.VIDEO_H263:
+        return "h263";
+     case MimeTypes.VIDEO_H264:
         return "h264";
-      case MimeTypes.VIDEO_H265:
+     case MimeTypes.VIDEO_H265:
         return "hevc";
+     case MimeTypes.VIDEO_MPEG2:
+        return "mpeg2video";
+     case MimeTypes.VIDEO_MPEG4:
+        return "mpeg4";
+     case MimeTypes.VIDEO_VP8:
+        return "vp8";
+     case MimeTypes.VIDEO_VP9:
+        return "vp9";
       default:
         return null;
     }
