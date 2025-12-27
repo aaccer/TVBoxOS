@@ -111,6 +111,13 @@ public final class FfmpegLibrary {
     return true;
   }
 
+private static String getBaseMimeType(String mimeType) {
+    if (mimeType == null || !mimeType.contains(";")) {
+        return mimeType;
+    }
+    return mimeType.split(";")[0].trim();
+}
+
   /**
    * Returns the name of the FFmpeg decoder that could be used to decode the format, or {@code null}
    * if it's unsupported.
@@ -122,7 +129,7 @@ public final class FfmpegLibrary {
         return null;
     }
     // 提取基础 MIME 类型，过滤带参数的后缀（如 video/avc; codecs="avc1.42E01E"）
-    String baseMimeType = MimeTypes.getBaseType(mimeType);
+    String baseMimeType = getBaseMimeType(mimeType);
     
     switch (baseMimeType) {
         case MimeTypes.AUDIO_AAC:
@@ -157,12 +164,8 @@ public final class FfmpegLibrary {
         return "pcm_mulaw";
         case MimeTypes.AUDIO_ALAW:
         return "pcm_alaw";
-        case MimeTypes.AUDIO_PCM_16BIT:
-        return "pcm_s16le";
         case MimeTypes.AUDIO_WAV:
         return "pcm_s16le";
-        case MimeTypes.AUDIO_APTX:
-        return "aptx";
         case MimeTypes.VIDEO_H263:
         return "h263";
         case MimeTypes.VIDEO_H264:
