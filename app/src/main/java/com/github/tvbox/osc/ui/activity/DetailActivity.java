@@ -4,10 +4,12 @@ import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.PointF;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.text.Html;
 import android.text.TextUtils;
+import android.util.DisplayMetrics;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -23,6 +25,7 @@ import android.content.ClipData;
 import androidx.fragment.app.FragmentContainerView;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearSmoothScroller;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.BaseViewHolder;
@@ -76,6 +79,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.regex.Pattern;
@@ -139,6 +143,8 @@ public class DetailActivity extends BaseActivity {
     private View currentSeriesGroupView;
     private int GroupCount;
 
+    private LinearSmoothScroller smoothScroller;
+
     @Override
     protected int getLayoutResID() {
         return R.layout.activity_detail;
@@ -150,6 +156,15 @@ public class DetailActivity extends BaseActivity {
         initView();
         initViewModel();
         initData();
+        /*
+        tvPlay.post(new Runnable() {
+            @Override
+            public void run() {
+                tvPlay.requestFocus();
+                tvPlay.requestFocusFromTouch();
+            }
+        });
+        */
     }
 
     private void initView() {
@@ -181,6 +196,18 @@ public class DetailActivity extends BaseActivity {
         this.mGridViewLayoutMgr = new V7GridLayoutManager(this.mContext, 6);
         mGridView.setLayoutManager(this.mGridViewLayoutMgr);
 //        mGridView.setLayoutManager(new V7LinearLayoutManager(this.mContext, 0, false));
+
+        smoothScroller = new LinearSmoothScroller(mContext) {
+            @Override
+            protected float calculateSpeedPerPixel(DisplayMetrics displayMetrics) {
+                return 100f / displayMetrics.densityDpi;
+            }
+            @Override
+            public PointF computeScrollVectorForPosition(int targetPosition) {
+                return mGridViewLayoutMgr.computeScrollVectorForPosition(targetPosition);
+            }
+        };
+
         seriesAdapter = new SeriesAdapter();
         mGridView.setAdapter(seriesAdapter);
         mGridViewFlag = findViewById(R.id.mGridViewFlag);
@@ -197,7 +224,8 @@ public class DetailActivity extends BaseActivity {
             getSupportFragmentManager().beginTransaction().show(playFragment).commitAllowingStateLoss();
             tvPlay.setText("全屏");
         }
-
+        //llPlayerFragmentContainerBlock.setFocusable(showPreview);
+        
         mSeriesGroupView = findViewById(R.id.mSeriesGroupView);
         mSeriesGroupView.setHasFixedSize(true);
         mSeriesGroupView.setLayoutManager(new V7LinearLayoutManager(this.mContext, 0, false));
@@ -209,11 +237,17 @@ public class DetailActivity extends BaseActivity {
             }
         };
         mSeriesGroupView.setAdapter(seriesGroupAdapter);
-
         //禁用播放地址焦点
-        tvPlayUrl.setFocusable(false);
+        //tvPlayUrl.setFocusable(false);
 
-        llPlayerFragmentContainerBlock.setOnClickListener((view -> toggleFullPreview()));
+        //llPlayerFragmentContainerBlock.setOnClickListener((view -> toggleFullPreview()));
+        llPlayerFragmentContainerBlock.setOnClickListener(v -> {
+            toggleFullPreview();
+            if (firstReverse) {
+                jumpToPlay();
+                firstReverse=false;
+            }
+        });
 
         tvSort.setOnClickListener(new View.OnClickListener() {
             @SuppressLint("NotifyDataSetChanged")
@@ -360,6 +394,7 @@ public class DetailActivity extends BaseActivity {
                     vodInfo.playFlag = newFlag;
                     seriesFlagAdapter.notifyItemChanged(position);
                     refreshList();
+                    mGridView.clearFocus();
                 }
                 seriesFlagFocus = itemView;
             }
@@ -431,7 +466,8 @@ public class DetailActivity extends BaseActivity {
 	        if (vodInfo != null && vodInfo.seriesMap.get(vodInfo.playFlag).size() > 0 && position != 0) {
 	            int targetPos = (position - 1) * GroupCount;
                     //mGridView.scrollToPosition(targetPos);
-                    mGridView.smoothScrollToPosition(targetPos);
+                    //mGridView.smoothScrollToPosition(targetPos);
+                    customSeriesScrollPos(targetPos);
                 }
                 currentSeriesGroupView = itemView;
                 currentSeriesGroupView.isSelected();
@@ -449,7 +485,8 @@ public class DetailActivity extends BaseActivity {
 	        if (vodInfo != null && vodInfo.seriesMap.get(vodInfo.playFlag).size() > 0 && position != 0) {
 	            int targetPos =  (position - 1) * GroupCount;
                     //mGridView.scrollToPosition(targetPos);
-                    mGridView.smoothScrollToPosition(targetPos);
+                    //mGridView.smoothScrollToPosition(targetPos);
+                    customSeriesScrollPos(targetPos);
                 }
                 if(currentSeriesGroupView != null) {
                     TextView txtView = currentSeriesGroupView.findViewById(R.id.tvSeriesGroup);
@@ -459,17 +496,33 @@ public class DetailActivity extends BaseActivity {
                 currentSeriesGroupView.isSelected();
             }
         });
-        mGridView.setOnFocusChangeListener((view, b) -> onGridViewFocusChange(view, b));
+        //mGridView.setOnFocusChangeListener((view, b) -> onGridViewFocusChange(view, b));
 
-
+        llPlayerFragmentContainerBlock.setFocusable(showPreview);
+        if(showPreview){
+            llPlayerFragmentContainerBlock.requestFocus();
+        }else {
+            tvPlay.requestFocus();
+        }
         setLoadSir(llLayout);
     }
 
+    //解决类似海贼王的超长动漫 焦点滚动失败的问题
+    void customSeriesScrollPos(int targetPos)
+    {
+        mGridViewLayoutMgr.scrollToPositionWithOffset(targetPos>10?targetPos - 10:0, 0);
+        mGridView.postDelayed(() -> {
+            this.smoothScroller.setTargetPosition(targetPos);
+            mGridViewLayoutMgr.startSmoothScroll(smoothScroller);
+            mGridView.smoothScrollToPosition(targetPos);
+        }, 50);
+    }
+/*
     private void onGridViewFocusChange(View view, boolean hasFocus) {
         if (llPlayerFragmentContainerBlock.getVisibility() != View.VISIBLE) return;
         llPlayerFragmentContainerBlock.setFocusable(!hasFocus);
     }
-
+*/
     private void initCheckedSourcesForSearch() {
         mCheckSources = SearchHelper.getSourcesForSearch();
     }
@@ -561,7 +614,8 @@ public class DetailActivity extends BaseActivity {
         mGridView.postDelayed(new Runnable() {
             @Override
             public void run() {
-                mGridView.smoothScrollToPosition(vodInfo.playIndex);
+                //mGridView.smoothScrollToPosition(vodInfo.playIndex);
+                customSeriesScrollPos(vodInfo.playIndex);
             }
         }, 100);
     }
@@ -716,6 +770,7 @@ public class DetailActivity extends BaseActivity {
                             jumpToPlay();
                             llPlayerFragmentContainer.setVisibility(View.VISIBLE);
                             llPlayerFragmentContainerBlock.setVisibility(View.VISIBLE);
+                            //llPlayerFragmentContainerBlock.requestFocus();
                             toggleSubtitleTextSize();
                         }
                         // startQuickSearch();
@@ -767,26 +822,29 @@ public class DetailActivity extends BaseActivity {
             }
         }
     }
-
+    private boolean isFirstLoad = true;
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void refresh(RefreshEvent event) {
         if (event.type == RefreshEvent.TYPE_REFRESH) {
             if (event.obj != null) {
                 if (event.obj instanceof Integer) {
                     int index = (int) event.obj;
-                    for (int j = 0; j < vodInfo.seriesMap.get(vodInfo.playFlag).size(); j++) {
+                    //for (int j = 0; j < vodInfo.seriesMap.get(vodInfo.playFlag).size(); j++) {
+                    for (int j = 0; j < Objects.requireNonNull(vodInfo.seriesMap.get(vodInfo.playFlag)).size(); j++) {
                         seriesAdapter.getData().get(j).selected = false;
                         seriesAdapter.notifyItemChanged(j);
                     }
                     seriesAdapter.getData().get(index).selected = true;
                     seriesAdapter.notifyItemChanged(index);
-                    mGridView.setSelection(index);
+                    if(!isFirstLoad)mGridView.setSelection(index);
                     vodInfo.playIndex = index;
                     //保存历史
                     insertVod(firstsourceKey, vodInfo);
                      //   insertVod(sourceKey, vodInfo);
+                    isFirstLoad = false;
                 } else if (event.obj instanceof JSONObject) {
-                    vodInfo.playerCfg = ((JSONObject) event.obj).toString();
+                    //vodInfo.playerCfg = ((JSONObject) event.obj).toString();
+                    vodInfo.playerCfg = event.obj.toString();
                     //保存历史
                     insertVod(firstsourceKey, vodInfo);
             //        insertVod(sourceKey, vodInfo);
@@ -958,7 +1016,8 @@ public class DetailActivity extends BaseActivity {
             if (playFragment.onBackPressed())
                 return;
             toggleFullPreview();
-            mGridView.requestFocus();
+            //mGridView.requestFocus();
+            tvPlay.requestFocus();
             List<VodInfo.VodSeries> list = vodInfo.seriesMap.get(vodInfo.playFlag);
             mSeriesGroupView.setVisibility(list.size()>GroupCount ? View.VISIBLE : View.GONE);
             return;
@@ -1008,6 +1067,7 @@ public class DetailActivity extends BaseActivity {
         tvSort.setFocusable(!fullWindows);
         tvCollect.setFocusable(!fullWindows);
         tvQuickSearch.setFocusable(!fullWindows);
+        llPlayerFragmentContainerBlock.setFocusable(!fullWindows);
         toggleSubtitleTextSize();
     }
 

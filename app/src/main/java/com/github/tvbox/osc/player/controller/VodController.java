@@ -751,7 +751,7 @@ public class VodController extends BaseController {
     public void setTitle(String playTitleInfo) {
         mPlayTitle.setText(playTitleInfo);
         mPlayTitle1.setText(playTitleInfo);
-        mPlayTitle1.requestFocus();
+        //mPlayTitle1.requestFocus();
     }
 
     public void setUrlTitle(String playTitleInfo) {

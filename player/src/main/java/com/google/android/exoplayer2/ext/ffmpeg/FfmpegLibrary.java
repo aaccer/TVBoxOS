@@ -111,50 +111,82 @@ public final class FfmpegLibrary {
     return true;
   }
 
+private static String getBaseMimeType(String mimeType) {
+    if (mimeType == null || !mimeType.contains(";")) {
+        return mimeType;
+    }
+    return mimeType.split(";")[0].trim();
+}
+
   /**
    * Returns the name of the FFmpeg decoder that could be used to decode the format, or {@code null}
    * if it's unsupported.
    */
   @Nullable
   /* package */ static String getCodecName(String mimeType) {
-    switch (mimeType) {
-      case MimeTypes.AUDIO_AAC:
+
+    if (mimeType == null || mimeType.isEmpty()) {
+        return null;
+    }
+    // 提取基础 MIME 类型，过滤带参数的后缀（如 video/avc; codecs="avc1.42E01E"）
+    String baseMimeType = getBaseMimeType(mimeType);
+    
+    switch (baseMimeType) {
+        case MimeTypes.AUDIO_AAC:
         return "aac";
-      case MimeTypes.AUDIO_MPEG:
-      case MimeTypes.AUDIO_MPEG_L1:
-      case MimeTypes.AUDIO_MPEG_L2:
+        case MimeTypes.AUDIO_MPEG:
+        case MimeTypes.AUDIO_MPEG_L1:
+        case MimeTypes.AUDIO_MPEG_L2:
         return "mp3";
-      case MimeTypes.AUDIO_AC3:
+        case MimeTypes.AUDIO_AC3:
         return "ac3";
-      case MimeTypes.AUDIO_E_AC3:
-      case MimeTypes.AUDIO_E_AC3_JOC:
+        case MimeTypes.AUDIO_E_AC3:
+        case MimeTypes.AUDIO_E_AC3_JOC:
         return "eac3";
-      case MimeTypes.AUDIO_TRUEHD:
+        case MimeTypes.AUDIO_TRUEHD:
         return "truehd";
-      case MimeTypes.AUDIO_DTS:
-      case MimeTypes.AUDIO_DTS_HD:
+        case MimeTypes.AUDIO_DTS:
+        case MimeTypes.AUDIO_DTS_HD:
         return "dca";
-      case MimeTypes.AUDIO_VORBIS:
+        case MimeTypes.AUDIO_VORBIS:
         return "vorbis";
-      case MimeTypes.AUDIO_OPUS:
+        case MimeTypes.AUDIO_OPUS:
         return "opus";
-      case MimeTypes.AUDIO_AMR_NB:
+        case MimeTypes.AUDIO_AMR_NB:
         return "amrnb";
-      case MimeTypes.AUDIO_AMR_WB:
+        case MimeTypes.AUDIO_AMR_WB:
         return "amrwb";
-      case MimeTypes.AUDIO_FLAC:
+        case MimeTypes.AUDIO_FLAC:
         return "flac";
-      case MimeTypes.AUDIO_ALAC:
+        case MimeTypes.AUDIO_ALAC:
         return "alac";
-      case MimeTypes.AUDIO_MLAW:
+        case MimeTypes.AUDIO_MLAW:
         return "pcm_mulaw";
-      case MimeTypes.AUDIO_ALAW:
+        case MimeTypes.AUDIO_ALAW:
         return "pcm_alaw";
-      case MimeTypes.VIDEO_H264:
+        case MimeTypes.AUDIO_WAV:
+        return "pcm_s16le";
+        case MimeTypes.VIDEO_H263:
+        return "h263";
+        case MimeTypes.VIDEO_H264:
         return "h264";
-      case MimeTypes.VIDEO_H265:
+        case MimeTypes.VIDEO_H265:
         return "hevc";
-      default:
+        case MimeTypes.VIDEO_MPEG2:
+        return "mpeg2video";
+        case MimeTypes.VIDEO_VP8:
+        return "vp8";
+        case MimeTypes.VIDEO_VP9:
+        return "vp9";
+        case MimeTypes.VIDEO_AV1:
+        return "av1";
+        case MimeTypes.VIDEO_MJPEG:
+        return "mjpeg";
+        case MimeTypes.VIDEO_DIVX:
+        return "mpeg4";
+        case MimeTypes.VIDEO_VC1:
+        return "vc1";
+        default:
         return null;
     }
   }
