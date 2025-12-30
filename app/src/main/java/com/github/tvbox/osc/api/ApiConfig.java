@@ -583,7 +583,7 @@ public class ApiConfig {
         ArrayList<ArrayList<String>> itemsArrayList = new ArrayList<>();
         ArrayList<String> sourceItems = new ArrayList<>();
         ArrayList<String> scaleItems = new ArrayList<>(Arrays.asList("默认", "16:9", "4:3", "填充", "原始", "裁剪"));
-        ArrayList<String> playerDecoderItems = new ArrayList<>(Arrays.asList("系统", "ijk硬解", "ijk软解", "exo"));
+        ArrayList<String> playerDecoderItems = new ArrayList<>(Arrays.asList("系统", "ijk硬解", "ijk软解", "exo", "阿里"));
         ArrayList<String> timeoutItems = new ArrayList<>(Arrays.asList("3s", "6s", "9s", "12s", "15s", "18s"));
         ArrayList<String> personalSettingItems = new ArrayList<>(Arrays.asList("显示时间", "显示网速", "换台反转", "跨选分类", "启动进入", "睡眠退出"));
         ArrayList<String> yumItems = new ArrayList<>(Arrays.asList("线路1"));
