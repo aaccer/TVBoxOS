@@ -1009,6 +1009,9 @@ public class LivePlayActivity extends BaseActivity {
         }else
         if(currentLiveChannelItem.getChannelSourceName(currentLiveChannelItem.getSourceIndex()).indexOf("[exo]") != -1 && livePlayerManager.getLivePlayerType() != 3){
             livePlayerManager.changeLivePlayerType(mVideoView,3);
+        }else
+        if(currentLiveChannelItem.getChannelSourceName(currentLiveChannelItem.getSourceIndex()).indexOf("[ali]") != -1 && livePlayerManager.getLivePlayerType() != 4){
+            livePlayerManager.changeLivePlayerType(mVideoView,4);
         }
 
         channel_Name = currentLiveChannelItem;
