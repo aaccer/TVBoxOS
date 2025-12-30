@@ -91,6 +91,9 @@ public class LivePlayerManager {
                 case 2:
                     playerTypeIndex = 3;
                     break;
+                case 3:
+                    playerTypeIndex = 4;
+                    break;
             }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -134,6 +137,10 @@ public class LivePlayerManager {
                     break;
                 case 3:
                     playerConfig.put("pl", 2);
+                    playerConfig.put("ijk", "软解码");
+                    break;
+                case 4:
+                    playerConfig.put("pl", 3);
                     playerConfig.put("ijk", "软解码");
                     break;
             }
