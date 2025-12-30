@@ -2041,7 +2041,7 @@ public class LivePlayActivity extends BaseActivity {
         for (int j = 0; j < currentSourceNames.size(); j++) {
             LiveSettingItem liveSettingItem = new LiveSettingItem();
             liveSettingItem.setItemIndex(j);
-            String sourceName=currentSourceNames.get(j).replace("[ijk硬解]", "").replace("[ijk软解]", "").replace("[exo]", "");
+            String sourceName=currentSourceNames.get(j).replace("[ijk硬解]", "").replace("[ijk软解]", "").replace("[exo]", "").replace("[ali]", "");
             liveSettingItem.setItemName(sourceName!="" ? sourceName : currentSourceNames.get(j));
             liveSettingItemList.add(liveSettingItem);
         }
