@@ -605,7 +605,9 @@ public class LivePlayActivity extends BaseActivity {
             }
             //tv_right_top_channel_name.setText(channel_Name.getChannelName());
             //tv_right_top_epg_name.setText(channel_Name.getChannelName());
-
+            if (mVideoView.getVideoSize().length >= 2) {
+            tv_right_top_tipnetspeed.setText("[" + mVideoView.getVideoSize()[0] + " x " + mVideoView.getVideoSize()[1] + "]");
+            }
             ll_right_top_loading.setVisibility(View.VISIBLE);
 
             if (countDownTimerRightTop != null) {
@@ -620,9 +622,9 @@ public class LivePlayActivity extends BaseActivity {
                     ll_right_top_loading.setVisibility(View.GONE);
                 }
             };
-
+            countDownTimerRightTop.start();
         }
-        countDownTimerRightTop.start();
+        
     }
 
     private void updateChannelIcon(String channelName, String logoUrl) {
@@ -1485,9 +1487,6 @@ public class LivePlayActivity extends BaseActivity {
                     case VideoView.STATE_PAUSED:
                         break;
                     case VideoView.STATE_PREPARED:
-                        if (mVideoView.getVideoSize().length >= 2) {
-                        tv_right_top_tipnetspeed.setText("[" + mVideoView.getVideoSize()[0] + " x " + mVideoView.getVideoSize()[1] + "]");
-                        }
                         int duration = (int) mVideoView.getDuration();
                         if (livePlayerManager.getLivePlayerType() != 3 && duration > 0 || livePlayerManager.getLivePlayerType() == 3 && duration >= 3*60*1000) {
                             sBar.setMax(duration);
@@ -1501,6 +1500,9 @@ public class LivePlayActivity extends BaseActivity {
                         break;
                     case VideoView.STATE_BUFFERED:
                     case VideoView.STATE_PLAYING:
+                        if (mVideoView.getVideoSize().length >= 2) {
+                        tv_right_top_tipnetspeed.setText("[" + mVideoView.getVideoSize()[0] + " x " + mVideoView.getVideoSize()[1] + "]");
+                        }
                         currentLiveChangeSourceTimes = 0;
                         mHandler.removeCallbacks(mConnectTimeoutChangeSourceRun);
                         break;
