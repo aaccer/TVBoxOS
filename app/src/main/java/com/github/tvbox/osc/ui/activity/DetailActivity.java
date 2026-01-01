@@ -1067,6 +1067,8 @@ public class DetailActivity extends BaseActivity {
         tvCollect.setFocusable(!fullWindows);
         tvQuickSearch.setFocusable(!fullWindows);
         llPlayerFragmentContainerBlock.setFocusable(!fullWindows);
+        mGridView.setFocusable(!fullWindows);
+        mGridViewFlag.setFocusable(!fullWindows);
         mSeriesGroupView.setFocusable(!fullWindows);
         toggleSubtitleTextSize();
     }
