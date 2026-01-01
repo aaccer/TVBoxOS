@@ -224,7 +224,6 @@ public class DetailActivity extends BaseActivity {
             getSupportFragmentManager().beginTransaction().show(playFragment).commitAllowingStateLoss();
             tvPlay.setText("全屏");
         }
-        //llPlayerFragmentContainerBlock.setFocusable(showPreview);
         
         mSeriesGroupView = findViewById(R.id.mSeriesGroupView);
         mSeriesGroupView.setHasFixedSize(true);
@@ -496,7 +495,7 @@ public class DetailActivity extends BaseActivity {
                 currentSeriesGroupView.isSelected();
             }
         });
-        //mGridView.setOnFocusChangeListener((view, b) -> onGridViewFocusChange(view, b));
+        mGridView.setOnFocusChangeListener((view, b) -> onGridViewFocusChange(view, b));
 
         llPlayerFragmentContainerBlock.setFocusable(showPreview);
         if(showPreview){
@@ -517,12 +516,12 @@ public class DetailActivity extends BaseActivity {
             mGridView.smoothScrollToPosition(targetPos);
         }, 50);
     }
-/*
+
     private void onGridViewFocusChange(View view, boolean hasFocus) {
         if (llPlayerFragmentContainerBlock.getVisibility() != View.VISIBLE) return;
         llPlayerFragmentContainerBlock.setFocusable(!hasFocus);
     }
-*/
+
     private void initCheckedSourcesForSearch() {
         mCheckSources = SearchHelper.getSourcesForSearch();
     }
@@ -1068,6 +1067,7 @@ public class DetailActivity extends BaseActivity {
         tvCollect.setFocusable(!fullWindows);
         tvQuickSearch.setFocusable(!fullWindows);
         llPlayerFragmentContainerBlock.setFocusable(!fullWindows);
+        mSeriesGroupView.setFocusable(!fullWindows);
         toggleSubtitleTextSize();
     }
 
