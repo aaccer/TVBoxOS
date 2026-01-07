@@ -9,7 +9,6 @@ import android.view.SurfaceHolder;
 
 import com.aliyun.player.AliPlayer;
 import com.aliyun.player.AliPlayerFactory;
-import com.aliyun.player.common.PlayerCommon;
 import com.aliyun.player.IPlayer;
 import com.aliyun.player.bean.ErrorCode;
 import com.aliyun.player.bean.ErrorInfo;
@@ -84,7 +83,6 @@ public class AliMediaPlayer extends AbstractPlayer implements Player.Listener {
             config.setCustomHeaders(itemArray);
             aliPlayer.setConfig(config);
         }
-        aliPlayer.setOption(PlayerCommon.KEY_PLAYER_AUDIO_DECODER, "soft"); 
         aliPlayer.setDataSource(urlSource);
     }
 
