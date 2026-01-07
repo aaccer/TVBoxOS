@@ -54,10 +54,17 @@ public class ExoMediaPlayer extends AbstractPlayer implements Player.Listener {
 
     @Override
     public void initPlayer() {
-        if (mRenderersFactory == null) {
+        /*if (mRenderersFactory == null) {
             mRenderersFactory = new DefaultRenderersFactory(mAppContext);
         }
-        mRenderersFactory.setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_PREFER);
+        //mRenderersFactory.setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_PREFER);
+        mRenderersFactory.setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_PREFER)
+                // 禁用不支持的渲染器特性（老旧设备兼容）
+                .setEnableAudioHardwareAcceleration(true)
+                .setEnableVideoHardwareAcceleration(true)
+                // 硬解失败时自动降级软解
+                .setAllowedVideoJoiningTimeMs(5000);
+    */    
         if (mTrackSelector == null) {
             mTrackSelector = new DefaultTrackSelector(mAppContext);
         }
@@ -76,8 +83,9 @@ public class ExoMediaPlayer extends AbstractPlayer implements Player.Listener {
                 .build();*/
         mMediaPlayer = new SimpleExoPlayer.Builder(mAppContext)
                 .setLoadControl(mLoadControl)
-                .setRenderersFactory(mRenderersFactory)
+                //.setRenderersFactory(mRenderersFactory)
                 .setTrackSelector(mTrackSelector)
+                .setMediaSourceFactory(new DefaultMediaSourceFactory(mAppContext))
                 .build();
 
         setOptions();
