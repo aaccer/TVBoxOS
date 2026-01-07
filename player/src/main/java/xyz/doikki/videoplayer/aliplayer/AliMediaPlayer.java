@@ -16,6 +16,8 @@ import com.aliyun.player.bean.InfoBean;
 import com.aliyun.player.bean.InfoCode;
 import com.aliyun.player.nativeclass.MediaInfo;
 import com.aliyun.player.nativeclass.PlayerConfig;
+import com.aliyun.player.nativeclass.PlayerConfig.AudioDecoderType;
+import com.aliyun.player.nativeclass.PlayerConfig.AudioRenderMode;
 import com.aliyun.player.nativeclass.TrackInfo;
 import com.aliyun.player.source.UrlSource;
 import com.google.android.exoplayer2.Player;
@@ -81,7 +83,9 @@ public class AliMediaPlayer extends AbstractPlayer implements Player.Listener {
             }
             PlayerConfig config = aliPlayer.getConfig();
             config.setCustomHeaders(itemArray);
+            // 软解码（音频编码）
             config.setAudioDecoderType(PlayerConfig.AudioDecoderType.SOFTWARE);
+            // 音频渲染兼容模式
             config.setAudioRenderMode(PlayerConfig.AudioRenderMode.COMPATIBLE);
             aliPlayer.setConfig(config);
         }
