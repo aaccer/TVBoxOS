@@ -81,6 +81,8 @@ public class AliMediaPlayer extends AbstractPlayer implements Player.Listener {
             }
             PlayerConfig config = aliPlayer.getConfig();
             config.setCustomHeaders(itemArray);
+            config.setAudioDecoderType(PlayerConfig.AudioDecoderType.SOFTWARE);
+            config.setAudioRenderMode(PlayerConfig.AudioRenderMode.COMPATIBLE);
             aliPlayer.setConfig(config);
         }
         aliPlayer.setDataSource(urlSource);
