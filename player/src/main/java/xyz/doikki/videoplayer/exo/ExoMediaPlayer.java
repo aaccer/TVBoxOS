@@ -32,7 +32,8 @@ import xyz.doikki.videoplayer.player.AbstractPlayer;
 public class ExoMediaPlayer extends AbstractPlayer implements Player.Listener {
 
     protected Context mAppContext;
-    protected ExoPlayer mMediaPlayer;
+    //protected ExoPlayer mMediaPlayer;
+    protected SimpleExoPlayer mMediaPlayer;
     protected MediaSource mMediaSource;
     protected ExoMediaSourceHelper mMediaSourceHelper;
     protected ExoTrackNameProvider trackNameProvider;
@@ -55,24 +56,19 @@ public class ExoMediaPlayer extends AbstractPlayer implements Player.Listener {
 
     @Override
     public void initPlayer() {
-        /*if (mRenderersFactory == null) {
+        if (mRenderersFactory == null) {
             mRenderersFactory = new DefaultRenderersFactory(mAppContext);
         }
         //mRenderersFactory.setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_PREFER);
-        mRenderersFactory.setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_PREFER)
-                // 禁用不支持的渲染器特性（老旧设备兼容）
-                .setEnableAudioHardwareAcceleration(true)
-                .setEnableVideoHardwareAcceleration(true)
-                // 硬解失败时自动降级软解
-                .setAllowedVideoJoiningTimeMs(5000);
-    */    
+        mRenderersFactory.setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON)
+                   .setEnableDecoderFallback(true);
         if (mTrackSelector == null) {
             mTrackSelector = new DefaultTrackSelector(mAppContext);
         }
+        mTrackSelector.setParameters(mTrackSelector.getParameters().buildUpon().setTunnelingEnabled(true));
         if (mLoadControl == null) {
             mLoadControl = new DefaultLoadControl();
         }
-        mTrackSelector.setParameters(mTrackSelector.getParameters().buildUpon().setTunnelingEnabled(true));
         /*mMediaPlayer = new SimpleExoPlayer.Builder(
                 mAppContext,
                 mRenderersFactory,
@@ -84,7 +80,7 @@ public class ExoMediaPlayer extends AbstractPlayer implements Player.Listener {
                 .build();*/
         mMediaPlayer = new SimpleExoPlayer.Builder(mAppContext)
                 .setLoadControl(mLoadControl)
-                //.setRenderersFactory(mRenderersFactory)
+                .setRenderersFactory(mRenderersFactory)
                 .setTrackSelector(mTrackSelector)
                 .setMediaSourceFactory(new DefaultMediaSourceFactory(mAppContext))
                 .build();
