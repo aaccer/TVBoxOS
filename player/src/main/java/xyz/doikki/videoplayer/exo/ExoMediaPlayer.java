@@ -65,7 +65,8 @@ public class ExoMediaPlayer extends AbstractPlayer implements Player.Listener {
         if (mTrackSelector == null) {
             mTrackSelector = new DefaultTrackSelector(mAppContext);
         }
-        //mTrackSelector.setParameters(mTrackSelector.getParameters().buildUpon().setTunnelingEnabled(true));
+                        //隧道模式
+        mTrackSelector.setParameters(mTrackSelector.getParameters().buildUpon().setTunnelingEnabled(false));
         if (mLoadControl == null) {
             mLoadControl = new DefaultLoadControl();
         }
