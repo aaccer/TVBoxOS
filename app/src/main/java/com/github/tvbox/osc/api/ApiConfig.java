@@ -506,7 +506,8 @@ public class ApiConfig {
                     JsonArray array = obj.getAsJsonArray("hosts");
                     for (JsonElement one : array) {
                         String host = one.getAsString();
-                        VideoParseRuler.addHostRule(host, rule);
+                        if (rule.size() > 0) VideoParseRuler.addHostRule(host, rule);
+                        if (ads.size() > 0) VideoParseRuler.addHostRegex(host, ads);
                     }
                 }
                 //嗅探脚本规则 如 click
@@ -520,7 +521,7 @@ public class ApiConfig {
                     JsonArray array = obj.getAsJsonArray("hosts");
                     for (JsonElement one : array) {
                         String host = one.getAsString();
-                        VideoParseRuler.addHostScript(host, scripts);
+                        if (scripts.size() > 0) VideoParseRuler.addHostScript(host, scripts);
                     }
                 }
             }
