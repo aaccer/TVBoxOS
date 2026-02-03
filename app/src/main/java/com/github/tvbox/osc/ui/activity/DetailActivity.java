@@ -136,7 +136,7 @@ public class DetailActivity extends BaseActivity {
     private View seriesFlagFocus = null;
     private boolean isReverse;
     private String preFlag="";
-    private boolean firstReverse;
+    //private boolean firstReverse;
     private V7GridLayoutManager mGridViewLayoutMgr = null;
     private HashMap<String, String> mCheckSources = null;
     private final ArrayList<String> seriesGroupOptions = new ArrayList<>();
@@ -216,7 +216,7 @@ public class DetailActivity extends BaseActivity {
         seriesFlagAdapter = new SeriesFlagAdapter();
         mGridViewFlag.setAdapter(seriesFlagAdapter);
         isReverse = false;
-        firstReverse = false;
+        //firstReverse = false;
         preFlag = "";
         if (showPreview) {
             playFragment = new PlayFragment();
@@ -242,10 +242,10 @@ public class DetailActivity extends BaseActivity {
         //llPlayerFragmentContainerBlock.setOnClickListener((view -> toggleFullPreview()));
         llPlayerFragmentContainerBlock.setOnClickListener(v -> {
             toggleFullPreview();
-            if (firstReverse) {
-                jumpToPlay();
-                firstReverse=false;
-            }
+            //if (firstReverse) {
+                //jumpToPlay();
+                //firstReverse=false;
+            //}
         });
 
         tvSort.setOnClickListener(new View.OnClickListener() {
@@ -256,11 +256,15 @@ public class DetailActivity extends BaseActivity {
                     vodInfo.reverseSort = !vodInfo.reverseSort;
                     isReverse = !isReverse;
                     vodInfo.reverse();
-                    vodInfo.playIndex=(vodInfo.seriesMap.get(vodInfo.playFlag).size()-1)-vodInfo.playIndex;
+                    //vodInfo.playIndex=(vodInfo.seriesMap.get(vodInfo.playFlag).size()-1)-vodInfo.playIndex;
 //                    insertVod(sourceKey, vodInfo);
-                    firstReverse = true;
+                    //firstReverse = true;
                     setSeriesGroupOptions();
                     seriesAdapter.notifyDataSetChanged();
+                    if(showPreview){
+                        jumpToPlay();
+                        //firstReverse=false;
+                    }
                 }
             }
         });
@@ -270,10 +274,6 @@ public class DetailActivity extends BaseActivity {
                 FastClickCheckUtil.check(v);
                 if (showPreview) {
                     toggleFullPreview();
-                    if(firstReverse){
-                        jumpToPlay();
-                        firstReverse=false;
-                    }
                 } else {
                     jumpToPlay();
                 }
@@ -444,7 +444,7 @@ public class DetailActivity extends BaseActivity {
                     if (showPreview && !fullWindows) toggleFullPreview();
                     if (!showPreview || reload) {
                         jumpToPlay();
-                        firstReverse=false;
+                        //firstReverse=false;
                     }
                 }
             }
