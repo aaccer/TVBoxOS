@@ -94,7 +94,8 @@ public final class MyOkhttpDownLoader implements Downloader {
             JsonObject jsonInfo = new Gson().fromJson(header, JsonObject.class);
             for (String key : jsonInfo.keySet()) {
                 String val = jsonInfo.get(key).getAsString();
-                mRequestBuilder.addHeader(key.toUpperCase(), removeDuplicateSlashes(val));
+                //mRequestBuilder.addHeader(key.toUpperCase(), removeDuplicateSlashes(val));
+                mRequestBuilder.addHeader(key, removeDuplicateSlashes(val));
             }
         }else {
             if(!TextUtils.isEmpty(cookie)) {
