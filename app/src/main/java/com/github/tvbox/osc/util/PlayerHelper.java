@@ -295,6 +295,12 @@ public class PlayerHelper {
             case VideoView.SCREEN_SCALE_CENTER_CROP:
                 scaleText = "裁剪";
                 break;
+            case VideoView.SCREEN_SCALE_19_10:
+                scaleText = "19:10";
+                break;
+            case VideoView.SCREEN_SCALE_40_17:
+                scaleText = "40:17";
+                break;
         }
         return scaleText;
     }
