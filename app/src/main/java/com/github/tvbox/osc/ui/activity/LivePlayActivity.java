@@ -381,7 +381,7 @@ public class LivePlayActivity extends BaseActivity {
             }
 
             @Override
-            public void onProgressChanged(SeekBar sb, int progress, boolean fromuser) {
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromuser) {
                 if (!fromuser) {
                     return;
                 }
@@ -396,6 +396,11 @@ public class LivePlayActivity extends BaseActivity {
                     // long newPosition = (duration * progress) / seekBar.getMax();
                     // if (mCurrentTime != null)
                         // mCurrentTime.setText(stringForTime((int) newPosition));
+                    long duration = mVideoView.getDuration();
+                    long newPosition = (duration * progress) / seekBar.getMax();
+                    if (tv_currentpos != null)
+                    tv_currentpos.setText(durationToString((int) newPosition));
+
                 }
             }
         });
@@ -418,9 +423,11 @@ public class LivePlayActivity extends BaseActivity {
                         }
                     }
                 } else if (event.getAction() == KeyEvent.ACTION_UP) {
-                    long duration = mVideoView.getDuration();
-                    long newPosition = (duration * sBar.getProgress()) / sBar.getMax();
-                    mVideoView.seekTo((int) newPosition);
+                    if (keycode == KeyEvent.KEYCODE_DPAD_LEFT || keycode == KeyEvent.KEYCODE_DPAD_RIGHT) {
+                        long duration = mVideoView.getDuration();
+                        long newPosition = (duration * sBar.getProgress()) / sBar.getMax();
+                        mVideoView.seekTo((int) newPosition);
+                    }
                 }
                 return false;
             }
