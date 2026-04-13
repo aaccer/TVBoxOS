@@ -478,6 +478,7 @@ public class HomeActivity extends BaseActivity {
                 } else if (this.sortFocused != 0) {
                     this.mGridView.setSelection(0);
                     currentView.findViewById(R.id.tvFilter).setVisibility(View.GONE);
+                    currentView.findViewById(R.id.tvFilterColor).setVisibility(View.GONE);
                 } else {
                     exit();
                 }
