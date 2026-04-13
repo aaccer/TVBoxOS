@@ -370,11 +370,14 @@ public class LivePlayActivity extends BaseActivity {
 
         sBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
-            public void onStopTrackingTouch(SeekBar arg0) {
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                long duration = mVideoView.getDuration();
+                long newPosition = (duration * seekBar.getProgress()) / seekBar.getMax();
+                mVideoView.seekTo((int) newPosition);
             }
 
             @Override
-            public void onStartTrackingTouch(SeekBar arg0) {
+            public void onStartTrackingTouch(SeekBar seekBar) {
             }
 
             @Override
@@ -383,16 +386,16 @@ public class LivePlayActivity extends BaseActivity {
                     return;
                 }
                 if(fromuser){
-                    //if(countDownTimer!=null){
-                        mVideoView.seekTo(progress);
-                        //countDownTimer.cancel();
-                        //countDownTimer.start();
-                    //}
-/*
-                    long duration = mControlWrapper.getDuration();
-                    long newPosition = (duration * progress) / seekBar.getMax();
-                    if (mCurrentTime != null)
-                        mCurrentTime.setText(stringForTime((int) newPosition));*/
+                    // if(countDownTimer!=null){
+                        // mVideoView.seekTo(progress);
+                        // countDownTimer.cancel();
+                        // countDownTimer.start();
+                    // }
+
+                    // long duration = mControlWrapper.getDuration();
+                    // long newPosition = (duration * progress) / seekBar.getMax();
+                    // if (mCurrentTime != null)
+                        // mCurrentTime.setText(stringForTime((int) newPosition));
                 }
             }
         });
@@ -414,6 +417,10 @@ public class LivePlayActivity extends BaseActivity {
                             iv_playpause.setBackground(ContextCompat.getDrawable(LivePlayActivity.context, R.drawable.vod_play));
                         }
                     }
+                } else if (event.getAction() == KeyEvent.ACTION_UP) {
+                    long duration = mVideoView.getDuration();
+                    long newPosition = (duration * sBar.getProgress()) / sBar.getMax();
+                    mVideoView.seekTo((int) newPosition);
                 }
                 return false;
             }
