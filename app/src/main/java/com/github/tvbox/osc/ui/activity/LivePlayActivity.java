@@ -199,6 +199,7 @@ public class LivePlayActivity extends BaseActivity {
     private SeekBar sBar;
     private View iv_playpause;
     //private View iv_play;
+    boolean mIsDragging;
     
     private boolean loadEpgOnFocus = false;
     private boolean loadEpgleftOnFocus = false;
@@ -371,6 +372,7 @@ public class LivePlayActivity extends BaseActivity {
         sBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
+                mIsDragging = false;
                 long duration = mVideoView.getDuration();
                 long newPosition = (duration * seekBar.getProgress()) / seekBar.getMax();
                 mVideoView.seekTo((int) newPosition);
@@ -378,6 +380,7 @@ public class LivePlayActivity extends BaseActivity {
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
+            mIsDragging = true;
             }
 
             @Override
@@ -409,6 +412,9 @@ public class LivePlayActivity extends BaseActivity {
             @Override
             public boolean onKey(View arg0, int keycode, KeyEvent event) {
                 if(event.getAction()==KeyEvent.ACTION_DOWN){
+                    if (keycode == KeyEvent.KEYCODE_DPAD_LEFT || keycode == KeyEvent.KEYCODE_DPAD_RIGHT) {
+                        mIsDragging = true;
+                    }
                     if(keycode==KeyEvent.KEYCODE_DPAD_CENTER||keycode==KeyEvent.KEYCODE_ENTER){
                         if(mVideoView.isPlaying()){
                             mVideoView.pause();
@@ -424,6 +430,7 @@ public class LivePlayActivity extends BaseActivity {
                     }
                 } else if (event.getAction() == KeyEvent.ACTION_UP) {
                     if (keycode == KeyEvent.KEYCODE_DPAD_LEFT || keycode == KeyEvent.KEYCODE_DPAD_RIGHT) {
+                        mIsDragging = false;
                         long duration = mVideoView.getDuration();
                         long newPosition = (duration * sBar.getProgress()) / sBar.getMax();
                         mVideoView.seekTo((int) newPosition);
@@ -471,7 +478,7 @@ public class LivePlayActivity extends BaseActivity {
 
     public void getEpg(Date date, boolean showbottom) {
         String channelName = channel_Name.getChannelName();
-        SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy-MM-dd");
+        //SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy-MM-dd");
         timeFormat.setTimeZone(TimeZone.getTimeZone("GMT+8:00"));
         String[] epgInfo = EpgUtil.getEpgInfo(channelName);
         String epgTagName = channelName;
@@ -2290,7 +2297,9 @@ public class LivePlayActivity extends BaseActivity {
     }
     
     public void showProgressBars(){
-        Toast.makeText(App.getInstance(), "按返回键退出时移模式", Toast.LENGTH_SHORT).show();
+        if(backcontroller.getVisibility() == View.GONE){
+            Toast.makeText(App.getInstance(), "按返回键退出时移模式", Toast.LENGTH_SHORT).show();
+        }
         sBar.requestFocus();
         backcontroller.setVisibility(View.VISIBLE);
         if (ll_epg.getVisibility() == View.VISIBLE || ll_right_top_loading.getVisibility() == View.VISIBLE) {
@@ -2315,7 +2324,7 @@ public class LivePlayActivity extends BaseActivity {
                 @Override
                 public void onTick(long arg0) {
 
-                    if(mVideoView != null){
+                    if(mVideoView != null && !mIsDragging){
                         sBar.setProgress((int) mVideoView.getCurrentPosition());
                         tv_currentpos.setText(durationToString((int) mVideoView.getCurrentPosition()));
                     }
