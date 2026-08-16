@@ -66,7 +66,7 @@ public class SearchHelper {
         // return result;
     // }
 
-     public static List<String> splitWords(String text) {
+    public static List<String> splitWords(String text) {
         List<String> result = new ArrayList<String>();
         if (text == null || text.trim().isEmpty()) return result;
         result.add(text);
