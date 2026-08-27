@@ -83,6 +83,23 @@ public class MeasureHelper {
                     height = width * mVideoHeight / mVideoWidth;
                 }
                 break;
+
+            case VideoView.SCREEN_SCALE_19_10: 
+                if (height > width / 19 * 10) {
+                    height = width / 19 * 10;
+                } else {
+                    width = height / 10 * 19;
+                }
+                break;
+        
+            case VideoView.SCREEN_SCALE_40_17: 
+                if (height > width / 40 * 17) {
+                    height = width / 40 * 17;
+                } else {
+                    width = height / 17 * 40;
+                }
+                break;
+
         }
         return new int[]{width, height};
     }

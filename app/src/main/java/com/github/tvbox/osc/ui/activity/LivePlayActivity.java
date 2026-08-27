@@ -199,6 +199,7 @@ public class LivePlayActivity extends BaseActivity {
     private SeekBar sBar;
     private View iv_playpause;
     //private View iv_play;
+    boolean mIsDragging;
     
     private boolean loadEpgOnFocus = false;
     private boolean loadEpgleftOnFocus = false;
@@ -370,29 +371,39 @@ public class LivePlayActivity extends BaseActivity {
 
         sBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
-            public void onStopTrackingTouch(SeekBar arg0) {
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                mIsDragging = false;
+                long duration = mVideoView.getDuration();
+                long newPosition = (duration * seekBar.getProgress()) / seekBar.getMax();
+                mVideoView.seekTo((int) newPosition);
             }
 
             @Override
-            public void onStartTrackingTouch(SeekBar arg0) {
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            mIsDragging = true;
             }
 
             @Override
-            public void onProgressChanged(SeekBar sb, int progress, boolean fromuser) {
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromuser) {
                 if (!fromuser) {
                     return;
                 }
                 if(fromuser){
-                    //if(countDownTimer!=null){
-                        mVideoView.seekTo(progress);
-                        //countDownTimer.cancel();
-                        //countDownTimer.start();
-                    //}
-/*
-                    long duration = mControlWrapper.getDuration();
+                    // if(countDownTimer!=null){
+                        // mVideoView.seekTo(progress);
+                        // countDownTimer.cancel();
+                        // countDownTimer.start();
+                    // }
+
+                    // long duration = mControlWrapper.getDuration();
+                    // long newPosition = (duration * progress) / seekBar.getMax();
+                    // if (mCurrentTime != null)
+                        // mCurrentTime.setText(stringForTime((int) newPosition));
+                    long duration = mVideoView.getDuration();
                     long newPosition = (duration * progress) / seekBar.getMax();
-                    if (mCurrentTime != null)
-                        mCurrentTime.setText(stringForTime((int) newPosition));*/
+                    if (tv_currentpos != null)
+                    tv_currentpos.setText(durationToString((int) newPosition));
+
                 }
             }
         });
@@ -401,6 +412,9 @@ public class LivePlayActivity extends BaseActivity {
             @Override
             public boolean onKey(View arg0, int keycode, KeyEvent event) {
                 if(event.getAction()==KeyEvent.ACTION_DOWN){
+                    if (keycode == KeyEvent.KEYCODE_DPAD_LEFT || keycode == KeyEvent.KEYCODE_DPAD_RIGHT) {
+                        mIsDragging = true;
+                    }
                     if(keycode==KeyEvent.KEYCODE_DPAD_CENTER||keycode==KeyEvent.KEYCODE_ENTER){
                         if(mVideoView.isPlaying()){
                             mVideoView.pause();
@@ -413,6 +427,13 @@ public class LivePlayActivity extends BaseActivity {
                             //countDownTimer.start();
                             iv_playpause.setBackground(ContextCompat.getDrawable(LivePlayActivity.context, R.drawable.vod_play));
                         }
+                    }
+                } else if (event.getAction() == KeyEvent.ACTION_UP) {
+                    if (keycode == KeyEvent.KEYCODE_DPAD_LEFT || keycode == KeyEvent.KEYCODE_DPAD_RIGHT) {
+                        mIsDragging = false;
+                        long duration = mVideoView.getDuration();
+                        long newPosition = (duration * sBar.getProgress()) / sBar.getMax();
+                        mVideoView.seekTo((int) newPosition);
                     }
                 }
                 return false;
@@ -457,7 +478,7 @@ public class LivePlayActivity extends BaseActivity {
 
     public void getEpg(Date date, boolean showbottom) {
         String channelName = channel_Name.getChannelName();
-        SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy-MM-dd");
+        //SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy-MM-dd");
         timeFormat.setTimeZone(TimeZone.getTimeZone("GMT+8:00"));
         String[] epgInfo = EpgUtil.getEpgInfo(channelName);
         String epgTagName = channelName;
@@ -605,7 +626,9 @@ public class LivePlayActivity extends BaseActivity {
             }
             //tv_right_top_channel_name.setText(channel_Name.getChannelName());
             //tv_right_top_epg_name.setText(channel_Name.getChannelName());
-
+            if (mVideoView.getVideoSize().length >= 2) {
+            tv_right_top_tipnetspeed.setText("[" + mVideoView.getVideoSize()[0] + " x " + mVideoView.getVideoSize()[1] + "]");
+            }
             ll_right_top_loading.setVisibility(View.VISIBLE);
 
             if (countDownTimerRightTop != null) {
@@ -620,9 +643,9 @@ public class LivePlayActivity extends BaseActivity {
                     ll_right_top_loading.setVisibility(View.GONE);
                 }
             };
-
+            countDownTimerRightTop.start();
         }
-        countDownTimerRightTop.start();
+        
     }
 
     private void updateChannelIcon(String channelName, String logoUrl) {
@@ -1009,6 +1032,9 @@ public class LivePlayActivity extends BaseActivity {
         }else
         if(currentLiveChannelItem.getChannelSourceName(currentLiveChannelItem.getSourceIndex()).indexOf("[exo]") != -1 && livePlayerManager.getLivePlayerType() != 3){
             livePlayerManager.changeLivePlayerType(mVideoView,3);
+        }else
+        if(currentLiveChannelItem.getChannelSourceName(currentLiveChannelItem.getSourceIndex()).indexOf("[ali]") != -1 && livePlayerManager.getLivePlayerType() != 4){
+            livePlayerManager.changeLivePlayerType(mVideoView,4);
         }
 
         channel_Name = currentLiveChannelItem;
@@ -1482,9 +1508,6 @@ public class LivePlayActivity extends BaseActivity {
                     case VideoView.STATE_PAUSED:
                         break;
                     case VideoView.STATE_PREPARED:
-                        if (mVideoView.getVideoSize().length >= 2) {
-                        tv_right_top_tipnetspeed.setText("[" + mVideoView.getVideoSize()[0] + " x " + mVideoView.getVideoSize()[1] + "]");
-                        }
                         int duration = (int) mVideoView.getDuration();
                         if (livePlayerManager.getLivePlayerType() != 3 && duration > 0 || livePlayerManager.getLivePlayerType() == 3 && duration >= 3*60*1000) {
                             sBar.setMax(duration);
@@ -1498,6 +1521,9 @@ public class LivePlayActivity extends BaseActivity {
                         break;
                     case VideoView.STATE_BUFFERED:
                     case VideoView.STATE_PLAYING:
+                        if (mVideoView.getVideoSize().length >= 2) {
+                        tv_right_top_tipnetspeed.setText("[" + mVideoView.getVideoSize()[0] + " x " + mVideoView.getVideoSize()[1] + "]");
+                        }
                         currentLiveChangeSourceTimes = 0;
                         mHandler.removeCallbacks(mConnectTimeoutChangeSourceRun);
                         break;
@@ -2038,7 +2064,7 @@ public class LivePlayActivity extends BaseActivity {
         for (int j = 0; j < currentSourceNames.size(); j++) {
             LiveSettingItem liveSettingItem = new LiveSettingItem();
             liveSettingItem.setItemIndex(j);
-            String sourceName=currentSourceNames.get(j).replace("[ijk硬解]", "").replace("[ijk软解]", "").replace("[exo]", "");
+            String sourceName=currentSourceNames.get(j).replace("[ijk硬解]", "").replace("[ijk软解]", "").replace("[exo]", "").replace("[ali]", "");
             liveSettingItem.setItemName(sourceName!="" ? sourceName : currentSourceNames.get(j));
             liveSettingItemList.add(liveSettingItem);
         }
@@ -2271,7 +2297,9 @@ public class LivePlayActivity extends BaseActivity {
     }
     
     public void showProgressBars(){
-        Toast.makeText(App.getInstance(), "按返回键退出时移模式", Toast.LENGTH_SHORT).show();
+        if(backcontroller.getVisibility() == View.GONE){
+            Toast.makeText(App.getInstance(), "按返回键退出时移模式", Toast.LENGTH_SHORT).show();
+        }
         sBar.requestFocus();
         backcontroller.setVisibility(View.VISIBLE);
         if (ll_epg.getVisibility() == View.VISIBLE || ll_right_top_loading.getVisibility() == View.VISIBLE) {
@@ -2296,7 +2324,7 @@ public class LivePlayActivity extends BaseActivity {
                 @Override
                 public void onTick(long arg0) {
 
-                    if(mVideoView != null){
+                    if(mVideoView != null && !mIsDragging){
                         sBar.setProgress((int) mVideoView.getCurrentPosition());
                         tv_currentpos.setText(durationToString((int) mVideoView.getCurrentPosition()));
                     }

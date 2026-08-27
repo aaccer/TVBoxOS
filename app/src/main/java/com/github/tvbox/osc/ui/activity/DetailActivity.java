@@ -136,7 +136,7 @@ public class DetailActivity extends BaseActivity {
     private View seriesFlagFocus = null;
     private boolean isReverse;
     private String preFlag="";
-    private boolean firstReverse;
+    //private boolean firstReverse;
     private V7GridLayoutManager mGridViewLayoutMgr = null;
     private HashMap<String, String> mCheckSources = null;
     private final ArrayList<String> seriesGroupOptions = new ArrayList<>();
@@ -216,7 +216,7 @@ public class DetailActivity extends BaseActivity {
         seriesFlagAdapter = new SeriesFlagAdapter();
         mGridViewFlag.setAdapter(seriesFlagAdapter);
         isReverse = false;
-        firstReverse = false;
+        //firstReverse = false;
         preFlag = "";
         if (showPreview) {
             playFragment = new PlayFragment();
@@ -224,7 +224,6 @@ public class DetailActivity extends BaseActivity {
             getSupportFragmentManager().beginTransaction().show(playFragment).commitAllowingStateLoss();
             tvPlay.setText("全屏");
         }
-        //llPlayerFragmentContainerBlock.setFocusable(showPreview);
         
         mSeriesGroupView = findViewById(R.id.mSeriesGroupView);
         mSeriesGroupView.setHasFixedSize(true);
@@ -243,10 +242,10 @@ public class DetailActivity extends BaseActivity {
         //llPlayerFragmentContainerBlock.setOnClickListener((view -> toggleFullPreview()));
         llPlayerFragmentContainerBlock.setOnClickListener(v -> {
             toggleFullPreview();
-            if (firstReverse) {
-                jumpToPlay();
-                firstReverse=false;
-            }
+            //if (firstReverse) {
+                //jumpToPlay();
+                //firstReverse=false;
+            //}
         });
 
         tvSort.setOnClickListener(new View.OnClickListener() {
@@ -257,11 +256,15 @@ public class DetailActivity extends BaseActivity {
                     vodInfo.reverseSort = !vodInfo.reverseSort;
                     isReverse = !isReverse;
                     vodInfo.reverse();
-                    vodInfo.playIndex=(vodInfo.seriesMap.get(vodInfo.playFlag).size()-1)-vodInfo.playIndex;
+                    //vodInfo.playIndex=(vodInfo.seriesMap.get(vodInfo.playFlag).size()-1)-vodInfo.playIndex;
 //                    insertVod(sourceKey, vodInfo);
-                    firstReverse = true;
+                    //firstReverse = true;
                     setSeriesGroupOptions();
                     seriesAdapter.notifyDataSetChanged();
+                    if(showPreview){
+                        jumpToPlay();
+                        //firstReverse=false;
+                    }
                 }
             }
         });
@@ -271,10 +274,6 @@ public class DetailActivity extends BaseActivity {
                 FastClickCheckUtil.check(v);
                 if (showPreview) {
                     toggleFullPreview();
-                    if(firstReverse){
-                        jumpToPlay();
-                        firstReverse=false;
-                    }
                 } else {
                     jumpToPlay();
                 }
@@ -445,7 +444,7 @@ public class DetailActivity extends BaseActivity {
                     if (showPreview && !fullWindows) toggleFullPreview();
                     if (!showPreview || reload) {
                         jumpToPlay();
-                        firstReverse=false;
+                        //firstReverse=false;
                     }
                 }
             }
@@ -496,7 +495,7 @@ public class DetailActivity extends BaseActivity {
                 currentSeriesGroupView.isSelected();
             }
         });
-        //mGridView.setOnFocusChangeListener((view, b) -> onGridViewFocusChange(view, b));
+        mGridView.setOnFocusChangeListener((view, b) -> onGridViewFocusChange(view, b));
 
         llPlayerFragmentContainerBlock.setFocusable(showPreview);
         if(showPreview){
@@ -517,12 +516,12 @@ public class DetailActivity extends BaseActivity {
             mGridView.smoothScrollToPosition(targetPos);
         }, 50);
     }
-/*
+
     private void onGridViewFocusChange(View view, boolean hasFocus) {
         if (llPlayerFragmentContainerBlock.getVisibility() != View.VISIBLE) return;
         llPlayerFragmentContainerBlock.setFocusable(!hasFocus);
     }
-*/
+
     private void initCheckedSourcesForSearch() {
         mCheckSources = SearchHelper.getSourcesForSearch();
     }
@@ -1068,6 +1067,9 @@ public class DetailActivity extends BaseActivity {
         tvCollect.setFocusable(!fullWindows);
         tvQuickSearch.setFocusable(!fullWindows);
         llPlayerFragmentContainerBlock.setFocusable(!fullWindows);
+        mGridView.setFocusable(!fullWindows);
+        mGridViewFlag.setFocusable(!fullWindows);
+        mSeriesGroupView.setFocusable(!fullWindows);
         toggleSubtitleTextSize();
     }
 

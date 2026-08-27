@@ -17,6 +17,8 @@ import com.google.android.exoplayer2.PlaybackException;
 import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.Tracks;
+import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.source.DefaultMediaSourceFactory;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
@@ -30,7 +32,8 @@ import xyz.doikki.videoplayer.player.AbstractPlayer;
 public class ExoMediaPlayer extends AbstractPlayer implements Player.Listener {
 
     protected Context mAppContext;
-    protected ExoPlayer mMediaPlayer;
+    //protected ExoPlayer mMediaPlayer;
+    protected SimpleExoPlayer mMediaPlayer;
     protected MediaSource mMediaSource;
     protected ExoMediaSourceHelper mMediaSourceHelper;
     protected ExoTrackNameProvider trackNameProvider;
@@ -56,14 +59,17 @@ public class ExoMediaPlayer extends AbstractPlayer implements Player.Listener {
         if (mRenderersFactory == null) {
             mRenderersFactory = new DefaultRenderersFactory(mAppContext);
         }
-        mRenderersFactory.setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_PREFER);
+        //mRenderersFactory.setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_PREFER);
+        mRenderersFactory.setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON)
+                   .setEnableDecoderFallback(true);
         if (mTrackSelector == null) {
             mTrackSelector = new DefaultTrackSelector(mAppContext);
         }
+                        //隧道模式
+        mTrackSelector.setParameters(mTrackSelector.getParameters().buildUpon().setTunnelingEnabled(false));
         if (mLoadControl == null) {
             mLoadControl = new DefaultLoadControl();
         }
-        mTrackSelector.setParameters(mTrackSelector.getParameters().buildUpon().setTunnelingEnabled(true));
         /*mMediaPlayer = new SimpleExoPlayer.Builder(
                 mAppContext,
                 mRenderersFactory,
@@ -73,10 +79,18 @@ public class ExoMediaPlayer extends AbstractPlayer implements Player.Listener {
                 DefaultBandwidthMeter.getSingletonInstance(mAppContext),
                 new AnalyticsCollector(Clock.DEFAULT))
                 .build();*/
-        mMediaPlayer = new ExoPlayer.Builder(mAppContext)
+        /*mMediaPlayer = new SimpleExoPlayer.Builder(mAppContext)
                 .setLoadControl(mLoadControl)
                 .setRenderersFactory(mRenderersFactory)
-                .setTrackSelector(mTrackSelector).build();
+                .setTrackSelector(mTrackSelector)
+                .setMediaSourceFactory(new DefaultMediaSourceFactory(mAppContext))
+                .build();*/
+        SimpleExoPlayer.Builder builder = new SimpleExoPlayer.Builder(mAppContext, mRenderersFactory);
+        builder.setLoadControl(mLoadControl);
+        builder.setTrackSelector(mTrackSelector);
+        builder.setMediaSourceFactory(new DefaultMediaSourceFactory(mAppContext));
+    
+        mMediaPlayer = builder.build();
 
         setOptions();
 

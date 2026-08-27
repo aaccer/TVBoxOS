@@ -75,9 +75,18 @@ public final class MyOkhttpDownLoader implements Downloader {
             header =url.split("@Headers=")[1].split("@")[0];
             header =URLDecoder.decode(header,"UTF-8");
         }
-        if (url.contains("@Cookie=")) cookie= url.split("@Cookie=")[1].split("@")[0];
-        if (url.contains("@User-Agent=")) ua =url.split("@User-Agent=")[1].split("@")[0];
-        if (url.contains("@Referer=")) referer= url.split("@Referer=")[1].split("@")[0];
+        if (url.contains("@Cookie=")){
+            cookie= url.split("@Cookie=")[1].split("@")[0];
+            cookie =URLDecoder.decode(cookie,"UTF-8");
+        }
+        if (url.contains("@User-Agent=")){
+            ua =url.split("@User-Agent=")[1].split("@")[0];
+            ua =URLDecoder.decode(ua,"UTF-8");
+        }
+        if (url.contains("@Referer=")){
+            referer= url.split("@Referer=")[1].split("@")[0];
+            referer =URLDecoder.decode(referer,"UTF-8");
+        }
 
         url = url.split("@")[0];
         Request.Builder mRequestBuilder = request.newBuilder().url(url);
@@ -85,7 +94,8 @@ public final class MyOkhttpDownLoader implements Downloader {
             JsonObject jsonInfo = new Gson().fromJson(header, JsonObject.class);
             for (String key : jsonInfo.keySet()) {
                 String val = jsonInfo.get(key).getAsString();
-                mRequestBuilder.addHeader(key.toUpperCase(), removeDuplicateSlashes(val));
+                //mRequestBuilder.addHeader(key.toUpperCase(), removeDuplicateSlashes(val));
+                mRequestBuilder.addHeader(key, removeDuplicateSlashes(val));
             }
         }else {
             if(!TextUtils.isEmpty(cookie)) {

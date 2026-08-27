@@ -62,6 +62,9 @@ public class VideoView<P extends AbstractPlayer> extends FrameLayout
     public static final int SCREEN_SCALE_MATCH_PARENT = 3;
     public static final int SCREEN_SCALE_ORIGINAL = 4;
     public static final int SCREEN_SCALE_CENTER_CROP = 5;
+    public static final int SCREEN_SCALE_19_10 = 6;
+    public static final int SCREEN_SCALE_40_17 = 7;
+    
     protected int mCurrentScreenScaleType;
 
     protected int[] mVideoSize = {0, 0};

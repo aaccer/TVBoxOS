@@ -506,7 +506,8 @@ public class ApiConfig {
                     JsonArray array = obj.getAsJsonArray("hosts");
                     for (JsonElement one : array) {
                         String host = one.getAsString();
-                        VideoParseRuler.addHostRule(host, rule);
+                        if (rule.size() > 0) VideoParseRuler.addHostRule(host, rule);
+                        if (ads.size() > 0) VideoParseRuler.addHostRegex(host, ads);
                     }
                 }
                 //嗅探脚本规则 如 click
@@ -520,7 +521,7 @@ public class ApiConfig {
                     JsonArray array = obj.getAsJsonArray("hosts");
                     for (JsonElement one : array) {
                         String host = one.getAsString();
-                        VideoParseRuler.addHostScript(host, scripts);
+                        if (scripts.size() > 0) VideoParseRuler.addHostScript(host, scripts);
                     }
                 }
             }
@@ -583,7 +584,7 @@ public class ApiConfig {
         ArrayList<ArrayList<String>> itemsArrayList = new ArrayList<>();
         ArrayList<String> sourceItems = new ArrayList<>();
         ArrayList<String> scaleItems = new ArrayList<>(Arrays.asList("默认", "16:9", "4:3", "填充", "原始", "裁剪"));
-        ArrayList<String> playerDecoderItems = new ArrayList<>(Arrays.asList("系统", "ijk硬解", "ijk软解", "exo"));
+        ArrayList<String> playerDecoderItems = new ArrayList<>(Arrays.asList("系统", "ijk硬解", "ijk软解", "exo", "阿里"));
         ArrayList<String> timeoutItems = new ArrayList<>(Arrays.asList("3s", "6s", "9s", "12s", "15s", "18s"));
         ArrayList<String> personalSettingItems = new ArrayList<>(Arrays.asList("显示时间", "显示网速", "换台反转", "跨选分类", "启动进入", "睡眠退出"));
         ArrayList<String> yumItems = new ArrayList<>(Arrays.asList("线路1"));
@@ -835,6 +836,7 @@ public class ApiConfig {
 
     String fixContentPath(String url, String content) {
         if (content.contains("\"./")) {
+            url=url.replace("file://","clan://localhost/");
             if(!url.startsWith("http") && !url.startsWith("clan://")){
                 url = "http://" + url;
             }

@@ -360,7 +360,7 @@ public class VodController extends BaseController {
                 try {
                     int scaleType = mPlayerConfig.getInt("sc");
                     scaleType++;
-                    if (scaleType > 5)
+                    if (scaleType > 7)
                         scaleType = 0;
                     mPlayerConfig.put("sc", scaleType);
                     updatePlayerCfgView();
@@ -371,6 +371,23 @@ public class VodController extends BaseController {
                 }
             }
         });
+        mPlayerScaleBtn.setOnLongClickListener(new OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                try {
+                    int scaleType = mPlayerConfig.getInt("sc");
+                    scaleType = 0;
+                    mPlayerConfig.put("sc", scaleType);
+                    updatePlayerCfgView();
+                    listener.updatePlayerCfg();
+                    mControlWrapper.setScreenScaleType(scaleType);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                return true;
+            }
+        });
+
         mPlayerSpeedBtn.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -449,13 +466,13 @@ public class VodController extends BaseController {
                                     updatePlayerCfgView();
                                     listener.updatePlayerCfg();
                                     listener.replay(false);
-                                    //hideBottom();
+                                    hideBottom();
                                 }
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
-                            mPlayerBtn.requestFocus();
-                            mPlayerBtn.requestFocusFromTouch();
+                            //mPlayerBtn.requestFocus();
+                            //mPlayerBtn.requestFocusFromTouch();
                         }
 
                         @Override
@@ -510,8 +527,8 @@ public class VodController extends BaseController {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                mPlayerBtn.requestFocus();
-                mPlayerBtn.requestFocusFromTouch();
+                //mPlayerBtn.requestFocus();
+                //mPlayerBtn.requestFocusFromTouch();
                 return true;
             }
         });
@@ -541,8 +558,8 @@ public class VodController extends BaseController {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                mPlayerIJKBtn.requestFocus();
-                mPlayerIJKBtn.requestFocusFromTouch();
+                //mPlayerIJKBtn.requestFocus();
+                //mPlayerIJKBtn.requestFocusFromTouch();
             }
         });
 //        增加播放页面片头片尾时间重置
@@ -735,7 +752,7 @@ public class VodController extends BaseController {
         try {
             int playerType = mPlayerConfig.getInt("pl");
             mPlayerBtn.setText(PlayerHelper.getPlayerName(playerType));
-            mPlayerScaleBtn.setText(PlayerHelper.getScaleName(mPlayerConfig.getInt("sc")));
+            //mPlayerScaleBtn.setText(PlayerHelper.getScaleName(mPlayerConfig.getInt("sc")));
             mPlayerIJKBtn.setText(mPlayerConfig.getString("ijk"));
             mPlayerIJKBtn.setVisibility(playerType == 1 ? VISIBLE : GONE);
             mPlayerScaleBtn.setText(PlayerHelper.getScaleName(mPlayerConfig.getInt("sc")));

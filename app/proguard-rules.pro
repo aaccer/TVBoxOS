@@ -211,3 +211,11 @@
     public static **[] values();
     public static ** valueOf(java.lang.String);
 }
+
+#阿里云播放器
+-keep class com.alivc.**{*;}
+-keep class com.aliyun.**{*;}
+-keep class com.cicada.**{*;}
+-dontwarn com.alivc.**
+-dontwarn com.aliyun.**
+-dontwarn com.cicada.**
