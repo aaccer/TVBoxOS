@@ -194,6 +194,32 @@ public class JsSpider extends Spider {
 
     private void createCtx() {
         ctx = QuickJSContext.create();
+        ctx.registerFunction("aesGcmDecrypt", args -> {
+            try {
+                byte[] keyBytes = args.getBin(0);
+                byte[] ivBytes = args.getBin(1);
+                byte[] cipherBytes = args.getBin(2);
+                byte[] tagBytes = args.getBin(3);
+        
+                if (keyBytes == null || keyBytes.length != 32) return null;
+                if (tagBytes == null || tagBytes.length != 16) return null;
+        
+                javax.crypto.spec.SecretKeySpec keySpec = new javax.crypto.spec.SecretKeySpec(keyBytes, "AES");
+                javax.crypto.spec.GCMParameterSpec gcmParam = new javax.crypto.spec.GCMParameterSpec(128, ivBytes);
+                javax.crypto.Cipher cipher = javax.crypto.Cipher.getInstance("AES/GCM/NoPadding");
+                cipher.init(javax.crypto.Cipher.DECRYPT_MODE, keySpec, gcmParam);
+        
+                byte[] combined = new byte[cipherBytes.length + tagBytes.length];
+                System.arraycopy(cipherBytes,0,combined,0,cipherBytes.length);
+                System.arraycopy(tagBytes,0,combined,cipherBytes.length,tagBytes.length);
+        
+                byte[] plain = cipher.doFinal(combined);
+                return new String(plain, java.nio.charset.StandardCharsets.UTF_8);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+        });
         ctx.setModuleLoader(new QuickJSContext.BytecodeModuleLoader() {
             @Override
             public byte[] getModuleBytecode(String moduleName) {
