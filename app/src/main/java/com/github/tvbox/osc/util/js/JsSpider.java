@@ -198,10 +198,10 @@ public class JsSpider extends Spider {
             @Override
             public Object call(Object... args) {
                 try {
-                    byte[] keyBytes = (byte[]) args[0];
-                    byte[] ivBytes = (byte[]) args[1];
-                    byte[] cipherBytes = (byte[]) args[2];
-                    byte[] tagBytes = (byte[]) args[3];
+                    byte[] keyBytes = toByteArray(args[0]);
+                    byte[] ivBytes = toByteArray(args[1]);
+                    byte[] cipherBytes = toByteArray(args[2]);
+                    byte[] tagBytes = toByteArray(args[3]);
         
                     if (keyBytes == null || keyBytes.length != 32) return null;
                     if (tagBytes == null || tagBytes.length != 16) return null;
@@ -221,6 +221,23 @@ public class JsSpider extends Spider {
                     e.printStackTrace();
                     return null;
                 }
+            }
+        
+            private byte[] toByteArray(Object obj) {
+                if(obj == null) return null;
+                if(obj instanceof byte[]) {
+                    return (byte[]) obj;
+                }
+                if(obj instanceof java.util.List<?>) {
+                    java.util.List<?> list = (java.util.List<?>) obj;
+                    byte[] arr = new byte[list.size()];
+                    for(int i=0;i<list.size();i++){
+                        Number num = (Number) list.get(i);
+                        arr[i] = num.byteValue();
+                    }
+                    return arr;
+                }
+                return null;
             }
         };
         ctx.getGlobalObject().set("aesGcmDecrypt", aesGcmDecryptFunc);
