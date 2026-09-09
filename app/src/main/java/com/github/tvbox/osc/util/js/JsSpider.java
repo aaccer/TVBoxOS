@@ -24,6 +24,7 @@ import java.io.ByteArrayInputStream;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -216,7 +217,8 @@ public class JsSpider extends Spider {
                     if (key == null || iv == null || cipher == null || tag == null) {
                         return null;
                     }
-        
+                    
+                    int tagLenBits = tag.length * 8;
                     SecretKeySpec keySpec = new SecretKeySpec(key, "AES");
                     GCMParameterSpec gcmSpec = new GCMParameterSpec(tagLenBits, iv);
                     Cipher cipherObj = Cipher.getInstance("AES/GCM/NoPadding");
