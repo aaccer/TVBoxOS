@@ -18,7 +18,9 @@ import com.whl.quickjs.wrapper.QuickJSContext;
 
 import org.json.JSONArray;
 import java.io.ByteArrayInputStream;
+import java.lang.reflect.Array;
 import java.lang.reflect.Method;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +28,10 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+
+import javax.crypto.Cipher;
+import javax.crypto.spec.GCMParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 
 public class SpiderJS extends Spider {
 
@@ -70,48 +76,96 @@ public class SpiderJS extends Spider {
                 @Override
                 public Object call(Object... args) {
                     try {
-                        byte[] keyBytes = toByteArray(args[0]);
-                        byte[] ivBytes = toByteArray(args[1]);
-                        byte[] cipherBytes = toByteArray(args[2]);
-                        byte[] tagBytes = toByteArray(args[3]);
+                        if (args.length < 4) {
+                            return null;
+                        }
             
-                        if (keyBytes == null || keyBytes.length != 32) return null;
-                        if (tagBytes == null || tagBytes.length != 16) return null;
+                        byte[] key = toByteArray(args[0]);
+                        byte[] iv = toByteArray(args[1]);
+                        byte[] cipher = toByteArray(args[2]);
+                        byte[] tag = toByteArray(args[3]);
             
-                        javax.crypto.spec.SecretKeySpec keySpec = new javax.crypto.spec.SecretKeySpec(keyBytes, "AES");
-                        javax.crypto.spec.GCMParameterSpec gcmParam = new javax.crypto.spec.GCMParameterSpec(128, ivBytes);
-                        javax.crypto.Cipher cipher = javax.crypto.Cipher.getInstance("AES/GCM/NoPadding");
-                        cipher.init(javax.crypto.Cipher.DECRYPT_MODE, keySpec, gcmParam);
+                        if (key == null || iv == null || cipher == null || tag == null) {
+                            return null;
+                        }
             
-                        byte[] combined = new byte[cipherBytes.length + tagBytes.length];
-                        System.arraycopy(cipherBytes,0,combined,0,cipherBytes.length);
-                        System.arraycopy(tagBytes,0,combined,cipherBytes.length,tagBytes.length);
+                        SecretKeySpec keySpec = new SecretKeySpec(key, "AES");
+                        GCMParameterSpec gcmSpec = new GCMParameterSpec(tagLenBits, iv);
+                        Cipher cipherObj = Cipher.getInstance("AES/GCM/NoPadding");
+                        cipherObj.init(Cipher.DECRYPT_MODE, keySpec, gcmSpec);
             
-                        byte[] plain = cipher.doFinal(combined);
-                        return new String(plain, java.nio.charset.StandardCharsets.UTF_8);
+                        byte[] combined = new byte[cipher.length + tag.length];
+                        System.arraycopy(cipher, 0, combined, 0, cipher.length);
+                        System.arraycopy(tag, 0, combined, cipher.length, tag.length);
+            
+                        byte[] plain = cipherObj.doFinal(combined);
+                        return new String(plain, StandardCharsets.UTF_8);
                     } catch (Exception e) {
                         e.printStackTrace();
                         return null;
                     }
                 }
-
+            
                 private byte[] toByteArray(Object obj) {
-                    if(obj == null) return null;
-                    if(obj instanceof byte[]) {
+                    if (obj == null) return null;
+            
+                    if (obj instanceof byte[]) {
                         return (byte[]) obj;
                     }
-                    if(obj instanceof java.util.List<?>) {
-                        java.util.List<?> list = (java.util.List<?>) obj;
+            
+                    if (obj instanceof ByteBuffer) {
+                        ByteBuffer buf = (ByteBuffer) obj;
+                        byte[] arr = new byte[buf.remaining()];
+                        buf.get(arr);
+                        return arr;
+                    }
+            
+                    if (obj instanceof String) {
+                        String s = (String) obj;
+                        s = s.trim();
+                        if (s.length() % 2 != 0) {
+                            s = "0" + s;
+                        }
+                        int len = s.length();
+                        byte[] data = new byte[len / 2];
+                        for (int i = 0; i < len; i += 2) {
+                            int high = Character.digit(s.charAt(i), 16);
+                            int low = Character.digit(s.charAt(i + 1), 16);
+                            if (high == -1 || low == -1) {
+                                throw new IllegalArgumentException("非法十六进制字符串: " + s);
+                            }
+                            data[i / 2] = (byte) ((high << 4) | low);
+                        }
+                        return data;
+                    }
+            
+                    if (obj instanceof List) {
+                        List<?> list = (List<?>) obj;
                         byte[] arr = new byte[list.size()];
-                        for(int i=0;i<list.size();i++){
+                        for (int i = 0; i < list.size(); i++) {
                             Number num = (Number) list.get(i);
                             arr[i] = num.byteValue();
                         }
                         return arr;
                     }
+            
+                    if (obj.getClass().isArray()) {
+                        int len = Array.getLength(obj);
+                        byte[] arr = new byte[len];
+                        for (int i = 0; i < len; i++) {
+                            Object elem = Array.get(obj, i);
+                            if (elem instanceof Number) {
+                                arr[i] = ((Number) elem).byteValue();
+                            } else {
+                                return null;
+                            }
+                        }
+                        return arr;
+                    }
+            
                     return null;
                 }
-            };
+            };        
             runtime.getGlobalObject().set("aesGcmDecrypt", aesGcmDecryptFunc);
             }
             runtime.setModuleLoader(new QuickJSContext.DefaultModuleLoader() {
