@@ -6,7 +6,6 @@ import android.animation.AnimatorSet;
 import android.animation.IntEvaluator;
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
-import android.app.ActivityManager;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -122,10 +121,33 @@ public class HomeActivity extends BaseActivity {
             refreshTopInfoTextSize();
         }
     };
+    private final Runnable refreshTopLayoutRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (topLayout == null || isActivityUnavailable() || currentSelected != 0 || topHide != 0) {
+                return;
+            }
+            // OnePlus devices may finish applying immersive mode after the first measure.
+            // Re-apply the visible top state once the final display metrics are available.
+            hideSysBar();
+            ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) topLayout.getLayoutParams();
+            params.topMargin = AutoSizeUtils.mm2px(HomeActivity.this, 10.0f);
+            params.height = AutoSizeUtils.mm2px(HomeActivity.this, 50.0f);
+            topLayout.setLayoutParams(params);
+            topLayout.setAlpha(1.0f);
+            refreshTopInfoTextSize();
+            topLayout.requestLayout();
+        }
+    };
 
     @Override
     protected int getLayoutResID() {
         return R.layout.activity_home;
+    }
+
+    @Override
+    protected boolean shouldRefreshAutoSize() {
+        return true;
     }
 
     boolean useCacheConfig = false;
@@ -636,21 +658,12 @@ public class HomeActivity extends BaseActivity {
     private void doExit() {
         // 如果两次返回间隔小于 2000 毫秒，则退出应用
         if (System.currentTimeMillis() - mExitTime < 2000) {
+            AppManager.getInstance().finishAllActivity();
             unregisterEventBus();
             ControlManager.get().stopServer();
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-                ActivityManager activityManager = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
-                if (activityManager != null) {
-                    for (ActivityManager.AppTask appTask : activityManager.getAppTasks()) {
-                        appTask.finishAndRemoveTask();
-                    }
-                } else {
-                    finishAndRemoveTask();
-                }
-            } else {
-                AppManager.getInstance().finishAllActivity();
-                finish();
-            }
+            finish();
+            android.os.Process.killProcess(android.os.Process.myPid());
+            System.exit(0);
         } else {
             // 否则仅提示用户，再按一次退出应用
             mExitTime = System.currentTimeMillis();
@@ -664,6 +677,8 @@ public class HomeActivity extends BaseActivity {
         refreshTopInfoTextSize();
         mHandler.removeCallbacks(refreshTopInfoTextSizeRunnable);
         mHandler.postDelayed(refreshTopInfoTextSizeRunnable, 350);
+        mHandler.removeCallbacks(refreshTopLayoutRunnable);
+        mHandler.postDelayed(refreshTopLayoutRunnable, 450);
         mHandler.post(mRunnable);
     }
 
@@ -672,6 +687,7 @@ public class HomeActivity extends BaseActivity {
     protected void onPause() {
         super.onPause();
         mHandler.removeCallbacks(refreshTopInfoTextSizeRunnable);
+        mHandler.removeCallbacks(refreshTopLayoutRunnable);
         mHandler.removeCallbacks(mRunnable);
     }
 

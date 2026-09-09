@@ -47,7 +47,9 @@ public abstract class BaseActivity extends AppCompatActivity implements CustomAd
     private final Runnable refreshAutoSizeRunnable = new Runnable() {
         @Override
         public void run() {
-            refreshAutoSize();
+            if (shouldRefreshAutoSize()) {
+                refreshAutoSize();
+            }
         }
     };
     private final Runnable hideSysBarRunnable = new Runnable() {
@@ -82,8 +84,10 @@ public abstract class BaseActivity extends AppCompatActivity implements CustomAd
         super.onResume();
         hideSysBar();
         changeWallpaper(false);
-        refreshAutoSize();
-        scheduleRefreshAutoSize();
+        if (shouldRefreshAutoSize()) {
+            refreshAutoSize();
+            scheduleRefreshAutoSize();
+        }
     }
 
     public void hideSysBar() {
@@ -105,7 +109,8 @@ public abstract class BaseActivity extends AppCompatActivity implements CustomAd
             decorView.setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
                 @Override
                 public void onSystemUiVisibilityChange(int visibility) {
-                    if ((visibility & View.SYSTEM_UI_FLAG_HIDE_NAVIGATION) == 0) {
+                    int hiddenBars = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_FULLSCREEN;
+                    if ((visibility & hiddenBars) != hiddenBars) {
                         decorView.removeCallbacks(hideSysBarRunnable);
                         decorView.postDelayed(hideSysBarRunnable, 300);
                     }
@@ -126,8 +131,14 @@ public abstract class BaseActivity extends AppCompatActivity implements CustomAd
         super.onWindowFocusChanged(hasFocus);
         if (hasFocus) {
             hideSysBar();
-            scheduleRefreshAutoSize();
+            if (shouldRefreshAutoSize()) {
+                scheduleRefreshAutoSize();
+            }
         }
+    }
+
+    protected boolean shouldRefreshAutoSize() {
+        return false;
     }
 
     private void scheduleRefreshAutoSize() {

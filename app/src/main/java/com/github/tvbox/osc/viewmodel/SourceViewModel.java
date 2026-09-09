@@ -87,6 +87,7 @@ public class SourceViewModel extends ViewModel {
     public MutableLiveData<AbsXml> listResult;
     public MutableLiveData<AbsXml> searchResult;
     public MutableLiveData<AbsXml> quickSearchResult;
+    public MutableLiveData<AbsXml> detailFallbackSearchResult;
     public MutableLiveData<AbsXml> detailResult;
     public MutableLiveData<JSONObject> actionResult;
     public MutableLiveData<JSONObject> playResult;
@@ -99,6 +100,7 @@ public class SourceViewModel extends ViewModel {
         listResult = new MutableLiveData<>();
         searchResult = new MutableLiveData<>();
         quickSearchResult = new MutableLiveData<>();
+        detailFallbackSearchResult = new MutableLiveData<>();
         detailResult = new MutableLiveData<>();
         actionResult = new MutableLiveData<>();
         playResult = new MutableLiveData<>();
@@ -666,6 +668,10 @@ public class SourceViewModel extends ViewModel {
     }
     // detailContent
     public void getDetail(String sourceKey, String urlid) {
+        getDetail(sourceKey, urlid, false);
+    }
+
+    public void getDetail(String sourceKey, String urlid, boolean fallback) {
         if (urlid.startsWith("push://") && ApiConfig.get().getSource(PUSH_AGENT) != null) {
             String pushUrl = urlid.substring(7);
             if (pushUrl.startsWith("b64:")) {
@@ -702,6 +708,7 @@ public class SourceViewModel extends ViewModel {
                             List<String> ids = new ArrayList<>();
                             ids.add(id);
                             try {
+//                                LOG.i("echo--getDetail--id: " + id);
                                 return sp.detailContent(ids);
                             } catch (Exception e) {
                                 LOG.i("echo--getDetail--error: " + e.getMessage());
@@ -712,7 +719,7 @@ public class SourceViewModel extends ViewModel {
 
                     String json = null;
                     try {
-                        json = future.get(30, TimeUnit.SECONDS);
+                        json = future.get(fallback ? 6 : 30, TimeUnit.SECONDS);
 //                        LOG.i("echo--getDetail--result:" + json);
                     } catch (TimeoutException e) {
                         LOG.i("echo--getDetail--timeout");
@@ -727,7 +734,7 @@ public class SourceViewModel extends ViewModel {
             });
         } else if (type == 0 || type == 1|| type == 4) {
             String extend=sourceBean.getExt();
-            extend=getFixUrl(extend);
+            extend=fallback ? getFixUrl(extend, 6) : getFixUrl(extend);
 
             GetRequest<String> request = OkGo.<String>get(sourceBean.getApi())
                     .tag("detail")
@@ -767,7 +774,9 @@ public class SourceViewModel extends ViewModel {
                         }
                     });
         } else {
-            detailResult.postValue(null);
+            AbsXml data = new AbsXml();
+            data.sourceKey = sourceKey;
+            detailResult.postValue(data);
         }
     }
 
@@ -802,9 +811,17 @@ public class SourceViewModel extends ViewModel {
     }
 
     public void getSearch(String sourceKey, String wd, String searchToken) {
+        getSearch(sourceKey, wd, searchToken, searchResult, "search");
+    }
+
+    public void getDetailFallbackSearch(String sourceKey, String wd, String searchToken) {
+        getSearch(sourceKey, wd, searchToken, detailFallbackSearchResult, "detail_fallback_search");
+    }
+
+    private void getSearch(String sourceKey, String wd, String searchToken, MutableLiveData<AbsXml> result, String requestTag) {
         SourceBean sourceBean = ApiConfig.get().getSource(sourceKey);
         if (sourceBean == null) {
-            postEmptySearchResult(searchResult, sourceKey, searchToken);
+            postEmptySearchResult(result, sourceKey, searchToken);
             return;
         }
         int type = sourceBean.getType();
@@ -813,19 +830,19 @@ public class SourceViewModel extends ViewModel {
                 Spider sp = ApiConfig.get().getCSP(sourceBean);
                 String search = sp.searchContent(wd, false);
                 if(!TextUtils.isEmpty(search)){
-                    json(searchResult, search, sourceBean.getKey(), searchToken);
+                    json(result, search, sourceBean.getKey(), searchToken);
                 } else {
-                    json(searchResult, "", sourceBean.getKey(), searchToken);
+                    json(result, "", sourceBean.getKey(), searchToken);
                 }
             } catch (Throwable th) {
                 th.printStackTrace();
-                json(searchResult, "", sourceBean.getKey(), searchToken);
+                json(result, "", sourceBean.getKey(), searchToken);
             }
         } else if (type == 0 || type == 1) {
             OkGo.<String>get(sourceBean.getApi())
                     .params("wd", wd)
                     .params(type == 1 ? "ac" : null, type == 1 ? "detail" : null)
-                    .tag("search")
+                    .tag(requestTag)
                     .execute(new AbsCallback<String>() {
                         @Override
                         public String convertResponse(okhttp3.Response response) throws Throwable {
@@ -840,17 +857,17 @@ public class SourceViewModel extends ViewModel {
                         public void onSuccess(Response<String> response) {
                             if (type == 0) {
                                 String xml = response.body();
-                                xml(searchResult, xml, sourceBean.getKey(), searchToken);
+                                xml(result, xml, sourceBean.getKey(), searchToken);
                             } else {
                                 String json = response.body();
-                                json(searchResult, json, sourceBean.getKey(), searchToken);
+                                json(result, json, sourceBean.getKey(), searchToken);
                             }
                         }
 
                         @Override
                         public void onError(Response<String> response) {
                             super.onError(response);
-                            postEmptySearchResult(searchResult, sourceBean.getKey(), searchToken);
+                            postEmptySearchResult(result, sourceBean.getKey(), searchToken);
                         }
                     });
         }else if (type == 4) {
@@ -868,7 +885,7 @@ public class SourceViewModel extends ViewModel {
             }
 
             GetRequest<String> request = OkGo.<String>get(sourceBean.getApi())
-                    .tag("search")
+                    .tag(requestTag)
                     .params("wd", queryWd)
                     .params("ac" ,"detail")
                     .params("quick" ,"false");
@@ -891,20 +908,20 @@ public class SourceViewModel extends ViewModel {
                     public void onSuccess(Response<String> response) {
                             String json = response.body();
 //                            LOG.i("echo-t4 search onSuccess"+json);
-                            json(searchResult, json, sourceBean.getKey(), searchToken);
+                            json(result, json, sourceBean.getKey(), searchToken);
                     }
 
                     @Override
                     public void onError(Response<String> response) {
                         LOG.i("echo-t4 search-onError");
                         super.onError(response);
-                        postEmptySearchResult(searchResult, sourceBean.getKey(), searchToken);
+                        postEmptySearchResult(result, sourceBean.getKey(), searchToken);
                     }
                 });
                 }
             });
         } else {
-            postEmptySearchResult(searchResult, sourceBean.getKey(), searchToken);
+            postEmptySearchResult(result, sourceBean.getKey(), searchToken);
         }
     }
     // searchContent
@@ -1028,6 +1045,7 @@ public class SourceViewModel extends ViewModel {
                             Spider sp = ApiConfig.get().getCSP(sourceBean);
                             if (TextUtils.isEmpty(requestUrl)) return "";
                             try {
+                                LOG.i("echo--getPlay--id: " + requestUrl);
                                 return sp.playerContent(playFlag, requestUrl, ApiConfig.get().getVipParseFlags());
                             } catch (Exception e) {
                                 LOG.i("echo--getPlay--error: " + e.getMessage());
@@ -1336,6 +1354,10 @@ public class SourceViewModel extends ViewModel {
     private static final ConcurrentHashMap<String, String> extendCache = new ConcurrentHashMap<>();
 
     private String getFixUrl(final String extend) {
+        return getFixUrl(extend, 20);
+    }
+
+    private String getFixUrl(final String extend, final long timeoutSeconds) {
         if (TextUtils.isEmpty(extend)) return "";
         if(!extend.startsWith("http"))return extend;
         final String key = MD5.string2MD5(extend);
@@ -1366,7 +1388,7 @@ public class SourceViewModel extends ViewModel {
         });
 
         try {
-            return future.get(20, TimeUnit.SECONDS);
+            return future.get(timeoutSeconds, TimeUnit.SECONDS);
         } catch (TimeoutException te) {
             te.printStackTrace();
             future.cancel(true);
@@ -1733,15 +1755,21 @@ public class SourceViewModel extends ViewModel {
                 	data = checkPush(data);
                     checkThunder(data,0);
                 }else {
-                    result.postValue(data);
+                    postSearchResult(result, data);
                 }
             }
             return data;
         } catch (Exception e) {
-            if (searchResult == result || quickSearchResult == result) {
+            if (searchResult == result || quickSearchResult == result || detailFallbackSearchResult == result) {
                 postEmptySearchResult(result, sourceKey, searchToken);
             } else if (result != null) {
-                result.postValue(null);
+                if (result == detailResult) {
+                    AbsXml data = new AbsXml();
+                    data.sourceKey = sourceKey;
+                    result.postValue(data);
+                } else {
+                    result.postValue(null);
+                }
             }
             return null;
         }
@@ -1783,15 +1811,21 @@ public class SourceViewModel extends ViewModel {
                 	data = checkPush(data);
                     checkThunder(data,0);
                 }else {
-                    result.postValue(data);
+                    postSearchResult(result, data);
                 }
             }
             return data;
         } catch (Exception e) {
-            if (searchResult == result || quickSearchResult == result) {
+            if (searchResult == result || quickSearchResult == result || detailFallbackSearchResult == result) {
                 postEmptySearchResult(result, sourceKey, searchToken);
             } else if (result != null) {
-                result.postValue(null);
+                if (result == detailResult) {
+                    AbsXml data = new AbsXml();
+                    data.sourceKey = sourceKey;
+                    result.postValue(data);
+                } else {
+                    result.postValue(null);
+                }
             }
             return null;
         }
@@ -1840,6 +1874,19 @@ public class SourceViewModel extends ViewModel {
         } else if (quickSearchResult == result) {
             EventBus.getDefault().post(new RefreshEvent(RefreshEvent.TYPE_QUICK_SEARCH_RESULT, data));
         } else if (result != null) {
+            postSearchResult(result, data);
+        }
+    }
+
+    private void postSearchResult(final MutableLiveData<AbsXml> result, final AbsXml data) {
+        if (result == detailFallbackSearchResult) {
+            mainHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    result.setValue(data);
+                }
+            });
+        } else {
             result.postValue(data);
         }
     }

@@ -37,6 +37,9 @@ public abstract class AbstractPlayer {
      */
     protected PlayerEventListener mPlayerEventListener;
 
+    private volatile long mStartPosition;
+    private volatile boolean mStartPositionApplied;
+
     /**
      * 初始化播放器实例
      */
@@ -76,9 +79,37 @@ public abstract class AbstractPlayer {
     public abstract void prepareAsync();
 
     /**
+     * 设置当前数据源准备完成后的起始播放位置。
+     * 播放器实现应在回调 {@link PlayerEventListener#onPrepared()} 前应用该位置。
+     */
+    public void setStartPosition(long position) {
+        mStartPosition = Math.max(0, position);
+        mStartPositionApplied = false;
+    }
+
+    protected final long getStartPosition() {
+        return mStartPosition;
+    }
+
+    protected final void markStartPositionApplied() {
+        mStartPositionApplied = true;
+    }
+
+    public final boolean isStartPositionApplied() {
+        return mStartPositionApplied;
+    }
+
+    /**
      * 重置播放器
      */
     public abstract void reset();
+
+    /**
+     * Whether the render view remains attached after reset.
+     */
+    public boolean keepRenderViewOnReset() {
+        return false;
+    }
 
     /**
      * 是否正在播放

@@ -18,7 +18,6 @@ import com.github.tvbox.osc.R;
 import com.github.tvbox.osc.api.ApiConfig;
 import com.github.tvbox.osc.base.BaseLazyFragment;
 import com.github.tvbox.osc.bean.Movie;
-import com.github.tvbox.osc.bean.SourceBean;
 import com.github.tvbox.osc.bean.VodInfo;
 import com.github.tvbox.osc.cache.RoomDataManger;
 import com.github.tvbox.osc.event.ServerEvent;
@@ -96,17 +95,17 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
             int spanCount = 5;
             if(style!=null && Hawk.get(HawkConfig.HOME_REC, HawkConfig.DEFAULT_HOME_REC) == 1)spanCount=ImgUtil.spanCountByStyle(style,spanCount);
             tvHotList.setLayoutManager(new V7GridLayoutManager(this.mContext, spanCount));
-            int paddingLeft = getResources().getDimensionPixelSize(R.dimen.vs_0);
+            int paddingLeft = -tvHotList.mHorizontalSpacingWithMargins / 2 + getResources().getDimensionPixelSize(R.dimen.vs_6);
             int paddingTop = getResources().getDimensionPixelSize(R.dimen.vs_20);
-            int paddingRight = getResources().getDimensionPixelSize(R.dimen.vs_0);
+            int paddingRight = -tvHotList.mHorizontalSpacingWithMargins / 2 + getResources().getDimensionPixelSize(R.dimen.vs_6);
             int paddingBottom = getResources().getDimensionPixelSize(R.dimen.vs_20);
             tvHotList.setPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
         } else {
             tvHotList.setVisibility(View.VISIBLE);
             tvHotList.setLayoutManager(new V7LinearLayoutManager(this.mContext, V7LinearLayoutManager.HORIZONTAL, false));
-            int paddingLeft = getResources().getDimensionPixelSize(R.dimen.vs_0);
+            int paddingLeft = -tvHotList.mHorizontalSpacingWithMargins / 2 + getResources().getDimensionPixelSize(R.dimen.vs_6);
             int paddingTop = getResources().getDimensionPixelSize(R.dimen.vs_20);
-            int paddingRight = getResources().getDimensionPixelSize(R.dimen.vs_0);
+            int paddingRight = -tvHotList.mHorizontalSpacingWithMargins / 2 + getResources().getDimensionPixelSize(R.dimen.vs_6);
             int paddingBottom = getResources().getDimensionPixelSize(R.dimen.vs_20);
             tvHotList.setPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
         }
@@ -141,17 +140,18 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
         }
     }
 
-    private void jumpSearch(Movie.Video vod){
+    private void jumpSearch(Movie.Video vod) {
         Intent newIntent;
-        if(Hawk.get(HawkConfig.FAST_SEARCH_MODE, true)){
+        if (Hawk.get(HawkConfig.FAST_SEARCH_MODE, true)) {
             newIntent = new Intent(mContext, FastSearchActivity.class);
-        }else {
+        } else {
             newIntent = new Intent(mContext, SearchActivity.class);
         }
         newIntent.putExtra("title", vod.name);
         newIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         mActivity.startActivity(newIntent);
     }
+
     private ImgUtil.Style style;
     @Override
     protected void init() {
@@ -204,20 +204,15 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
                     assert vodInfo != null;
                     RoomDataManger.deleteVodRecord(vod.sourceKey, vodInfo);
                     Toast.makeText(mContext, "已删除当前记录", Toast.LENGTH_SHORT).show();
-               } else if (vod.id != null && !vod.id.isEmpty()) {
+                } else if (vod.id != null && vod.id.startsWith("msearch:")) {
+                    jumpSearch(vod);
+                } else {
                     Bundle bundle = new Bundle();
                     bundle.putString("id", vod.id);
                     bundle.putString("sourceKey", vod.sourceKey);
-                    SourceBean sourceBean = ApiConfig.get().getSource(vod.sourceKey);
-                    if(sourceBean!=null && !vod.id.startsWith("msearch:")){
-                        bundle.putString("title", vod.name);
-                        bundle.putString("picture", vod.pic);
-                        jumpActivity(DetailActivity.class, bundle);
-                    }else {
-                        jumpSearch(vod);
-                    }
-                } else {
-                    jumpSearch(vod);
+                    bundle.putString("title", vod.name);
+                    bundle.putString("picture", vod.pic);
+                    jumpActivity(DetailActivity.class, bundle);
                 }
             }
         });
@@ -230,7 +225,14 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
                 Movie.Video vod = ((Movie.Video) adapter.getItem(position));
                 // Additional Check if : Home Rec 0=豆瓣, 1=推荐, 2=历史
                 assert vod != null;
-                if ((vod.id != null && !vod.id.isEmpty()) && (Hawk.get(HawkConfig.HOME_REC, HawkConfig.DEFAULT_HOME_REC) == 2)) {
+                if (vod.id != null && vod.id.startsWith("msearch:")) {
+                    Bundle bundle = new Bundle();
+                    bundle.putString("id", vod.id);
+                    bundle.putString("sourceKey", vod.sourceKey);
+                    bundle.putString("title", vod.name);
+                    bundle.putString("picture", vod.pic);
+                    jumpActivity(DetailActivity.class, bundle);
+                } else if ((vod.id != null && !vod.id.isEmpty()) && (Hawk.get(HawkConfig.HOME_REC, HawkConfig.DEFAULT_HOME_REC) == 2)) {
                     HawkConfig.hotVodDelete = !HawkConfig.hotVodDelete;
                     homeHotVodAdapter.notifyDataSetChanged();
                 } else {
