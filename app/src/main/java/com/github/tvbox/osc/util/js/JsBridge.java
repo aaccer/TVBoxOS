@@ -1,6 +1,8 @@
 package com.github.tvbox.osc.util.js;
 
+import com.whl.quickjs.wrapper.JSArray;
 import com.whl.quickjs.wrapper.JSCallFunction;
+import com.whl.quickjs.wrapper.JSObject;
 import com.whl.quickjs.wrapper.QuickJSContext;
 
 import java.lang.reflect.Array;
@@ -90,6 +92,7 @@ public class JsBridge {
         public Object call(Object... args) {
             try {
                 if (args.length < 1) {
+                    //System.err.println("digest: 至少需要1个参数");
                     return null;
                 }
     
@@ -97,16 +100,14 @@ public class JsBridge {
                 byte[] data;
     
                 if (args.length == 1) {
-                    // 只传 1 个参数：默认 SHA-256，参数为数据
                     algo = "SHA256";
-                    data = toByteArray(args[0]);
+                    data = toBytesForHash(args[0]);
                 } else {
-                    // 2 个及以上参数：第一个是算法名，第二个是数据
                     algo = args[0].toString().toUpperCase().replace("-", "");
-                    data = toByteArray(args[1]);
-                }
+                    data = toBytesForHash(args[1]);
     
                 if (data == null) {
+                    //System.err.println("digest: 数据转换失败");
                     return null;
                 }
     
@@ -118,11 +119,19 @@ public class JsBridge {
                     case "SHA512": javaAlgo = "SHA-512"; break;
                     case "MD5":    javaAlgo = "MD5";     break;
                     default:
+                        //System.err.println("digest: 不支持的算法 " + algo);
                         return null;
                 }
     
                 MessageDigest md = MessageDigest.getInstance(javaAlgo);
-                return md.digest(data);
+                byte[] hash = md.digest(data);
+    
+                StringBuilder hex = new StringBuilder(hash.length * 2);
+                for (byte b : hash) {
+                    hex.append(Character.forDigit((b >> 4) & 0xF, 16));
+                    hex.append(Character.forDigit(b & 0xF, 16));
+                }
+                return hex.toString();
             } catch (Exception e) {
                 e.printStackTrace();
                 return null;
@@ -130,93 +139,86 @@ public class JsBridge {
         }
     };
 
-// ============================================================
-// powNonce：SHA-256 Proof-of-Work 求 Nonce
-// 参数：(data, diff[, mode[, maxIter[, nonceSuffix]]])
-// 返回：nonce（long），失败返回 -1
-// ============================================================
-private static final JSCallFunction POW_NONCE = new JSCallFunction() {
-    @Override
-    public Object call(Object... args) {
-        try {
-            if (args.length < 2) {
-                //System.err.println("powNonce: 至少需要2个参数 (data, diff)");
+    // powNonce：SHA-256 Proof-of-Work 求 Nonce
+    // 参数：(data, diff[, mode[, maxIter[, nonceSuffix]]])
+    // 返回：nonce（long），失败返回 -1
+    private static final JSCallFunction POW_NONCE = new JSCallFunction() {
+        @Override
+        public Object call(Object... args) {
+            try {
+                if (args.length < 2) {
+                    //System.err.println("powNonce: 至少需要2个参数 (data, diff)");
+                    return -1L;
+                }
+    
+                byte[] data = toBytesForHash(args[0]);
+                if (data == null) {
+                    //System.err.println("powNonce: 数据转换失败");
+                    return -1L;
+                }
+    
+                String diffStr = args[1].toString().trim();
+                int diffLen = diffStr.length();
+                if (diffLen == 0 || diffLen > 8) {
+                    //System.err.println("powNonce: diff 长度必须在 1~8 之间，实际: " + diffLen);
+                    return -1L;
+                }
+                long diffInt = Long.parseLong(diffStr, 16);
+    
+                String mode = args.length >= 3 ? args[2].toString() : "lt";
+                long maxIter = args.length >= 4 ? ((Number) args[3]).longValue() : 10000000L;
+                String nonceSuffix = args.length >= 5 ? args[4].toString() : "dec";
+    
+                int bits = diffLen * 4;
+                MessageDigest md = MessageDigest.getInstance("SHA-256");
+    
+                for (long nonce = 0; nonce < maxIter; nonce++) {
+                    byte[] nonceBytes;
+                    if ("hex".equals(nonceSuffix)) {
+                        nonceBytes = Long.toHexString(nonce).getBytes(StandardCharsets.UTF_8);
+                    } else {
+                        nonceBytes = Long.toString(nonce).getBytes(StandardCharsets.UTF_8);
+                    }
+    
+                    md.reset();
+                    md.update(data);
+                    md.update(nonceBytes);
+                    byte[] hash = md.digest();
+    
+                    long head = extractHead(hash, bits);
+    
+                    boolean matched;
+                    switch (mode) {
+                        case "eq": matched = head == diffInt; break;
+                        case "le": matched = head <= diffInt; break;
+                        case "lt":
+                        default:   matched = head <  diffInt; break;
+                    }
+    
+                    if (matched) return nonce;
+                }
+    
+                //System.err.println("powNonce: 未在 " + maxIter + " 次内找到");
+                return -1L;
+            } catch (Exception e) {
+                e.printStackTrace();
                 return -1L;
             }
-
-            byte[] data = toByteArray(args[0]);
-            if (data == null) {
-                //System.err.println("powNonce: 数据转换失败");
-                return -1L;
-            }
-
-            String diffStr = args[1].toString().trim();
-            int diffLen = diffStr.length();
-            if (diffLen == 0 || diffLen > 8) {
-                //System.err.println("powNonce: diff 长度必须在 1~8 之间，实际: " + diffLen);
-                return -1L;
-            }
-            long diffInt = Long.parseLong(diffStr, 16);
-
-            String mode = args.length >= 3 ? args[2].toString() : "lt";
-            long maxIter = args.length >= 4
-                    ? ((Number) args[3]).longValue()
-                    : 10000000L;
-            String nonceSuffix = args.length >= 5 ? args[4].toString() : "dec";
-
-            int bits = diffLen * 4;   // diff 对应的位数
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
-
-            for (long nonce = 0; nonce < maxIter; nonce++) {
-                // 拼接 nonce
-                byte[] nonceBytes;
-                if ("hex".equals(nonceSuffix)) {
-                    nonceBytes = Long.toHexString(nonce).getBytes(StandardCharsets.UTF_8);
-                } else {
-                    nonceBytes = Long.toString(nonce).getBytes(StandardCharsets.UTF_8);
-                }
-
-                md.reset();
-                md.update(data);
-                md.update(nonceBytes);
-                byte[] hash = md.digest();
-
-                long head = extractHead(hash, bits);
-
-                boolean matched;
-                switch (mode) {
-                    case "eq": matched = head == diffInt; break;
-                    case "le": matched = head <= diffInt; break;
-                    case "lt":
-                    default:   matched = head <  diffInt; break;
-                }
-
-                if (matched) {
-                    return nonce;
-                }
-            }
-
-            //System.err.println("powNonce: 未在 " + maxIter + " 次内找到符合条件的 nonce");
-            return -1L;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return -1L;
         }
-    }
-};
+    };
 
-/**
- * 从 hash 前 bits 位提取整数（bits 必须 <= 64）
- */
-private static long extractHead(byte[] hash, int bits) {
-    int bytesNeeded = (bits + 7) / 8;
-    long value = 0;
-    for (int i = 0; i < bytesNeeded; i++) {
-        value = (value << 8) | (hash[i] & 0xFF);
+    /**
+     * 从 hash 前 bits 位提取整数（bits 必须 <= 64）
+     */
+    private static long extractHead(byte[] hash, int bits) {
+        int bytesNeeded = (bits + 7) / 8;
+        long value = 0;
+        for (int i = 0; i < bytesNeeded; i++) {
+            value = (value << 8) | (hash[i] & 0xFF);
+        }
+        int shift = bytesNeeded * 8 - bits;
+        return value >>> shift;
     }
-    int shift = bytesNeeded * 8 - bits;
-    return value >>> shift;
-}
 
 
     // 返回参数类型的详细描述
@@ -302,82 +304,115 @@ private static long extractHead(byte[] hash, int bits) {
     // 将任意输入转换为 byte[]
     public static byte[] toByteArray(Object obj) {
         if (obj == null) return null;
-
-        // 1. 直接 byte[]
         if (obj instanceof byte[]) return (byte[]) obj;
-
-        // 2. ByteBuffer
+ 
         if (obj instanceof ByteBuffer) {
             ByteBuffer buf = (ByteBuffer) obj;
             byte[] arr = new byte[buf.remaining()];
             buf.get(arr);
             return arr;
         }
-
-        // 3. 十六进制字符串
+        
+        // 十六进制字符串    
         if (obj instanceof String) {
             String s = ((String) obj).trim();
             if (s.length() % 2 != 0) s = "0" + s;
             byte[] data = new byte[s.length() / 2];
             for (int i = 0; i < s.length(); i += 2) {
-                int high = Character.digit(s.charAt(i), 16);
-                int low = Character.digit(s.charAt(i + 1), 16);
-                if (high == -1 || low == -1) {
-                    throw new IllegalArgumentException("非法十六进制字符串: " + s);
-                }
-                data[i / 2] = (byte) ((high << 4) | low);
+                int hi = Character.digit(s.charAt(i), 16);
+                int lo = Character.digit(s.charAt(i + 1), 16);
+                if (hi == -1 || lo == -1) throw new IllegalArgumentException("非法十六进制");
+                data[i / 2] = (byte) ((hi << 4) | lo);
             }
             return data;
         }
-
-        // 4. List（如 JS 数组）
+    
         if (obj instanceof List) {
             List<?> list = (List<?>) obj;
             byte[] arr = new byte[list.size()];
             for (int i = 0; i < list.size(); i++) {
-                Object val = list.get(i);
-                if (val instanceof Number) {
-                    arr[i] = ((Number) val).byteValue();
-                } else {
-                    arr[i] = 0;
-                }
+                Object v = list.get(i);
+                arr[i] = (v instanceof Number) ? ((Number) v).byteValue() : 0;
             }
             return arr;
         }
-
-        // 5. QuickJS 的 Uint8Array / TypedArray / ArrayBuffer（反射获取）
-        String className = obj.getClass().getName();
-        if (className.contains("Uint8Array")
-                || className.contains("TypedArray")
-                || className.contains("ArrayBuffer")) {
+    
+        // JSArray 必须先于 JSObject 判断
+        if (obj instanceof JSArray) {
+            JSArray arr = (JSArray) obj;
+            int len = arr.length();
+            // 优先用 JSON 序列化（大数据快），失败再退到索引访问
             try {
-                Method m = obj.getClass().getMethod("toByteArray");
-                return (byte[]) m.invoke(obj);
+                String json = arr.toJsonString();
+                byte[] result = new byte[len];
+                int idx = 0, num = 0;
+                boolean inNum = false;
+                for (int i = 1; i < json.length() && idx < len; i++) {
+                    char c = json.charAt(i);
+                    if (c >= '0' && c <= '9') {
+                        num = num * 10 + (c - '0');
+                        inNum = true;
+                    } else if (inNum) {
+                        result[idx++] = (byte) num;
+                        num = 0;
+                        inNum = false;
+                    }
+                }
+                if (idx == len) return result;
             } catch (Exception ignored) {}
-
+    
+            // 兜底：逐索引
+            byte[] result = new byte[len];
+            for (int i = 0; i < len; i++) {
+                Object item = arr.get(i);
+                result[i] = (item instanceof Number) ? ((Number) item).byteValue() : 0;
+            }
+            return result;
+        }
+    
+        // Uint8Array 走这里（被桥接为 JSObject）
+        if (obj instanceof JSObject) {
+            JSObject jsObj = (JSObject) obj;
             try {
-                Method getBuffer = obj.getClass().getMethod("getBuffer");
-                Object buffer = getBuffer.invoke(obj);
-                Method getData = buffer.getClass().getMethod("getData");
-                return (byte[]) getData.invoke(buffer);
+                Object lenObj = jsObj.get("length");
+                if (lenObj instanceof Number) {
+                    int len = ((Number) lenObj).intValue();
+                    if (len >= 0 && len < 100 * 1024 * 1024) {
+                        byte[] result = new byte[len];
+                        for (int i = 0; i < len; i++) {
+                            Object item = jsObj.get(String.valueOf(i));
+                            result[i] = (item instanceof Number) ? ((Number) item).byteValue() : 0;
+                        }
+                        return result;
+                    }
+                }
             } catch (Exception ignored) {}
         }
-
-        // 6. 其他原生数组（int[]、long[] 等）
+    
         if (obj.getClass().isArray()) {
             int len = Array.getLength(obj);
             byte[] arr = new byte[len];
             for (int i = 0; i < len; i++) {
                 Object elem = Array.get(obj, i);
-                if (elem instanceof Number) {
-                    arr[i] = ((Number) elem).byteValue();
-                } else {
-                    return null;
-                }
+                if (elem instanceof Number) arr[i] = ((Number) elem).byteValue();
+                else return null;
             }
             return arr;
         }
-
+    
         return null;
     }
+
+    /**
+     * 哈希类函数专用：String 按 UTF-8 处理，其他类型走 toByteArray
+     * 与 CryptoJS.SHA256(str) 行为一致
+     */
+    public static byte[] toBytesForHash(Object obj) {
+        if (obj == null) return null;
+        if (obj instanceof String) {
+            return ((String) obj).getBytes(StandardCharsets.UTF_8);
+        }
+        return toByteArray(obj);
+    }
+
 }
