@@ -18,10 +18,7 @@ import com.whl.quickjs.wrapper.QuickJSContext;
 
 import org.json.JSONArray;
 import java.io.ByteArrayInputStream;
-import java.lang.reflect.Array;
 import java.lang.reflect.Method;
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,10 +26,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-
-import javax.crypto.Cipher;
-import javax.crypto.spec.GCMParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
 
 public class SpiderJS extends Spider {
 
@@ -71,105 +64,7 @@ public class SpiderJS extends Spider {
 
     private void initjs(Class<?> cls) throws Exception {
         submit(() -> {
-            if (runtime == null){
-            this.runtime = QuickJSContext.create();
-            JSCallFunction aesGcmDecryptFunc = new JSCallFunction() {
-                @Override
-                public Object call(Object... args) {
-                    try {
-                        if (args.length < 4) {
-                            return null;
-                        }
-            
-                        byte[] key = toByteArray(args[0]);
-                        byte[] iv = toByteArray(args[1]);
-                        byte[] cipher = toByteArray(args[2]);
-                        byte[] tag = toByteArray(args[3]);
-            
-                        if (key == null || iv == null || cipher == null || tag == null) {
-                            return null;
-                        }
-                        
-                        int tagLenBits = tag.length * 8;
-                        SecretKeySpec keySpec = new SecretKeySpec(key, "AES");
-                        GCMParameterSpec gcmSpec = new GCMParameterSpec(tagLenBits, iv);
-                        Cipher cipherObj = Cipher.getInstance("AES/GCM/NoPadding");
-                        cipherObj.init(Cipher.DECRYPT_MODE, keySpec, gcmSpec);
-            
-                        byte[] combined = new byte[cipher.length + tag.length];
-                        System.arraycopy(cipher, 0, combined, 0, cipher.length);
-                        System.arraycopy(tag, 0, combined, cipher.length, tag.length);
-            
-                        byte[] plain = cipherObj.doFinal(combined);
-                        return new String(plain, StandardCharsets.UTF_8);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        return null;
-                    }
-                }
-            
-                private byte[] toByteArray(Object obj) {
-                    if (obj == null) return null;
-            
-                    if (obj instanceof byte[]) {
-                        return (byte[]) obj;
-                    }
-            
-                    if (obj instanceof ByteBuffer) {
-                        ByteBuffer buf = (ByteBuffer) obj;
-                        byte[] arr = new byte[buf.remaining()];
-                        buf.get(arr);
-                        return arr;
-                    }
-            
-                    if (obj instanceof String) {
-                        String s = (String) obj;
-                        s = s.trim();
-                        if (s.length() % 2 != 0) {
-                            s = "0" + s;
-                        }
-                        int len = s.length();
-                        byte[] data = new byte[len / 2];
-                        for (int i = 0; i < len; i += 2) {
-                            int high = Character.digit(s.charAt(i), 16);
-                            int low = Character.digit(s.charAt(i + 1), 16);
-                            if (high == -1 || low == -1) {
-                                throw new IllegalArgumentException("非法十六进制字符串: " + s);
-                            }
-                            data[i / 2] = (byte) ((high << 4) | low);
-                        }
-                        return data;
-                    }
-            
-                    if (obj instanceof List) {
-                        List<?> list = (List<?>) obj;
-                        byte[] arr = new byte[list.size()];
-                        for (int i = 0; i < list.size(); i++) {
-                            Number num = (Number) list.get(i);
-                            arr[i] = num.byteValue();
-                        }
-                        return arr;
-                    }
-            
-                    if (obj.getClass().isArray()) {
-                        int len = Array.getLength(obj);
-                        byte[] arr = new byte[len];
-                        for (int i = 0; i < len; i++) {
-                            Object elem = Array.get(obj, i);
-                            if (elem instanceof Number) {
-                                arr[i] = ((Number) elem).byteValue();
-                            } else {
-                                return null;
-                            }
-                        }
-                        return arr;
-                    }
-            
-                    return null;
-                }
-            };        
-            runtime.getGlobalObject().set("aesGcmDecrypt", aesGcmDecryptFunc);
-            }
+            if (runtime == null) this.runtime = QuickJSContext.create();
             runtime.setModuleLoader(new QuickJSContext.DefaultModuleLoader() {
                 @Override
                 public String getModuleStringCode(String moduleName) {
@@ -250,6 +145,8 @@ public class SpiderJS extends Spider {
                 LOG.i("QuJs", s);
             }
         });
+
+        JsBridge.register(runtime);
 
         runtime.evaluate(FileUtils.loadModule("net.js"));
     }
