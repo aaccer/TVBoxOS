@@ -105,6 +105,7 @@ public class JsBridge {
                 } else {
                     algo = args[0].toString().toUpperCase().replace("-", "");
                     data = toBytesForHash(args[1]);
+                }
     
                 if (data == null) {
                     //System.err.println("digest: 数据转换失败");
