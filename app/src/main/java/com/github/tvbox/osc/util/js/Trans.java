@@ -23,8 +23,9 @@ public class Trans {
     private Trans() {
         s2t = new HashMap<>();
         t2s = new HashMap<>();
-        trans = Locale.getDefault().getCountry().equals("TW");
-        if (trans) init();
+        //trans = Locale.getDefault().getCountry().equals("TW");
+        //if (trans) 
+        init();
     }
 
     private void init() {
