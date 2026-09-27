@@ -319,39 +319,34 @@ public class Global {
     // AES-GCM 解密（返回 UTF-8 字符串）    
     @Keep
     @Function
-    public String aesGcmDecrypt(Object... args) {
+    public String aesGcmDecrypt(Object key, Object iv, Object cipher, Object tag) {
         try {
-            if (args.length < 3) return null;
-    
-            byte[] key = toByteArray(args[0]);
-            byte[] iv  = toByteArray(args[1]);
-            if (key == null || iv == null) return null;
-    
-            byte[] cipher, tag;
-            if (args.length == 3) {
-                // 3 个参数：cipher 与 tag 拼接在 args[2] 中，tag 取末尾 16 字节
-                byte[] combined = toByteArray(args[2]);
+            // 3 参数时把 cipher 和 tag 合并
+            if (tag == null) {
+                byte[] combined = toByteArray(cipher);
                 if (combined == null || combined.length < 16) return null;
-                cipher = new byte[combined.length - 16];
-                tag = new byte[16];
-                System.arraycopy(combined, 0, cipher, 0, cipher.length);
-                System.arraycopy(combined, cipher.length, tag, 0, 16);
-            } else {
-                cipher = toByteArray(args[2]);
-                tag = toByteArray(args[3]);
-                if (cipher == null || tag == null) return null;
+                byte[] c = new byte[combined.length - 16];
+                byte[] t = new byte[16];
+                System.arraycopy(combined, 0, c, 0, c.length);
+                System.arraycopy(combined, c.length, t, 0, 16);
+                cipher = c;
+                tag = t;
             }
+            byte[] keyBytes = toByteArray(key);
+            byte[] ivBytes = toByteArray(iv);
+            byte[] cipherBytes = toByteArray(cipher);
+            byte[] tagBytes = toByteArray(tag);
+            if (keyBytes == null || ivBytes == null || cipherBytes == null || tagBytes == null) return null;
     
-            javax.crypto.spec.SecretKeySpec keySpec =
-                    new javax.crypto.spec.SecretKeySpec(key, "AES");
-            javax.crypto.spec.GCMParameterSpec gcmSpec =
-                    new javax.crypto.spec.GCMParameterSpec(tag.length * 8, iv);
-            javax.crypto.Cipher cipherObj = javax.crypto.Cipher.getInstance("AES/GCM/NoPadding");
-            cipherObj.init(javax.crypto.Cipher.DECRYPT_MODE, keySpec, gcmSpec);
+            int tagLenBits = tagBytes.length * 8;
+            SecretKeySpec keySpec = new SecretKeySpec(keyBytes, "AES");
+            GCMParameterSpec gcmSpec = new GCMParameterSpec(tagLenBits, ivBytes);
+            Cipher cipherObj = Cipher.getInstance("AES/GCM/NoPadding");
+            cipherObj.init(Cipher.DECRYPT_MODE, keySpec, gcmSpec);
     
-            byte[] combined = new byte[cipher.length + tag.length];
-            System.arraycopy(cipher, 0, combined, 0, cipher.length);
-            System.arraycopy(tag, 0, combined, cipher.length, tag.length);
+            byte[] combined = new byte[cipherBytes.length + tagBytes.length];
+            System.arraycopy(cipherBytes, 0, combined, 0, cipherBytes.length);
+            System.arraycopy(tagBytes, 0, combined, cipherBytes.length, tagBytes.length);
             byte[] plain = cipherObj.doFinal(combined);
             return new String(plain, java.nio.charset.StandardCharsets.UTF_8);
         } catch (Exception e) {
@@ -363,23 +358,13 @@ public class Global {
     // digest（SHA-256 / SHA-1 / SHA-384 / SHA-512 / MD5）
     @Keep
     @Function
-    public String digest(Object... args) {
+    public String digest(String algoStr, Object dataObj) {
         try {
-            if (args.length < 1) return null;
-
-            String algo;
-            byte[] data;
-
-            if (args.length == 1) {
-                algo = "SHA256";
-                data = toBytesForHash(args[0]);
-            } else {
-                algo = args[0].toString().toUpperCase().replace("-", "");
-                data = toBytesForHash(args[1]);
-            }
-
+            String algo = algoStr.toUpperCase().replace("-", "");
+            byte[] data = toBytesForHash(dataObj);
+            
             if (data == null) return null;
-
+    
             String javaAlgo;
             switch (algo) {
                 case "SHA256": javaAlgo = "SHA-256"; break;
@@ -387,13 +372,10 @@ public class Global {
                 case "SHA384": javaAlgo = "SHA-384"; break;
                 case "SHA512": javaAlgo = "SHA-512"; break;
                 case "MD5":    javaAlgo = "MD5";     break;
-                default:
-                    return null;
+                default: return null;
             }
-
             MessageDigest md = MessageDigest.getInstance(javaAlgo);
             byte[] hash = md.digest(data);
-
             StringBuilder hex = new StringBuilder(hash.length * 2);
             for (byte b : hash) {
                 hex.append(Character.forDigit((b >> 4) & 0xF, 16));
@@ -407,24 +389,21 @@ public class Global {
     }
 
     // powNonce：SHA-256 Proof-of-Work 求 Nonce
-    // 参数：(data, diff[, mode[, maxIter[, nonceSuffix]]])
+    // 参数：(data, diff, mode, maxIter, nonceSuffix)
     // 返回：nonce（long），失败返回 -1
     @Keep
     @Function
-    public long powNonce(Object... args) {
+    public long powNonce(Object dataStr, String diffStr, String mode, Integer maxIter, String nonceSuffix) {
         try {
-            byte[] data = toBytesForHash(args[0]);
-            if (data == null) return -1L;
-
-            String diffStr = args[1].toString().trim();
+            byte[] data = toBytesForHash(dataStr);
             int diffLen = diffStr.length();
             if (diffLen == 0 || diffLen > 8) return -1L;
 
             long diffInt = Long.parseLong(diffStr, 16);
 
-            String mode = args.length >= 3 ? args[2].toString() : "lt";
-            long maxIter = args.length >= 4 ? ((Number) args[3]).longValue() : 10000000L;
-            String nonceSuffix = args.length >= 5 ? args[4].toString() : "dec";
+            if (mode == null) mode = "eq";
+            if (maxIter == null) maxIter = 10000000L;
+            if (nonceSuffix == null) nonceSuffix = "dec";
 
             int bits = diffLen * 4;
             MessageDigest md = MessageDigest.getInstance("SHA-256");
