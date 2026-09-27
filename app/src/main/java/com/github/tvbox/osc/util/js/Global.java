@@ -389,11 +389,10 @@ public class Global {
     }
 
     // powNonce：SHA-256 Proof-of-Work 求 Nonce
-    // 参数：(data, diff, mode, maxIter, nonceSuffix)
     // 返回：nonce（long），失败返回 -1
     @Keep
     @Function
-    public long powNonce(Object dataStr, String diffStr, String mode, Integer maxIter, String nonceSuffix) {
+    public long powNonce(Object dataStr, String diffStr, String mode, Number maxIter, String nonceSuffix) {
         try {
             byte[] data = toBytesForHash(dataStr);
             int diffLen = diffStr.length();
@@ -402,13 +401,14 @@ public class Global {
             long diffInt = Long.parseLong(diffStr, 16);
 
             if (mode == null) mode = "eq";
-            if (maxIter == null) maxIter = 10000000L;
+            long max = (maxIter != null) ? maxIter.longValue() : 10000000L;
+            
             if (nonceSuffix == null) nonceSuffix = "dec";
 
             int bits = diffLen * 4;
             MessageDigest md = MessageDigest.getInstance("SHA-256");
 
-            for (long nonce = 0; nonce < maxIter; nonce++) {
+            for (long nonce = 0; nonce < max; nonce++) {
                 byte[] nonceBytes;
                 if ("hex".equals(nonceSuffix)) {
                     nonceBytes = Long.toHexString(nonce).getBytes(StandardCharsets.UTF_8);
@@ -434,7 +434,7 @@ public class Global {
                 if (matched) return nonce;
             }
 
-            //System.err.println("powNonce: 未在 " + maxIter + " 次内找到");
+            //powNonce:未在max内找到
             return -1L;
         } catch (Exception e) {
             e.printStackTrace();
