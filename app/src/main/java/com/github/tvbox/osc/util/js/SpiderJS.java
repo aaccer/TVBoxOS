@@ -146,8 +146,6 @@ public class SpiderJS extends Spider {
             }
         });
 
-        JsBridge.register(runtime);
-
         runtime.evaluate(FileUtils.loadModule("net.js"));
     }
 
