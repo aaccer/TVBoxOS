@@ -231,8 +231,6 @@ public class JsSpider extends Spider {
         ctx.getGlobalObject().set("local", local);
         local.bind(new local());
 
-        JsBridge.register(ctx);
-
         ctx.getGlobalObject().getContext().evaluate(FileUtils.loadModule("net.js"));
     }
 
