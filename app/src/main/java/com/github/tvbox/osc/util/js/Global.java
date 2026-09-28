@@ -128,11 +128,12 @@ public class Global {
         return result;
     }
 
-    @Keep
-    @Function
-    public String rsaEncrypt(String data, String key) {
-        return  rsaEncrypt(data, key, null);
-    }
+    // @Keep
+    // @Function
+    // public String rsaEncrypt(String data, String key) {
+        // return  rsaEncrypt(data, key, null);
+    // }
+
     /**
      * RSA 加密
      *
@@ -206,11 +207,11 @@ public class Global {
         }
     }
 
-    @Keep
-    @Function
-    public String rsaDecrypt(String encryptBase64Data, String key) {
-        return  rsaDecrypt(encryptBase64Data, key, null);
-    }
+    // @Keep
+    // @Function
+    // public String rsaDecrypt(String encryptBase64Data, String key) {
+        // return  rsaDecrypt(encryptBase64Data, key, null);
+    // }
 
     /**
      * RSA 解密
