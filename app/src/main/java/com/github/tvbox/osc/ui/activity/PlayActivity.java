@@ -779,8 +779,8 @@ public class PlayActivity extends BaseActivity {
                                     if (mVideoView.getMediaPlayer() instanceof EXOmPlayer) {
                                         ((EXOmPlayer)(mVideoView.getMediaPlayer())).selectExoTrack(subtitleTrackInfoBean);
                                     }
-                                    break;
                                 }
+                                break;
                             }
                         }
                         //if(!hasCh)((IjkMediaPlayer)(mVideoView.getMediaPlayer())).setTrack(subtitleTrackList.get(0).trackId);
