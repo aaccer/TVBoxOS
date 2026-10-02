@@ -150,7 +150,7 @@ public class VodController extends BaseController {
     private boolean isLock = false;
     Handler myHandle;
     Runnable myRunnable;
-    int myHandleSeconds = 10000;//闲置多少毫秒秒关闭底栏  默认6秒
+    int myHandleSeconds = 8000;//闲置多少毫秒秒关闭底栏  默认6秒
 
     int videoPlayState = 0;
 
@@ -657,11 +657,11 @@ public class VodController extends BaseController {
                 Toast.makeText(getContext(), "字幕已关闭", Toast.LENGTH_SHORT).show();*/
                 if(mSubtitleView.getVisibility() == View.VISIBLE){
                 mSubtitleView.setVisibility(View.GONE);
-                hideBottom();
+                // hideBottom();
                 Toast.makeText(getContext(), "字幕已关闭", Toast.LENGTH_SHORT).show();
                 }else{
                 mSubtitleView.setVisibility(View.VISIBLE);
-                hideBottom();
+                // hideBottom();
                 Toast.makeText(getContext(), "字幕已开启", Toast.LENGTH_SHORT).show();
                 }
                 return true;
