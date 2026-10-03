@@ -643,10 +643,6 @@ public class VodController extends BaseController {
             public void onClick(View view) {
                 FastClickCheckUtil.check(view);
                 listener.selectSubtitle();
-                // 强制重置，避免进度卡住
-                mIsDragging = false;
-                mControlWrapper.startProgress();
-                mControlWrapper.startFadeOut();
                 hideBottom();
             }
         });
@@ -678,10 +674,6 @@ public class VodController extends BaseController {
             public void onClick(View view) {
                 FastClickCheckUtil.check(view);
                 listener.selectAudioTrack();
-                // 强制重置，避免进度卡住
-                mIsDragging = false;
-                mControlWrapper.startProgress();
-                mControlWrapper.startFadeOut();
                 hideBottom();
             }
         });
