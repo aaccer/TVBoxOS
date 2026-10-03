@@ -643,6 +643,10 @@ public class VodController extends BaseController {
             public void onClick(View view) {
                 FastClickCheckUtil.check(view);
                 listener.selectSubtitle();
+                // 强制重置，避免进度卡住
+                mIsDragging = false;
+                mControlWrapper.startProgress();
+                mControlWrapper.startFadeOut();
                 hideBottom();
             }
         });
@@ -657,10 +661,12 @@ public class VodController extends BaseController {
                 Toast.makeText(getContext(), "字幕已关闭", Toast.LENGTH_SHORT).show();*/
                 if(mSubtitleView.getVisibility() == View.VISIBLE){
                 mSubtitleView.setVisibility(View.GONE);
+                mSubtitleView.pause();   // 暂停引擎
                 // hideBottom();
                 Toast.makeText(getContext(), "字幕已关闭", Toast.LENGTH_SHORT).show();
                 }else{
                 mSubtitleView.setVisibility(View.VISIBLE);
+                mSubtitleView.resume();  // 恢复引擎
                 // hideBottom();
                 Toast.makeText(getContext(), "字幕已开启", Toast.LENGTH_SHORT).show();
                 }
@@ -672,6 +678,10 @@ public class VodController extends BaseController {
             public void onClick(View view) {
                 FastClickCheckUtil.check(view);
                 listener.selectAudioTrack();
+                // 强制重置，避免进度卡住
+                mIsDragging = false;
+                mControlWrapper.startProgress();
+                mControlWrapper.startFadeOut();
                 hideBottom();
             }
         });
