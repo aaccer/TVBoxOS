@@ -98,6 +98,15 @@ public class SimpleSubtitleView extends TextView
         start();
     }
 
+    public void clear() {
+        setText(EMPTY_TEXT);
+        if (backGroundText != null) {
+            backGroundText.setText(EMPTY_TEXT);
+        }
+        invalidate();
+        requestLayout();
+    }
+
     @Override
     public void onSubtitleChanged(@Nullable final Subtitle subtitle) {
         if (subtitle == null) {
