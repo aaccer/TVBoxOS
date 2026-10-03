@@ -632,7 +632,7 @@ public class PlayFragment extends BaseLazyFragment {
                                 startPlayUrl(url, headers);
                             else {
                                 startPlayUrl("http://127.0.0.1:" + RemoteServer.serverPort + "/m3u8", headers);
-                                Toast.makeText(getContext(), "已移除视频广告", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(mContext, "已移除视频广告", Toast.LENGTH_SHORT).show();
                             }
                             return;
                         }
@@ -651,7 +651,7 @@ public class PlayFragment extends BaseLazyFragment {
                                             startPlayUrl(finalforwardurl, headers);
                                         else {
                                             startPlayUrl("http://127.0.0.1:" + RemoteServer.serverPort + "/m3u8", headers);
-                                            Toast.makeText(getContext(), "已移除视频广告", Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(mContext, "已移除视频广告", Toast.LENGTH_SHORT).show();
                                         }
                                     }
 
