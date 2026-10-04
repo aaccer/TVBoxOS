@@ -311,13 +311,21 @@ public abstract class BaseVideoController extends FrameLayout
     /**
      * 刷新进度Runnable
      */
+    private int mProgressRetryCount = 0;
+    private static final int MAX_PROGRESS_RETRY = 20;
+    
     protected Runnable mShowProgress = new Runnable() {
         @Override
         public void run() {
             int pos = setProgress();
             if (mControlWrapper.isPlaying()) {
+                mProgressRetryCount = 0;
                 postDelayed(this, (long) ((1000 - pos % 1000) / mControlWrapper.getSpeed()));
+            } else if (mIsStartProgress && mProgressRetryCount < MAX_PROGRESS_RETRY) {
+                mProgressRetryCount++;
+                postDelayed(this, 500);
             } else {
+                mProgressRetryCount = 0;
                 mIsStartProgress = false;
             }
         }
