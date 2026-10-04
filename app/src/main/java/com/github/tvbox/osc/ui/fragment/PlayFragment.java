@@ -401,7 +401,6 @@ public class PlayFragment extends BaseLazyFragment {
                         public void run() {
                             mediaPlayer.seekTo(progress);
                             mediaPlayer.start();
-                            mController.stopProgress();
                             mController.startProgress();
                         }
                     }, 800);
@@ -467,31 +466,22 @@ public class PlayFragment extends BaseLazyFragment {
                         mController.mSubtitleView.clearSubtitleCache();
                         mController.mSubtitleView.isInternal = true;
                         ((IjkMediaPlayer) mediaPlayer).setTrack(value.trackId);
-                        new Handler().postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                mediaPlayer.seekTo(progress);
-                                mediaPlayer.start();
-                                mController.stopProgress();
-                                mController.startProgress();
-                            }
-                        }, 800);
                     }
                     if (mediaPlayer instanceof EXOmPlayer) {
                         mController.mSubtitleView.destroy();
                         mController.mSubtitleView.clearSubtitleCache();
                         mController.mSubtitleView.isInternal = true;
                         ((EXOmPlayer) mediaPlayer).selectExoTrack(value);
-                        new Handler().postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                mediaPlayer.seekTo(progress);
-                                mediaPlayer.start();
-                                mController.stopProgress();
-                                mController.startProgress();
-                            }
-                        }, 800);
                     }
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            mediaPlayer.seekTo(progress);
+                            mediaPlayer.start();
+                            mController.startProgress();
+                        }
+                    }, 800);
+
                     dialog.dismiss();
                 } catch (Exception e) {
                     LOG.e("切换内置字幕出错");
