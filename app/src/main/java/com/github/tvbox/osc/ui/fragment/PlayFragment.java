@@ -58,7 +58,7 @@ import com.github.tvbox.osc.player.TrackInfoBean;
 import com.github.tvbox.osc.player.controller.VodController;
 import com.github.tvbox.osc.server.ControlManager;
 import com.github.tvbox.osc.server.RemoteServer;
-import com.github.tvbox.osc.subtitle.model.Subtitle;
+//import com.github.tvbox.osc.subtitle.model.Subtitle;
 import com.github.tvbox.osc.ui.adapter.SelectDialogAdapter;
 import com.github.tvbox.osc.ui.dialog.SearchSubtitleDialog;
 import com.github.tvbox.osc.ui.dialog.SelectDialog;
@@ -742,7 +742,8 @@ public class PlayFragment extends BaseLazyFragment {
                 @Override
                 public void onTimedText(IMediaPlayer mp, IjkTimedText text) {
                     if (mController.mSubtitleView.isInternal) {
-                        Subtitle subtitle = new Subtitle();
+                        //Subtitle subtitle = new Subtitle();
+                        com.github.tvbox.osc.subtitle.model.Subtitle subtitle = new com.github.tvbox.osc.subtitle.model.Subtitle();
                         subtitle.content = text.getText();
                         mController.mSubtitleView.onSubtitleChanged(subtitle);
                     }
@@ -761,11 +762,13 @@ public class PlayFragment extends BaseLazyFragment {
                         CharSequence ss = cues.get(0).text;
                         if (mController.mSubtitleView.isInternal) {
                             if (ss != null) {
-                                Subtitle subtitle = new Subtitle();
+                                //Subtitle subtitle = new Subtitle();
+                                com.github.tvbox.osc.subtitle.model.Subtitle subtitle = new com.github.tvbox.osc.subtitle.model.Subtitle();
                                 subtitle.content = ss.toString();
                                 mController.mSubtitleView.onSubtitleChanged(subtitle);
                             }else {
-                                Subtitle subtitle = new Subtitle();
+                                //Subtitle subtitle = new Subtitle();
+                                com.github.tvbox.osc.subtitle.model.Subtitle subtitle = new com.github.tvbox.osc.subtitle.model.Subtitle();
                                 subtitle.content = "";
                                 mController.mSubtitleView.onSubtitleChanged(subtitle);
                             }
@@ -1104,6 +1107,7 @@ public class PlayFragment extends BaseLazyFragment {
         // 清空字幕
         if (mController != null && mController.mSubtitleView != null) {
             mController.mSubtitleView.clear();
+            mController.mSubtitleView.destroy();
             mController.mSubtitleView.isInternal = false;
             mController.mSubtitleView.hasInternal = false;
         }
