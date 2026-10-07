@@ -758,20 +758,20 @@ public class PlayFragment extends BaseLazyFragment {
             ((EXOmPlayer) (mVideoView.getMediaPlayer())).setOnTimedTextListener(new Player.Listener() {
                 @Override
                 public void onCues(@NonNull List<Cue> cues) {
-                    if (cues.size() > 0) {
-                        CharSequence ss = cues.get(0).text;
-                        if (mController.mSubtitleView.isInternal) {
+                    if (mController.mSubtitleView.isInternal) {
+                        if (cues.size() > 0) {
+                            CharSequence ss = cues.get(0).text;
                             if (ss != null) {
                                 //Subtitle subtitle = new Subtitle();
                                 com.github.tvbox.osc.subtitle.model.Subtitle subtitle = new com.github.tvbox.osc.subtitle.model.Subtitle();
                                 subtitle.content = ss.toString();
                                 mController.mSubtitleView.onSubtitleChanged(subtitle);
-                            }else {
-                                //Subtitle subtitle = new Subtitle();
-                                com.github.tvbox.osc.subtitle.model.Subtitle subtitle = new com.github.tvbox.osc.subtitle.model.Subtitle();
-                                subtitle.content = "";
-                                mController.mSubtitleView.onSubtitleChanged(subtitle);
                             }
+                        }else {
+                            //Subtitle subtitle = new Subtitle();
+                            com.github.tvbox.osc.subtitle.model.Subtitle subtitle = new com.github.tvbox.osc.subtitle.model.Subtitle();
+                            subtitle.content = "";
+                            mController.mSubtitleView.onSubtitleChanged(subtitle);
                         }
                     }
                 }
