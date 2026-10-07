@@ -58,6 +58,7 @@ import com.github.tvbox.osc.player.TrackInfoBean;
 import com.github.tvbox.osc.player.controller.VodController;
 import com.github.tvbox.osc.server.ControlManager;
 import com.github.tvbox.osc.server.RemoteServer;
+import com.github.tvbox.osc.subtitle.model.Subtitle;
 import com.github.tvbox.osc.ui.adapter.SelectDialogAdapter;
 import com.github.tvbox.osc.ui.dialog.SearchSubtitleDialog;
 import com.github.tvbox.osc.ui.dialog.SelectDialog;
@@ -507,7 +508,7 @@ public class PlayFragment extends BaseLazyFragment {
             public boolean areContentsTheSame(@NonNull @NotNull TrackInfoBean oldItem, @NonNull @NotNull TrackInfoBean newItem) {
                 return oldItem.trackId == newItem.trackId;
             }
-        }, bean, trackInfo.getSubtitleSelected(false));
+        }, bean, mController.mSubtitleView.isInternal ? trackInfo.getSubtitleSelected(false) : -1);
         dialog.show();
     }
 
@@ -741,7 +742,7 @@ public class PlayFragment extends BaseLazyFragment {
                 @Override
                 public void onTimedText(IMediaPlayer mp, IjkTimedText text) {
                     if (mController.mSubtitleView.isInternal) {
-                        com.github.tvbox.osc.subtitle.model.Subtitle subtitle = new com.github.tvbox.osc.subtitle.model.Subtitle();
+                        Subtitle subtitle = new Subtitle();
                         subtitle.content = text.getText();
                         mController.mSubtitleView.onSubtitleChanged(subtitle);
                     }
@@ -758,10 +759,16 @@ public class PlayFragment extends BaseLazyFragment {
                 public void onCues(@NonNull List<Cue> cues) {
                     if (cues.size() > 0) {
                         CharSequence ss = cues.get(0).text;
-                        if (ss != null && mController.mSubtitleView.isInternal) {
-                            com.github.tvbox.osc.subtitle.model.Subtitle subtitle = new com.github.tvbox.osc.subtitle.model.Subtitle();
-                            subtitle.content = ss.toString();
-                            mController.mSubtitleView.onSubtitleChanged(subtitle);
+                        if (mController.mSubtitleView.isInternal) {
+                            if (ss != null) {
+                                Subtitle subtitle = new Subtitle();
+                                subtitle.content = ss.toString();
+                                mController.mSubtitleView.onSubtitleChanged(subtitle);
+                            }else {
+                                Subtitle subtitle = new Subtitle();
+                                subtitle.content = "";
+                                mController.mSubtitleView.onSubtitleChanged(subtitle);
+                            }
                         }
                     }
                 }
@@ -1106,21 +1113,7 @@ public class PlayFragment extends BaseLazyFragment {
         if (reset) {
             CacheManager.delete(MD5.string2MD5(progressKey), 0);
             CacheManager.delete(MD5.string2MD5(subtitleCacheKey), 0);
-            //if(mController.mSubtitleView.getVisibility() == View.VISIBLE){
-                //mController.mSubtitleView.reset();
-            //}
-        }/*else{
-            try{
-                int playerType = mVodPlayerCfg.getInt("pl");
-                if(playerType==1){
-                    mController.mSubtitleView.setVisibility(View.VISIBLE);
-                }else {
-                    mController.mSubtitleView.setVisibility(View.GONE);
-                }
-            }catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }*/
+        }
 
         if(Jianpian.isJpUrl(vs.url)){//荐片地址特殊判断
             String jp_url= vs.url;
