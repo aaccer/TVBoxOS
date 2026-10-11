@@ -166,6 +166,7 @@
                     android:layout_marginBottom="@dimen/vs_10"
                     android:focusable="false"
                     android:ellipsize="end"
+                    android:maxLines="7"
                     android:lineSpacingMultiplier="1.2"
                     android:textColor="@color/color_CCFFFFFF"
                     android:textSize="@dimen/ts_20" />
