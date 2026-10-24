@@ -1,11 +1,16 @@
 package com.github.tvbox.osc.util.js;
 
+import android.os.Environment;
+import android.util.Base64;
+
 import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 
 import com.github.tvbox.osc.server.ControlManager;
+import com.github.tvbox.osc.util.FileUtils;
 import com.github.tvbox.osc.util.LOG;
 import com.github.tvbox.osc.util.rsa.RSAEncrypt;
+import com.github.tvbox.osc.util.StringUtils;
 import com.whl.quickjs.wrapper.ContextSetter;
 import com.whl.quickjs.wrapper.Function;
 import com.whl.quickjs.wrapper.JSArray;
@@ -16,6 +21,9 @@ import com.whl.quickjs.wrapper.QuickJSContext;
 
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URLEncoder;
 
@@ -24,12 +32,16 @@ import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.security.SecureRandom;
 
+import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.ExecutorService;
+import java.util.UUID;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.GCMParameterSpec;
@@ -128,12 +140,6 @@ public class Global {
         return result;
     }
 
-    // @Keep
-    // @Function
-    // public String rsaEncrypt(String data, String key) {
-        // return  rsaEncrypt(data, key, null);
-    // }
-
     /**
      * RSA 加密
      *
@@ -206,12 +212,6 @@ public class Global {
             return "";
         }
     }
-
-    // @Keep
-    // @Function
-    // public String rsaDecrypt(String encryptBase64Data, String key) {
-        // return  rsaDecrypt(encryptBase64Data, key, null);
-    // }
 
     /**
      * RSA 解密
@@ -317,12 +317,37 @@ public class Global {
         }, delay);
     }
 
+    @Keep
+    @Function
+    public Object aesGcmEncrypt(Object key, Object iv, Object plain, Object aad) {
+        try {
+            byte[] keyBytes   = toByteArray(key);
+            byte[] ivBytes    = toByteArray(iv);
+            byte[] plainBytes = toByteArray(plain);
+            byte[] aadBytes   = (aad == null) ? null : toByteArray(aad);
+            if (keyBytes == null || ivBytes == null || plainBytes == null) return null;
+    
+            SecretKeySpec keySpec = new SecretKeySpec(keyBytes, "AES");
+            GCMParameterSpec gcmSpec = new GCMParameterSpec(128, ivBytes);
+            Cipher c = Cipher.getInstance("AES/GCM/NoPadding");
+            c.init(Cipher.ENCRYPT_MODE, keySpec, gcmSpec);
+            if (aadBytes != null) c.updateAAD(aadBytes);
+            byte[] out = c.doFinal(plainBytes);   // 密文 + 16字节 tag
+            // 返回普通数组
+            byte[] arr = out;
+            return arr;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     // AES-GCM 解密（返回 UTF-8 字符串）    
     @Keep
     @Function
-    public String aesGcmDecrypt(Object key, Object iv, Object cipher, Object tag) {
+    public String aesGcmDecryptAad(Object key, Object iv, Object cipher, Object tag, Object aad) {
         try {
-            // 3 参数时把 cipher 和 tag 合并
+            // 3参数兼容：tag 为 null 时把 cipher 末尾 16 字节拆出来
             if (tag == null) {
                 byte[] combined = toByteArray(cipher);
                 if (combined == null || combined.length < 16) return null;
@@ -333,10 +358,13 @@ public class Global {
                 cipher = c;
                 tag = t;
             }
-            byte[] keyBytes = toByteArray(key);
-            byte[] ivBytes = toByteArray(iv);
+    
+            byte[] keyBytes    = toByteArray(key);
+            byte[] ivBytes     = toByteArray(iv);
             byte[] cipherBytes = toByteArray(cipher);
-            byte[] tagBytes = toByteArray(tag);
+            byte[] tagBytes    = toByteArray(tag);
+            byte[] aadBytes    = (aad == null) ? null : toByteArray(aad);
+    
             if (keyBytes == null || ivBytes == null || cipherBytes == null || tagBytes == null) return null;
     
             int tagLenBits = tagBytes.length * 8;
@@ -345,9 +373,15 @@ public class Global {
             Cipher cipherObj = Cipher.getInstance("AES/GCM/NoPadding");
             cipherObj.init(Cipher.DECRYPT_MODE, keySpec, gcmSpec);
     
+            // AAD 参与认证
+            if (aadBytes != null) {
+                cipherObj.updateAAD(aadBytes);
+            }
+    
             byte[] combined = new byte[cipherBytes.length + tagBytes.length];
             System.arraycopy(cipherBytes, 0, combined, 0, cipherBytes.length);
             System.arraycopy(tagBytes, 0, combined, cipherBytes.length, tagBytes.length);
+    
             byte[] plain = cipherObj.doFinal(combined);
             return new String(plain, java.nio.charset.StandardCharsets.UTF_8);
         } catch (Exception e) {
@@ -356,13 +390,19 @@ public class Global {
         }
     }
 
+    @Keep
+    @Function
+    public String aesGcmDecrypt(Object key, Object iv, Object cipher, Object tag) {
+        return aesGcmDecryptAad(key, iv, cipher, tag, null);
+    }
+
     // digest（SHA-256 / SHA-1 / SHA-384 / SHA-512 / MD5）
     @Keep
     @Function
     public String digest(String algoStr, Object dataObj) {
         try {
             String algo = algoStr.toUpperCase().replace("-", "");
-            byte[] data = toBytesForHash(dataObj);
+            byte[] data = toByteArray(dataObj);
             
             if (data == null) return null;
     
@@ -379,6 +419,44 @@ public class Global {
             byte[] hash = md.digest(data);
             StringBuilder hex = new StringBuilder(hash.length * 2);
             for (byte b : hash) {
+                hex.append(Character.forDigit((b >> 4) & 0xF, 16));
+                hex.append(Character.forDigit(b & 0xF, 16));
+            }
+            return hex.toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    @Keep
+    @Function
+    public String hmac(Object algoObj, Object keyObj, Object dataObj) {
+        try {
+            String algo = (algoObj == null ? "HmacSHA256" : algoObj.toString().trim());
+            // 兼容传入 "SHA256" / "HmacSHA256" / "HMACSHA256"
+            String normalized = algo.toUpperCase().replace("-", "").replace("HMAC", "");
+            String javaAlgo;
+            switch (normalized) {
+                case "SHA256": javaAlgo = "HmacSHA256"; break;
+                case "SHA1":   javaAlgo = "HmacSHA1";   break;
+                case "SHA384": javaAlgo = "HmacSHA384"; break;
+                case "SHA512": javaAlgo = "HmacSHA512"; break;
+                case "MD5":    javaAlgo = "HmacMD5";    break;
+                default: return null;
+            }
+    
+            byte[] key  = toByteArray(keyObj);
+            byte[] data = toByteArray(dataObj);
+            if (key == null || data == null) return null;
+    
+            Mac mac = Mac.getInstance(javaAlgo);
+            mac.init(new SecretKeySpec(key, javaAlgo));
+            byte[] out = mac.doFinal(data);
+    
+            // 返回 hex 文本
+            StringBuilder hex = new StringBuilder(out.length * 2);
+            for (byte b : out) {
                 hex.append(Character.forDigit((b >> 4) & 0xF, 16));
                 hex.append(Character.forDigit(b & 0xF, 16));
             }
@@ -443,10 +521,7 @@ public class Global {
         }
     }
 
-
-    /**
-     * 从 hash 前 bits 位提取整数（bits 必须 <= 64）
-     */
+    /** 从 hash 前 bits 位提取整数（bits 必须 <= 64）*/
     private static long extractHead(byte[] hash, int bits) {
         int bytesNeeded = (bits + 7) / 8;
         long value = 0;
@@ -455,6 +530,62 @@ public class Global {
         }
         int shift = bytesNeeded * 8 - bits;
         return value >>> shift;
+    }
+
+
+    private static final SecureRandom RNG = new SecureRandom();
+
+    /** 指定长度随机字节，返回 hex 字符串（不 Base64） */
+    @Keep
+    @Function
+    public String randomHex(int len) {
+        if (len <= 0) return "";
+        byte[] buf = new byte[len];
+        RNG.nextBytes(buf);
+        StringBuilder sb = new StringBuilder(len * 2);
+        for (byte b : buf) {
+            sb.append(Character.forDigit((b >> 4) & 0xF, 16));
+            sb.append(Character.forDigit(b & 0xF, 16));
+        }
+        return sb.toString();
+    }
+
+    /** 指定长度随机字节，返回 JS 数组（每个元素 0~255），不 Base64 */
+    @Keep
+    @Function
+    public Object randomBytes(int len) {
+        if (len <= 0) return new int[0];
+        byte[] buf = new byte[len];
+        RNG.nextBytes(buf);
+        int[] out = new int[len];
+        for (int i = 0; i < len; i++) out[i] = buf[i] & 0xff;
+        return out;
+    }
+
+    /** 生成 UUID v4 */
+    @Keep
+    @Function
+    public String uuidv4() {
+        return UUID.randomUUID().toString();
+    }
+
+    /** 生成 32 字节随机，返回43位Base64 URL_SAFE | NO_WRAP | NO_PADDING */
+    @Keep
+    @Function
+    public String randomCredential() {
+        byte[] buf = new byte[32];
+        RNG.nextBytes(buf);
+        return Base64.encodeToString(buf, Base64.URL_SAFE | Base64.NO_WRAP | Base64.NO_PADDING);
+    }
+
+    /** 指定长度随机字节，返回Base64 URL_SAFE 编码 */
+    @Keep
+    @Function
+    public String secureRandom(int len) {
+        if (len <= 0) return "";
+        byte[] buf = new byte[len];
+        RNG.nextBytes(buf);
+        return Base64.encodeToString(buf, Base64.URL_SAFE | Base64.NO_WRAP | Base64.NO_PADDING);
     }
 
 
@@ -644,6 +775,222 @@ public class Global {
         }
         return toByteArray(obj);
     }
+
+    // ================= 路径信息 =================
+    
+    /** 内部存储根目录 /storage/emulated/0 */
+    @Keep
+    @Function
+    public String rootPath() {
+        return FileUtils.getRootPath();
+    }
+    
+    /** 应用缓存目录 */
+    @Keep
+    @Function
+    public String cachePath() {
+        return FileUtils.getCachePath();
+    }
+    
+    /** 应用私有 files 目录 */
+    @Keep
+    @Function
+    public String filesPath() {
+        return FileUtils.getFilePath();
+    }
+    
+    /** 外部缓存目录（可能为 null） */
+    @Keep
+    @Function
+    public String externalCachePath() {
+        try {
+            return FileUtils.getExternalCachePath();
+        } catch (Exception e) {
+            return "";
+        }
+    }
+    
+    // ================= 存在性判断 =================
+    
+    /** 路径是否存在 */
+    @Keep
+    @Function
+    public boolean exists(String path) {
+        if (StringUtils.isEmpty(path)) return false;
+        return new File(normalizePath(path)).exists();
+    }
+    
+    /** 是否是文件 */
+    @Keep
+    @Function
+    public boolean isFile(String path) {
+        if (StringUtils.isEmpty(path)) return false;
+        return new File(normalizePath(path)).isFile();
+    }
+    
+    /** 是否是目录 */
+    @Keep
+    @Function
+    public boolean isDir(String path) {
+        if (StringUtils.isEmpty(path)) return false;
+        return new File(normalizePath(path)).isDirectory();
+    }
+    
+    // ================= 目录读取 =================
+    
+    /**
+     * 列出目录内容
+     * @return List<Map>，每项 {name, path, isDir, size, lastModified}
+     *         目录不存在或为空时返回空 List
+     */
+    @Keep
+    @Function
+    public List<Map<String, Object>> listDir(String path) {
+        List<Map<String, Object>> out = new ArrayList<>();
+        if (StringUtils.isEmpty(path)) return out;
+    
+        File dir = new File(normalizePath(path));
+        if (!dir.exists() || !dir.isDirectory()) return out;
+    
+        File[] files = dir.listFiles();
+        if (files == null) return out;
+    
+        for (File f : files) {
+            Map<String, Object> item = new HashMap<>();
+            item.put("name", f.getName());
+            item.put("path", f.getAbsolutePath());
+            item.put("isDir", f.isDirectory());
+            item.put("size", f.length());
+            item.put("lastModified", f.lastModified());
+            out.add(item);
+        }
+        return out;
+    }
+    
+    /** 只返回文件名数组，按名字排序 */
+    @Keep
+    @Function
+    public List<String> listNames(String path) {
+        List<String> out = new ArrayList<>();
+        if (StringUtils.isEmpty(path)) return out;
+    
+        File dir = new File(normalizePath(path));
+        if (!dir.exists() || !dir.isDirectory()) return out;
+    
+        String[] names = dir.list();
+        if (names == null) return out;
+    
+        java.util.Arrays.sort(names);
+        for (String n : names) out.add(n);
+        return out;
+    }
+    
+    // ================= 文件读取 =================
+    
+    /** 读文本文件，指定编码，失败返回空串 */
+    @Keep
+    @Function
+    public String readText(String path, String charset) {
+        if(charset == null) charset ="UTF-8";
+        if (StringUtils.isEmpty(path)) return "";
+        try {
+            return FileUtils.readFileToString(normalizePath(path), charset);
+        } catch (Exception e) {
+            return "";
+        }
+    }
+    
+    /** 读文本，直接返回 FileUtils 的解码结果（走 FileUtils.readFileToString） */
+    @Keep
+    @Function
+    public String readFile(String path) {
+        return readText(path, "UTF-8");
+    }
+    
+    /** 读二进制文件，返回 0~255 的数组；失败返回空数组 */
+    @Keep
+    @Function
+    public List<Integer> readBytes(String path) {
+        List<Integer> out = new ArrayList<>();
+        if (StringUtils.isEmpty(path)) return out;
+    
+        File file = new File(normalizePath(path));
+        if (!file.exists() || !file.isFile()) return out;
+    
+        try (FileInputStream fis = new FileInputStream(file)) {
+            byte[] buf = new byte[(int) file.length()];
+            int read = 0, total = 0;
+            while ((read = fis.read(buf, total, buf.length - total)) > 0) {
+                total += read;
+                if (total >= buf.length) break;
+            }
+            for (int i = 0; i < total; i++) out.add(buf[i] & 0xff);
+        } catch (IOException e) {
+            // ignore
+        }
+        return out;
+    }
+    
+    // ================= 文件写入 =================
+    @Keep
+    @Function
+    public boolean writeText(String path, String content, String charset) {
+        if (StringUtils.isEmpty(path)) return false;
+        try {
+            String cs = (charset == null || charset.isEmpty()) ? "UTF-8" : charset;
+            File file = new File(normalizePath(path));
+            File parent = file.getParentFile();
+            if (parent != null && !parent.exists()) parent.mkdirs();
+            return FileUtils.writeSimple(content.getBytes(cs), file);   // 覆盖
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    
+    @Keep
+    @Function
+    public boolean appendText(String path, String content, String charset) {
+        if (StringUtils.isEmpty(path)) return false;
+        try {
+            String cs = (charset == null || charset.isEmpty()) ? "UTF-8" : charset;
+            File file = new File(normalizePath(path));
+            File parent = file.getParentFile();
+            if (parent != null && !parent.exists()) parent.mkdirs();
+            try (FileOutputStream fos = new FileOutputStream(file, true)) {   // 追加
+                fos.write(content.getBytes(cs));
+                fos.flush();
+            }
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    
+    /**
+     * 规范化路径：
+     * - 支持 file:// / file:/ 前缀
+     * - 支持 /sdcard/ 别名 → /storage/emulated/0/
+     * - 其他原样返回
+     */
+    private String normalizePath(String path) {
+        if (StringUtils.isEmpty(path)) return "";
+        String p = path.trim();
+    
+        if (p.startsWith("file://")) {
+            p = p.substring(7);
+        } else if (p.startsWith("file:/")) {
+            p = p.substring(6);
+        }
+    
+        if (p.startsWith("/sdcard/")) {
+            p = p.replaceFirst("^/sdcard/", "/storage/emulated/0/");
+        } else if (p.equals("/sdcard")) {
+            p = "/storage/emulated/0";
+        }
+    
+        return p;
+    }
+    
 
     private Callback getCallback(JSFunction complete, Req req) {
         return new Callback() {
