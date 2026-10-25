@@ -44,6 +44,7 @@ import java.util.TimerTask;
 import java.util.UUID;
 
 import javax.crypto.Cipher;
+import javax.crypto.Mac;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
@@ -333,14 +334,26 @@ public class Global {
             c.init(Cipher.ENCRYPT_MODE, keySpec, gcmSpec);
             if (aadBytes != null) c.updateAAD(aadBytes);
             byte[] out = c.doFinal(plainBytes);   // 密文 + 16字节 tag
-            // 返回普通数组
-            byte[] arr = out;
-            return arr;
+            // byte[] arr = out;
+            int[] arr = new int[out.length];
+            for (int i = 0; i < out.length; i++) arr[i] = out[i] & 0xff;
+            return arr;            
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
     }
+
+
+        byte[] out = c.doFinal(plainBytes);
+        int[] arr = new int[out.length];
+        for (int i = 0; i < out.length; i++) arr[i] = out[i] & 0xff;
+        return arr;
+    } catch (Exception e) {
+        e.printStackTrace();
+        return null;
+    }
+}
 
     // AES-GCM 解密（返回 UTF-8 字符串）    
     @Keep
@@ -1009,8 +1022,8 @@ public class Global {
             }
         };
     }
-    @Keep
     // 声明用于依赖注入的 QuickJSContext
+    @Keep
     @ContextSetter
     public void setJSContext(QuickJSContext runtime) {
         this.runtime = runtime;
