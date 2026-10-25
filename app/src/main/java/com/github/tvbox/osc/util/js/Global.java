@@ -907,7 +907,7 @@ public class Global {
     /** 读文本，直接返回 FileUtils 的解码结果（走 FileUtils.readFileToString） */
     @Keep
     @Function
-    public String readFile(String path) {
+    public String readUtf8Text(String path) {
         return readText(path, "UTF-8");
     }
     
