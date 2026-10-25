@@ -320,13 +320,13 @@ public class Global {
 
     @Keep
     @Function
-    public Object aesGcmEncrypt(Object key, Object iv, Object plain, Object aad) {
+    public JSArray aesGcmEncrypt(Object key, Object iv, Object plain, Object aad) {
         try {
             byte[] keyBytes   = toByteArray(key);
             byte[] ivBytes    = toByteArray(iv);
             byte[] plainBytes = toByteArray(plain);
             byte[] aadBytes   = (aad == null) ? null : toByteArray(aad);
-            if (keyBytes == null || ivBytes == null || plainBytes == null) return null;
+            if (keyBytes == null || ivBytes == null || plainBytes == null) return runtime.createJSArray();
     
             SecretKeySpec keySpec = new SecretKeySpec(keyBytes, "AES");
             GCMParameterSpec gcmSpec = new GCMParameterSpec(128, ivBytes);
@@ -334,16 +334,13 @@ public class Global {
             c.init(Cipher.ENCRYPT_MODE, keySpec, gcmSpec);
             if (aadBytes != null) c.updateAAD(aadBytes);
             byte[] out = c.doFinal(plainBytes);   // 密文 + 16字节 tag
-            // byte[] arr = out;
-            int[] arr = new int[out.length];
-            for (int i = 0; i < out.length; i++) arr[i] = out[i] & 0xff;
-            return arr;            
+    
+            return new JSUtils<Byte>().toArray(runtime, out);
         } catch (Exception e) {
             e.printStackTrace();
-            return null;
+            return runtime.createJSArray();
         }
     }
-
     // AES-GCM 解密（返回 UTF-8 字符串）    
     @Keep
     @Function
@@ -555,13 +552,11 @@ public class Global {
     /** 指定长度随机字节，返回 JS 数组（每个元素 0~255），不 Base64 */
     @Keep
     @Function
-    public Object randomBytes(int len) {
-        if (len <= 0) return new int[0];
+    public JSArray randomBytes(int len) {
+        if (len <= 0) return runtime.createJSArray();
         byte[] buf = new byte[len];
         RNG.nextBytes(buf);
-        int[] out = new int[len];
-        for (int i = 0; i < len; i++) out[i] = buf[i] & 0xff;
-        return out;
+        return new JSUtils<Byte>().toArray(runtime, buf);
     }
 
     /** 生成 UUID v4 */
@@ -590,17 +585,34 @@ public class Global {
         return Base64.encodeToString(buf, Base64.URL_SAFE | Base64.NO_WRAP | Base64.NO_PADDING);
     }
 
-
     @Keep
     @Function
     public String detectType(Object obj) {
         if (obj == null) return "null";
-
+    
         StringBuilder sb = new StringBuilder();
         Class<?> clazz = obj.getClass();
         sb.append("类名: ").append(clazz.getName());
-
-        if (clazz.isArray()) {
+    
+        if (obj instanceof JSArray) {
+            JSArray arr = (JSArray) obj;
+            int len = arr.length();
+            sb.append("\n类型: JSArray");
+            sb.append("\n长度: ").append(len);
+            if (len > 0) {
+                Object first = arr.get(0);
+                sb.append("\n第一个元素类型: ")
+                  .append(first == null ? "null" : first.getClass().getName());
+            }
+        }else if (obj instanceof JSObject) {
+            sb.append("\n类型: JSObject");
+            try {
+                String json = ((JSObject) obj).toJsonString();
+                sb.append("\n预览: ").append(json, 0, Math.min(100, json.length()));
+            } catch (Exception e) {
+                sb.append("\n预览失败: ").append(e.getMessage());
+            }
+        }else if (clazz.isArray()) {
             sb.append("\n类型: 数组");
             int len = Array.getLength(obj);
             sb.append("\n长度: ").append(len);
@@ -647,18 +659,6 @@ public class Global {
             for (Class<?> iface : clazz.getInterfaces()) {
                 sb.append(" ").append(iface.getName());
             }
-        }
-
-        // 尝试转换为 byte[]
-        try {
-            byte[] bytes = toByteArray(obj);
-            if (bytes != null) {
-                sb.append("\n可转为 byte[]，长度: ").append(bytes.length);
-            } else {
-                sb.append("\n无法转为 byte[]");
-            }
-        } catch (Exception e) {
-            sb.append("\n转换 byte[] 时异常: ").append(e.getMessage());
         }
 
         return sb.toString();
@@ -847,8 +847,8 @@ public class Global {
      */
     @Keep
     @Function
-    public List<Map<String, Object>> listDir(String path) {
-        List<Map<String, Object>> out = new ArrayList<>();
+    public JSArray listDir(String path) {
+        JSArray out = runtime.createJSArray();
         if (StringUtils.isEmpty(path)) return out;
     
         File dir = new File(normalizePath(path));
@@ -858,22 +858,24 @@ public class Global {
         if (files == null) return out;
     
         for (File f : files) {
-            Map<String, Object> item = new HashMap<>();
-            item.put("name", f.getName());
-            item.put("path", f.getAbsolutePath());
-            item.put("isDir", f.isDirectory());
-            item.put("size", f.length());
-            item.put("lastModified", f.lastModified());
-            out.add(item);
+            JSObject item = runtime.createJSObject();
+            item.set("name", f.getName());
+            item.set("path", f.getAbsolutePath());
+            item.set("isDir", f.isDirectory());
+            item.set("size", f.length());
+            item.set("lastModified", f.lastModified());
+            out.push(item);
         }
         return out;
     }
+
+
     
     /** 只返回文件名数组，按名字排序 */
     @Keep
     @Function
-    public List<String> listNames(String path) {
-        List<String> out = new ArrayList<>();
+    public JSArray listNames(String path) {
+        JSArray out = runtime.createJSArray();
         if (StringUtils.isEmpty(path)) return out;
     
         File dir = new File(normalizePath(path));
@@ -883,7 +885,7 @@ public class Global {
         if (names == null) return out;
     
         java.util.Arrays.sort(names);
-        for (String n : names) out.add(n);
+        for (String n : names) out.push(n);
         return out;
     }
     
@@ -912,12 +914,12 @@ public class Global {
     /** 读二进制文件，返回 0~255 的数组；失败返回空数组 */
     @Keep
     @Function
-    public List<Integer> readBytes(String path) {
-        List<Integer> out = new ArrayList<>();
-        if (StringUtils.isEmpty(path)) return out;
+    public JSArray readBytes(String path) {
+        JSArray arr = runtime.createJSArray();
+        if (StringUtils.isEmpty(path)) return arr;
     
         File file = new File(normalizePath(path));
-        if (!file.exists() || !file.isFile()) return out;
+        if (!file.exists() || !file.isFile()) return arr;
     
         try (FileInputStream fis = new FileInputStream(file)) {
             byte[] buf = new byte[(int) file.length()];
@@ -926,11 +928,11 @@ public class Global {
                 total += read;
                 if (total >= buf.length) break;
             }
-            for (int i = 0; i < total; i++) out.add(buf[i] & 0xff);
+            for (int i = 0; i < total; i++) arr.push(buf[i] & 0xff);
         } catch (IOException e) {
             // ignore
         }
-        return out;
+        return arr;
     }
     
     // ================= 文件写入 =================
