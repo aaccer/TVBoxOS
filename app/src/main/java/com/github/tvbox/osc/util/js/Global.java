@@ -333,14 +333,20 @@ public class Global {
             Cipher c = Cipher.getInstance("AES/GCM/NoPadding");
             c.init(Cipher.ENCRYPT_MODE, keySpec, gcmSpec);
             if (aadBytes != null) c.updateAAD(aadBytes);
-            byte[] out = c.doFinal(plainBytes);   // 密文 + 16字节 tag
+            byte[] out = c.doFinal(plainBytes);
     
-            return new JSUtils<Byte>().toArray(runtime, out);
+            // 转 0~255，避免 JSUtils 推负数
+            JSArray arr = runtime.createJSArray();
+            for (byte b : out) {
+                arr.push(b & 0xff);
+            }
+            return arr;
         } catch (Exception e) {
             e.printStackTrace();
             return runtime.createJSArray();
         }
     }
+
     // AES-GCM 解密（返回 UTF-8 字符串）    
     @Keep
     @Function
@@ -553,12 +559,15 @@ public class Global {
     @Keep
     @Function
     public JSArray randomBytes(int len) {
-        if (len <= 0) return runtime.createJSArray();
+        JSArray arr = runtime.createJSArray();
+        if (len <= 0) return arr;
         byte[] buf = new byte[len];
         RNG.nextBytes(buf);
-        return new JSUtils<Byte>().toArray(runtime, buf);
+        for (byte b : buf) {
+            arr.push(b & 0xff);
+        }
+        return arr;
     }
-
     /** 生成 UUID v4 */
     @Keep
     @Function
@@ -664,7 +673,10 @@ public class Global {
         return sb.toString();
     }
 
-    // 将任意输入转换为 byte[]
+    /**
+     *  将任意输入转换为 byte[]
+     * String文本默认十六进制字符串 
+     */
     public static byte[] toByteArray(Object obj) {
         if (obj == null) return null;
         if (obj instanceof byte[]) return (byte[]) obj;
@@ -704,27 +716,6 @@ public class Global {
         if (obj instanceof JSArray) {
             JSArray arr = (JSArray) obj;
             int len = arr.length();
-            // 优先用 JSON 序列化（大数据快），失败再退到索引访问
-            try {
-                String json = arr.toJsonString();
-                byte[] result = new byte[len];
-                int idx = 0, num = 0;
-                boolean inNum = false;
-                for (int i = 1; i < json.length() && idx < len; i++) {
-                    char c = json.charAt(i);
-                    if (c >= '0' && c <= '9') {
-                        num = num * 10 + (c - '0');
-                        inNum = true;
-                    } else if (inNum) {
-                        result[idx++] = (byte) num;
-                        num = 0;
-                        inNum = false;
-                    }
-                }
-                if (idx == len) return result;
-            } catch (Exception ignored) {}
-    
-            // 兜底：逐索引
             byte[] result = new byte[len];
             for (int i = 0; i < len; i++) {
                 Object item = arr.get(i);
@@ -842,7 +833,7 @@ public class Global {
     
     /**
      * 列出目录内容
-     * @return List<Map>，每项 {name, path, isDir, size, lastModified}
+     * @return 每项 {name, path, isDir, size, lastModified}
      *         目录不存在或为空时返回空 List
      */
     @Keep
