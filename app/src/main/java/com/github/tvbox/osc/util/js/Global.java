@@ -936,32 +936,35 @@ public class Global {
     }
     
     // ================= 文件写入 =================
+    //覆盖
     @Keep
     @Function
-    public boolean writeText(String path, String content, String charset) {
-        if (StringUtils.isEmpty(path)) return false;
+    public boolean writeText(String path, Object content, String charset) {
+        if (StringUtils.isEmpty(path) || content == null) return false;
         try {
             String cs = (charset == null || charset.isEmpty()) ? "UTF-8" : charset;
+            String text = String.valueOf(content);
             File file = new File(normalizePath(path));
             File parent = file.getParentFile();
             if (parent != null && !parent.exists()) parent.mkdirs();
-            return FileUtils.writeSimple(content.getBytes(cs), file);   // 覆盖
+            return FileUtils.writeSimple(text.getBytes(cs), file);
         } catch (Exception e) {
             return false;
         }
     }
-    
+    //追加
     @Keep
     @Function
-    public boolean appendText(String path, String content, String charset) {
-        if (StringUtils.isEmpty(path)) return false;
+    public boolean appendText(String path, Object content, String charset) {
+        if (StringUtils.isEmpty(path) || content == null) return false;
         try {
             String cs = (charset == null || charset.isEmpty()) ? "UTF-8" : charset;
+            String text = String.valueOf(content);   // 布尔/数字/字符串都转
             File file = new File(normalizePath(path));
             File parent = file.getParentFile();
             if (parent != null && !parent.exists()) parent.mkdirs();
-            try (FileOutputStream fos = new FileOutputStream(file, true)) {   // 追加
-                fos.write(content.getBytes(cs));
+            try (FileOutputStream fos = new FileOutputStream(file, true)) {
+                fos.write(text.getBytes(cs));
                 fos.flush();
             }
             return true;
