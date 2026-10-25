@@ -344,17 +344,6 @@ public class Global {
         }
     }
 
-
-        byte[] out = c.doFinal(plainBytes);
-        int[] arr = new int[out.length];
-        for (int i = 0; i < out.length; i++) arr[i] = out[i] & 0xff;
-        return arr;
-    } catch (Exception e) {
-        e.printStackTrace();
-        return null;
-    }
-}
-
     // AES-GCM 解密（返回 UTF-8 字符串）    
     @Keep
     @Function
