@@ -161,15 +161,19 @@
                 <TextView
                     android:id="@+id/tvDes"
                     android:layout_width="match_parent"
-                    android:layout_height="0mm"
-                    android:layout_weight="1"
-                    android:layout_marginBottom="@dimen/vs_10"
+                    android:layout_height="0dp"
+                    android:layout_weight="10"
                     android:focusable="false"
                     android:ellipsize="end"
                     android:maxLines="7"
                     android:lineSpacingMultiplier="1.2"
                     android:textColor="@color/color_CCFFFFFF"
                     android:textSize="@dimen/ts_20" />
+
+                <Space
+                   android:layout_width="wrap_content"
+                   android:layout_height="0dp"
+                   android:layout_weight="1"/>
 
                 <LinearLayout
                     android:layout_width="wrap_content"
