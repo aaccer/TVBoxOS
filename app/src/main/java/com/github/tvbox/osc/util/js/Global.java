@@ -318,15 +318,16 @@ public class Global {
         }, delay);
     }
 
+    // AES-GCM 加密  
     @Keep
     @Function
-    public JSArray aesGcmEncrypt(Object key, Object iv, Object plain, Object aad) {
+    public String aesGcmEncrypt(Object key, Object iv, Object plain, Object aad) {
         try {
             byte[] keyBytes   = toByteArray(key);
             byte[] ivBytes    = toByteArray(iv);
             byte[] plainBytes = toByteArray(plain);
             byte[] aadBytes   = (aad == null) ? null : toByteArray(aad);
-            if (keyBytes == null || ivBytes == null || plainBytes == null) return runtime.createJSArray();
+            if (keyBytes == null || ivBytes == null || plainBytes == null) return null;
     
             SecretKeySpec keySpec = new SecretKeySpec(keyBytes, "AES");
             GCMParameterSpec gcmSpec = new GCMParameterSpec(128, ivBytes);
@@ -335,22 +336,23 @@ public class Global {
             if (aadBytes != null) c.updateAAD(aadBytes);
             byte[] out = c.doFinal(plainBytes);
     
-            // 转 0~255，避免 JSUtils 推负数
-            JSArray arr = runtime.createJSArray();
+            // byte[] → 小写 hex 字符串
+            StringBuilder sb = new StringBuilder(out.length * 2);
             for (byte b : out) {
-                arr.push(b & 0xff);
+                sb.append(Character.forDigit((b >> 4) & 0xF, 16));
+                sb.append(Character.forDigit(b & 0xF, 16));
             }
-            return arr;
+            return sb.toString();
         } catch (Exception e) {
             e.printStackTrace();
-            return runtime.createJSArray();
+            return null;
         }
     }
 
-    // AES-GCM 解密（返回 UTF-8 字符串）    
+    // AES-GCM 解密   
     @Keep
     @Function
-    public String aesGcmDecryptAad(Object key, Object iv, Object cipher, Object tag, Object aad) {
+    public String aesGcmDecrypt(Object key, Object iv, Object cipher, Object tag, Object aad) {
         try {
             // 3参数兼容：tag 为 null 时把 cipher 末尾 16 字节拆出来
             if (tag == null) {
@@ -393,12 +395,6 @@ public class Global {
             e.printStackTrace();
             return null;
         }
-    }
-
-    @Keep
-    @Function
-    public String aesGcmDecrypt(Object key, Object iv, Object cipher, Object tag) {
-        return aesGcmDecryptAad(key, iv, cipher, tag, null);
     }
 
     // digest（SHA-256 / SHA-1 / SHA-384 / SHA-512 / MD5）
