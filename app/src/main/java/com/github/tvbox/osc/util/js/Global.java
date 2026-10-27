@@ -352,12 +352,11 @@ public class Global {
     // AES-GCM 解密   
     @Keep
     @Function
-    public String aesGcmDecrypt(Object key, Object iv, Object cipher, Object tag, Object aad) {
+    public JSArray aesGcmDecryptBytes(Object key, Object iv, Object cipher, Object tag, Object aad) {
         try {
-            // 3参数兼容：tag 为 null 时把 cipher 末尾 16 字节拆出来
             if (tag == null) {
                 byte[] combined = toByteArray(cipher);
-                if (combined == null || combined.length < 16) return null;
+                if (combined == null || combined.length < 16) return runtime.createJSArray();
                 byte[] c = new byte[combined.length - 16];
                 byte[] t = new byte[16];
                 System.arraycopy(combined, 0, c, 0, c.length);
@@ -372,29 +371,35 @@ public class Global {
             byte[] tagBytes    = toByteArray(tag);
             byte[] aadBytes    = (aad == null) ? null : toByteArray(aad);
     
-            if (keyBytes == null || ivBytes == null || cipherBytes == null || tagBytes == null) return null;
+            if (keyBytes == null || ivBytes == null || cipherBytes == null || tagBytes == null)
+                return runtime.createJSArray();
     
             int tagLenBits = tagBytes.length * 8;
             SecretKeySpec keySpec = new SecretKeySpec(keyBytes, "AES");
             GCMParameterSpec gcmSpec = new GCMParameterSpec(tagLenBits, ivBytes);
             Cipher cipherObj = Cipher.getInstance("AES/GCM/NoPadding");
             cipherObj.init(Cipher.DECRYPT_MODE, keySpec, gcmSpec);
-    
-            // AAD 参与认证
-            if (aadBytes != null) {
-                cipherObj.updateAAD(aadBytes);
-            }
+            if (aadBytes != null) cipherObj.updateAAD(aadBytes);
     
             byte[] combined = new byte[cipherBytes.length + tagBytes.length];
             System.arraycopy(cipherBytes, 0, combined, 0, cipherBytes.length);
             System.arraycopy(tagBytes, 0, combined, cipherBytes.length, tagBytes.length);
     
-            byte[] plain = cipherObj.doFinal(combined);
-            return new String(plain, java.nio.charset.StandardCharsets.UTF_8);
+            return bytesToJsArray(cipherObj.doFinal(combined));
         } catch (Exception e) {
             e.printStackTrace();
-            return null;
+            return runtime.createJSArray();
         }
+    }
+    
+    @Keep
+    @Function
+    public String aesGcmDecrypt(Object key, Object iv, Object cipher, Object tag, Object aad) {
+        JSArray arr = aesGcmDecryptBytes(key, iv, cipher, tag, aad);
+        if (arr == null || arr.length() == 0) return null;
+        byte[] bytes = jsArrayToBytes(arr);
+        if (bytes.length == 0) return null;
+        return new String(bytes, StandardCharsets.UTF_8);
     }
 
     // digest（SHA-256 / SHA-1 / SHA-384 / SHA-512 / MD5）
@@ -533,6 +538,86 @@ public class Global {
         return value >>> shift;
     }
 
+    // ================= 编码转换 =================
+    @Keep
+    @Function
+    public String bytesToHex(Object data) {
+        byte[] bytes = toBytesSafe(data);
+        if (bytes == null) return null;
+        StringBuilder sb = new StringBuilder(bytes.length * 2);
+        for (byte b : bytes) {
+            sb.append(Character.forDigit((b >> 4) & 0xF, 16));
+            sb.append(Character.forDigit(b & 0xF, 16));
+        }
+        return sb.toString();
+    }
+    
+    @Keep
+    @Function
+    public JSArray hexToBytes(String hex) {
+        if (hex == null) return runtime.createJSArray();
+        String s = hex.trim();
+        if (s.length() % 2 != 0) s = "0" + s;
+        byte[] out = new byte[s.length() / 2];
+        for (int i = 0; i < s.length(); i += 2) {
+            int hi = Character.digit(s.charAt(i), 16);
+            int lo = Character.digit(s.charAt(i + 1), 16);
+            if (hi == -1 || lo == -1) return runtime.createJSArray();
+            out[i / 2] = (byte) ((hi << 4) | lo);
+        }
+        return bytesToJsArray(out);
+    }
+    
+    @Keep
+    @Function
+    public String bytesToB64url(Object data) {
+        byte[] bytes = toBytesSafe(data);
+        if (bytes == null) return null;
+        return Base64.encodeToString(bytes, Base64.URL_SAFE | Base64.NO_WRAP | Base64.NO_PADDING);
+    }
+    
+    @Keep
+    @Function
+    public JSArray b64urlToBytes(String s) {
+        if (s == null) return runtime.createJSArray();
+        try {
+            String fixed = s.replace('-', '+').replace('_', '/');
+            while (fixed.length() % 4 != 0) fixed += "=";
+            byte[] out = Base64.decode(fixed, Base64.URL_SAFE | Base64.NO_WRAP);
+            return bytesToJsArray(out);
+        } catch (Exception e) {
+            return runtime.createJSArray();
+        }
+    }
+    
+    @Keep
+    @Function
+    public JSArray utf8ToBytes(String str) {
+        if (str == null) return runtime.createJSArray();
+        return bytesToJsArray(str.getBytes(StandardCharsets.UTF_8));
+    }
+    
+    @Keep
+    @Function
+    public String bytesToUtf8(Object data) {
+        byte[] bytes = toBytesSafe(data);
+        if (bytes == null) return null;
+        return new String(bytes, StandardCharsets.UTF_8);
+    }
+    
+    @Keep
+    @Function
+    public String hexToB64url(String hex) {
+        return bytesToB64url(hexToBytes(hex));
+    }
+    
+    @Keep
+    @Function
+    public String b64urlToHex(String s) {
+        return bytesToHex(b64urlToBytes(s));
+    }
+
+    // ================= 随机数 =================
 
     private static final SecureRandom RNG = new SecureRandom();
 
@@ -590,6 +675,224 @@ public class Global {
         return Base64.encodeToString(buf, Base64.URL_SAFE | Base64.NO_WRAP | Base64.NO_PADDING);
     }
 
+    // ================= 路径信息 =================
+    
+    /** 内部存储根目录 /storage/emulated/0 */
+    @Keep
+    @Function
+    public String rootPath() {
+        return FileUtils.getRootPath();
+    }
+    
+    /** 应用缓存目录 */
+    @Keep
+    @Function
+    public String cachePath() {
+        return FileUtils.getCachePath();
+    }
+    
+    /** 应用私有 files 目录 */
+    @Keep
+    @Function
+    public String filesPath() {
+        return FileUtils.getFilePath();
+    }
+    
+    /** 外部缓存目录（可能为 null） */
+    @Keep
+    @Function
+    public String externalCachePath() {
+        try {
+            return FileUtils.getExternalCachePath();
+        } catch (Exception e) {
+            return "";
+        }
+    }
+    
+    // ================= 存在性判断 =================
+    
+    /** 路径是否存在 */
+    @Keep
+    @Function
+    public boolean exists(String path) {
+        if (StringUtils.isEmpty(path)) return false;
+        return new File(normalizePath(path)).exists();
+    }
+    
+    /** 是否是文件 */
+    @Keep
+    @Function
+    public boolean isFile(String path) {
+        if (StringUtils.isEmpty(path)) return false;
+        return new File(normalizePath(path)).isFile();
+    }
+    
+    /** 是否是目录 */
+    @Keep
+    @Function
+    public boolean isDir(String path) {
+        if (StringUtils.isEmpty(path)) return false;
+        return new File(normalizePath(path)).isDirectory();
+    }
+    
+    // ================= 目录读取 =================
+    
+    /**
+     * 列出目录内容
+     * @return 每项 {name, path, isDir, size, lastModified}
+     *         目录不存在或为空时返回空 List
+     */
+    @Keep
+    @Function
+    public JSArray listDir(String path) {
+        JSArray out = runtime.createJSArray();
+        if (StringUtils.isEmpty(path)) return out;
+    
+        File dir = new File(normalizePath(path));
+        if (!dir.exists() || !dir.isDirectory()) return out;
+    
+        File[] files = dir.listFiles();
+        if (files == null) return out;
+    
+        for (File f : files) {
+            JSObject item = runtime.createJSObject();
+            item.set("name", f.getName());
+            item.set("path", f.getAbsolutePath());
+            item.set("isDir", f.isDirectory());
+            item.set("size", f.length());
+            item.set("lastModified", f.lastModified());
+            out.push(item);
+        }
+        return out;
+    }
+    
+    /** 只返回文件名数组，按名字排序 */
+    @Keep
+    @Function
+    public JSArray listNames(String path) {
+        JSArray out = runtime.createJSArray();
+        if (StringUtils.isEmpty(path)) return out;
+    
+        File dir = new File(normalizePath(path));
+        if (!dir.exists() || !dir.isDirectory()) return out;
+    
+        String[] names = dir.list();
+        if (names == null) return out;
+    
+        java.util.Arrays.sort(names);
+        for (String n : names) out.push(n);
+        return out;
+    }
+    
+    // ================= 文件读取 =================
+    
+    /** 读文本文件，指定编码，失败返回空串 */
+    @Keep
+    @Function
+    public String readText(String path, String charset) {
+        if(charset == null) charset ="UTF-8";
+        if (StringUtils.isEmpty(path)) return "";
+        try {
+            return FileUtils.readFileToString(normalizePath(path), charset);
+        } catch (Exception e) {
+            return "";
+        }
+    }
+    
+    /** 读文本，直接返回 FileUtils 的解码结果（走 FileUtils.readFileToString） */
+    @Keep
+    @Function
+    public String readUtf8Text(String path) {
+        return readText(path, "UTF-8");
+    }
+    
+    /** 读二进制文件，返回 0~255 的数组；失败返回空数组 */
+    @Keep
+    @Function
+    public JSArray readBytes(String path) {
+        JSArray arr = runtime.createJSArray();
+        if (StringUtils.isEmpty(path)) return arr;
+    
+        File file = new File(normalizePath(path));
+        if (!file.exists() || !file.isFile()) return arr;
+    
+        try (FileInputStream fis = new FileInputStream(file)) {
+            byte[] buf = new byte[(int) file.length()];
+            int read = 0, total = 0;
+            while ((read = fis.read(buf, total, buf.length - total)) > 0) {
+                total += read;
+                if (total >= buf.length) break;
+            }
+            for (int i = 0; i < total; i++) arr.push(buf[i] & 0xff);
+        } catch (IOException e) {
+            // ignore
+        }
+        return arr;
+    }
+    
+    // ================= 文件写入 =================
+    //覆盖
+    @Keep
+    @Function
+    public boolean writeText(String path, Object content, String charset) {
+        if (StringUtils.isEmpty(path) || content == null) return false;
+        try {
+            String cs = (charset == null || charset.isEmpty()) ? "UTF-8" : charset;
+            String text = String.valueOf(content);
+            File file = new File(normalizePath(path));
+            File parent = file.getParentFile();
+            if (parent != null && !parent.exists()) parent.mkdirs();
+            return FileUtils.writeSimple(text.getBytes(cs), file);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    //追加
+    @Keep
+    @Function
+    public boolean appendText(String path, Object content, String charset) {
+        if (StringUtils.isEmpty(path) || content == null) return false;
+        try {
+            String cs = (charset == null || charset.isEmpty()) ? "UTF-8" : charset;
+            String text = String.valueOf(content);   // 布尔/数字/字符串都转
+            File file = new File(normalizePath(path));
+            File parent = file.getParentFile();
+            if (parent != null && !parent.exists()) parent.mkdirs();
+            try (FileOutputStream fos = new FileOutputStream(file, true)) {
+                fos.write(text.getBytes(cs));
+                fos.flush();
+            }
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    
+    /**
+     * 规范化路径：
+     * - 支持 file:// / file:/ 前缀
+     * - 支持 /sdcard/ 别名 → /storage/emulated/0/
+     * - 其他原样返回
+     */
+    private String normalizePath(String path) {
+        if (StringUtils.isEmpty(path)) return "";
+        String p = path.trim();
+    
+        if (p.startsWith("file://")) {
+            p = p.substring(7);
+        } else if (p.startsWith("file:/")) {
+            p = p.substring(6);
+        }
+    
+        if (p.startsWith("/sdcard/")) {
+            p = p.replaceFirst("^/sdcard/", "/storage/emulated/0/");
+        } else if (p.equals("/sdcard")) {
+            p = "/storage/emulated/0";
+        }
+    
+        return p;
+    }
+    
     @Keep
     @Function
     public String detectType(Object obj) {
@@ -753,10 +1056,7 @@ public class Global {
         return null;
     }
 
-    /**
-     * 哈希类函数专用：String 按 UTF-8 处理，其他类型走 toByteArray
-     * 与 CryptoJS.SHA256(str) 行为一致
-     */
+    /* String 按 UTF-8 处理，其他类型走 toByteArray */
     public static byte[] toBytesForHash(Object obj) {
         if (obj == null) return null;
         if (obj instanceof String) {
@@ -765,226 +1065,34 @@ public class Global {
         return toByteArray(obj);
     }
 
-    // ================= 路径信息 =================
-    
-    /** 内部存储根目录 /storage/emulated/0 */
-    @Keep
-    @Function
-    public String rootPath() {
-        return FileUtils.getRootPath();
-    }
-    
-    /** 应用缓存目录 */
-    @Keep
-    @Function
-    public String cachePath() {
-        return FileUtils.getCachePath();
-    }
-    
-    /** 应用私有 files 目录 */
-    @Keep
-    @Function
-    public String filesPath() {
-        return FileUtils.getFilePath();
-    }
-    
-    /** 外部缓存目录（可能为 null） */
-    @Keep
-    @Function
-    public String externalCachePath() {
-        try {
-            return FileUtils.getExternalCachePath();
-        } catch (Exception e) {
-            return "";
-        }
-    }
-    
-    // ================= 存在性判断 =================
-    
-    /** 路径是否存在 */
-    @Keep
-    @Function
-    public boolean exists(String path) {
-        if (StringUtils.isEmpty(path)) return false;
-        return new File(normalizePath(path)).exists();
-    }
-    
-    /** 是否是文件 */
-    @Keep
-    @Function
-    public boolean isFile(String path) {
-        if (StringUtils.isEmpty(path)) return false;
-        return new File(normalizePath(path)).isFile();
-    }
-    
-    /** 是否是目录 */
-    @Keep
-    @Function
-    public boolean isDir(String path) {
-        if (StringUtils.isEmpty(path)) return false;
-        return new File(normalizePath(path)).isDirectory();
-    }
-    
-    // ================= 目录读取 =================
-    
-    /**
-     * 列出目录内容
-     * @return 每项 {name, path, isDir, size, lastModified}
-     *         目录不存在或为空时返回空 List
-     */
-    @Keep
-    @Function
-    public JSArray listDir(String path) {
-        JSArray out = runtime.createJSArray();
-        if (StringUtils.isEmpty(path)) return out;
-    
-        File dir = new File(normalizePath(path));
-        if (!dir.exists() || !dir.isDirectory()) return out;
-    
-        File[] files = dir.listFiles();
-        if (files == null) return out;
-    
-        for (File f : files) {
-            JSObject item = runtime.createJSObject();
-            item.set("name", f.getName());
-            item.set("path", f.getAbsolutePath());
-            item.set("isDir", f.isDirectory());
-            item.set("size", f.length());
-            item.set("lastModified", f.lastModified());
-            out.push(item);
-        }
-        return out;
-    }
-
-
-    
-    /** 只返回文件名数组，按名字排序 */
-    @Keep
-    @Function
-    public JSArray listNames(String path) {
-        JSArray out = runtime.createJSArray();
-        if (StringUtils.isEmpty(path)) return out;
-    
-        File dir = new File(normalizePath(path));
-        if (!dir.exists() || !dir.isDirectory()) return out;
-    
-        String[] names = dir.list();
-        if (names == null) return out;
-    
-        java.util.Arrays.sort(names);
-        for (String n : names) out.push(n);
-        return out;
-    }
-    
-    // ================= 文件读取 =================
-    
-    /** 读文本文件，指定编码，失败返回空串 */
-    @Keep
-    @Function
-    public String readText(String path, String charset) {
-        if(charset == null) charset ="UTF-8";
-        if (StringUtils.isEmpty(path)) return "";
-        try {
-            return FileUtils.readFileToString(normalizePath(path), charset);
-        } catch (Exception e) {
-            return "";
-        }
-    }
-    
-    /** 读文本，直接返回 FileUtils 的解码结果（走 FileUtils.readFileToString） */
-    @Keep
-    @Function
-    public String readUtf8Text(String path) {
-        return readText(path, "UTF-8");
-    }
-    
-    /** 读二进制文件，返回 0~255 的数组；失败返回空数组 */
-    @Keep
-    @Function
-    public JSArray readBytes(String path) {
+    /** byte[] → JSArray（0~255） */
+    private JSArray bytesToJsArray(byte[] bytes) {
         JSArray arr = runtime.createJSArray();
-        if (StringUtils.isEmpty(path)) return arr;
-    
-        File file = new File(normalizePath(path));
-        if (!file.exists() || !file.isFile()) return arr;
-    
-        try (FileInputStream fis = new FileInputStream(file)) {
-            byte[] buf = new byte[(int) file.length()];
-            int read = 0, total = 0;
-            while ((read = fis.read(buf, total, buf.length - total)) > 0) {
-                total += read;
-                if (total >= buf.length) break;
-            }
-            for (int i = 0; i < total; i++) arr.push(buf[i] & 0xff);
-        } catch (IOException e) {
-            // ignore
-        }
+        if (bytes == null) return arr;
+        for (byte b : bytes) arr.push(b & 0xff);
         return arr;
     }
     
-    // ================= 文件写入 =================
-    //覆盖
-    @Keep
-    @Function
-    public boolean writeText(String path, Object content, String charset) {
-        if (StringUtils.isEmpty(path) || content == null) return false;
-        try {
-            String cs = (charset == null || charset.isEmpty()) ? "UTF-8" : charset;
-            String text = String.valueOf(content);
-            File file = new File(normalizePath(path));
-            File parent = file.getParentFile();
-            if (parent != null && !parent.exists()) parent.mkdirs();
-            return FileUtils.writeSimple(text.getBytes(cs), file);
-        } catch (Exception e) {
-            return false;
+    /** JSArray → byte[] */
+    private byte[] jsArrayToBytes(Object obj) {
+        if (!(obj instanceof JSArray)) return new byte[0];
+        JSArray arr = (JSArray) obj;
+        int len = arr.length();
+        if (len <= 0) return new byte[0];
+        byte[] out = new byte[len];
+        for (int i = 0; i < len; i++) {
+            Object item = arr.get(i);
+            out[i] = (item instanceof Number) ? ((Number) item).byteValue() : 0;
         }
-    }
-    //追加
-    @Keep
-    @Function
-    public boolean appendText(String path, Object content, String charset) {
-        if (StringUtils.isEmpty(path) || content == null) return false;
-        try {
-            String cs = (charset == null || charset.isEmpty()) ? "UTF-8" : charset;
-            String text = String.valueOf(content);   // 布尔/数字/字符串都转
-            File file = new File(normalizePath(path));
-            File parent = file.getParentFile();
-            if (parent != null && !parent.exists()) parent.mkdirs();
-            try (FileOutputStream fos = new FileOutputStream(file, true)) {
-                fos.write(text.getBytes(cs));
-                fos.flush();
-            }
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
+        return out;
     }
     
-    /**
-     * 规范化路径：
-     * - 支持 file:// / file:/ 前缀
-     * - 支持 /sdcard/ 别名 → /storage/emulated/0/
-     * - 其他原样返回
-     */
-    private String normalizePath(String path) {
-        if (StringUtils.isEmpty(path)) return "";
-        String p = path.trim();
-    
-        if (p.startsWith("file://")) {
-            p = p.substring(7);
-        } else if (p.startsWith("file:/")) {
-            p = p.substring(6);
-        }
-    
-        if (p.startsWith("/sdcard/")) {
-            p = p.replaceFirst("^/sdcard/", "/storage/emulated/0/");
-        } else if (p.equals("/sdcard")) {
-            p = "/storage/emulated/0";
-        }
-    
-        return p;
+    /** 统一取字节：JSArray 用专用转换，其他用 toByteArray */
+    private byte[] toBytesSafe(Object obj) {
+        if (obj == null) return null;
+        if (obj instanceof JSArray) return jsArrayToBytes(obj);
+        return toByteArray(obj);
     }
-    
 
     private Callback getCallback(JSFunction complete, Req req) {
         return new Callback() {
